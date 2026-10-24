@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Car Engine
   m_EditorClassIdentifier: Nekuzaky.Resonance::Nekuzaky.Resonance.SoundEvent
   root:
-    rid: 5255168061877780502
+    rid: 5255168063938232342
   bus: {fileID: 11400000, guid: 6048dbf8d48e78e41a16d531be2eafa1, type: 2}
   volume: -4
   pitch: 0
@@ -25,6 +25,7 @@ MonoBehaviour:
     rolloff: 0
     spread: 0
     doppler: 1
+    binaural: 0
     customCurve:
       serializedVersion: 2
       m_Curve:
@@ -104,7 +105,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 5255168061877780502
+    - rid: 5255168063938232342
       type: {class: BlendNode, ns: Nekuzaky.Resonance, asm: Nekuzaky.Resonance}
       data:
         name: By Speed
@@ -117,10 +118,10 @@ MonoBehaviour:
         blendRange: {x: 0, y: 1}
         blendFade: 0
         children:
-        - rid: 5255168061877780503
-        - rid: 5255168061877780504
+        - rid: 5255168063938232343
+        - rid: 5255168063938232344
         parameter: {fileID: 11400000, guid: 855e65ca7bebcde44bbf35a23a3edac6, type: 2}
-    - rid: 5255168061877780503
+    - rid: 5255168063938232343
       type: {class: ClipNode, ns: Nekuzaky.Resonance, asm: Nekuzaky.Resonance}
       data:
         name: Idle
@@ -135,7 +136,7 @@ MonoBehaviour:
         clip: {fileID: 8300000, guid: bca7afdbf9045ec49b73dbf1880b680e, type: 3}
         loop: 1
         randomStart: 0
-    - rid: 5255168061877780504
+    - rid: 5255168063938232344
       type: {class: ClipNode, ns: Nekuzaky.Resonance, asm: Nekuzaky.Resonance}
       data:
         name: Revving

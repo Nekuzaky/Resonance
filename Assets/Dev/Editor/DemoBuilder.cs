@@ -64,6 +64,7 @@ namespace Nekuzaky.Resonance.Dev
             Write("coin", Normalized(data => Synth.Tones(data, new[] { 987.77f, 1318.51f }, 0.08f, 6f, true), 0.45f, 0.6f));
             Write("ui_click", Normalized(data => Synth.Tones(data, new[] { 2000f }, 0.05f, 80f, false), 0.06f, 0.5f));
             Write("voice_line", Normalized(data => Synth.Voice(data, 8), 2.6f, 0.75f));
+            Write("voice_line_fr", Normalized(data => Synth.Voice(data, 21), 2.9f, 0.75f));
             Write("music_explore", MusicSynth.Explore());
             Write("music_combat", MusicSynth.Combat());
             Write("stinger_alert", MusicSynth.Stinger());

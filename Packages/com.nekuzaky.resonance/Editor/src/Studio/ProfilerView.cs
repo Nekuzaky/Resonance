@@ -37,6 +37,10 @@ namespace Nekuzaky.Resonance.Editor
             }));
             _cursorLabel = Ui.Styled("Live. Click or drag on the history to look back up to 60 seconds.", "rs-node-tag");
             toolbar.Add(_cursorLabel);
+            toolbar.Add(Ui.Spacer());
+            _sourceButton = Ui.TextButton(Glyphs.Remote, "Show Player", ToggleSource);
+            _sourceButton.tooltip = "Profile a Development build connected to this editor (Build Settings > Development Build, Autoconnect Profiler).";
+            toolbar.Add(_sourceButton);
             Root.Add(toolbar);
             _timeline = new ProfilerTimeline(_history);
             _timeline.Picked += _ => _paused = true;
@@ -57,23 +61,42 @@ namespace Nekuzaky.Resonance.Editor
 
         public void Sample()
         {
-            var engine = Resonance.Engine;
-            if (engine == null || _paused)
+            if (_paused)
                 return;
-            _history.Record(engine, UnityEditor.EditorApplication.timeSinceStartup);
+            var now = UnityEditor.EditorApplication.timeSinceStartup;
+            if (_remote)
+            {
+                if (RemoteSession.Version == _remoteVersion)
+                    return;
+                _remoteVersion = RemoteSession.Version;
+                _history.RecordRemote(RemoteSession.Frame, now);
+            }
+            else
+            {
+                var engine = Resonance.Engine;
+                if (engine == null)
+                    return;
+                _history.Record(engine, now);
+            }
             _timeline.MarkDirtyRepaint();
         }
 
         public void Refresh()
         {
+            RefreshSource();
             var engine = Resonance.Engine;
-            if (engine == null)
+            if (engine == null && !_remote)
                 return;
             _liveButton.SetEnabled(_paused);
             _liveButton.EnableInClassList("rs-button--on", !_paused);
             if (_paused && _timeline.Cursor >= 0 && _timeline.Cursor < _history.Count)
             {
                 ShowSample(_history[_timeline.Cursor]);
+                return;
+            }
+            if (_remote)
+            {
+                ShowRemote(RemoteSession.Frame);
                 return;
             }
             var stats = engine.Stats;
@@ -122,6 +145,40 @@ namespace Nekuzaky.Resonance.Editor
         private readonly Button _liveButton;
         private readonly Label _cursorLabel;
         private bool _paused;
+        private bool _remote;
+        private int _remoteVersion = -1;
+        private readonly Button _sourceButton;
+
+        private void ToggleSource()
+        {
+            _remote = !_remote && RemoteSession.FramesReceived > 0;
+            _history.Clear();
+            GoLive();
+        }
+
+        private void RefreshSource()
+        {
+            var live = RemoteSession.Live;
+            _sourceButton.style.display = live || _remote ? DisplayStyle.Flex : DisplayStyle.None;
+            _sourceButton.Q<Label>().text = _remote ? (live ? $"Player: {RemoteSession.Frame.Platform}" : "Player disconnected") : "Show Player";
+            _sourceButton.EnableInClassList("rs-button--on", _remote && live);
+        }
+
+        private void ShowRemote(RemoteFrame frame)
+        {
+            _instances.text = frame.Instances.ToString();
+            _real.text = frame.Real.ToString();
+            _virtual.text = frame.Virtual.ToString();
+            _pool.text = frame.Pooled.ToString();
+            _cost.text = $"{frame.Cost:0.000}";
+            _plays.text = $"{frame.Plays} / {frame.Rejected}";
+            _clips.text = "-";
+            _onDemand.text = frame.OnDemand.ToString();
+            _reverb.text = string.IsNullOrEmpty(frame.Reverb) ? "dry" : $"{frame.Reverb} {frame.Wet * 100f:0}%";
+            _cursorLabel.text = $"Profiling the {frame.Platform} player. Click the history to look back.";
+            if (_history.Count > 0)
+                RenderSounds(_history[_history.Count - 1]);
+        }
 
         private void GoLive()
         {
@@ -185,7 +242,7 @@ namespace Nekuzaky.Resonance.Editor
             foreach (var sound in sample.Sounds)
             {
                 var row = Ui.Box("rs-table-row");
-                row.Add(Cell(sound.Event != null ? sound.Event.name : "(deleted)", 150));
+                row.Add(Cell(sound.EventName, 150));
                 row.Add(Cell(sound.Emitter, 110, "rs-cell--dim"));
                 row.Add(Cell(sound.Bus, 70, "rs-cell--dim"));
                 row.Add(Cell(sound.Virtual ? "virtual" : sound.Voices.ToString(), 50, sound.Virtual ? "rs-cell--warn" : null));

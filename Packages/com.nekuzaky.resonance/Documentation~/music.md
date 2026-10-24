@@ -9,13 +9,19 @@ A **Music Track** holds the pieces of a score and the rules to move between them
 | BPM, Beats Per Bar | The tempo grid every transition snaps to |
 | Segments | Named parts of the score, each with a clip, a length in bars (0 uses the clip length) and the segment that follows it (empty loops the segment) |
 | First Segment | Where the track starts |
-| State Group, Links | Which segment plays for each state |
+| State Group, Links | Which segment plays for each state, and an optional **Bridge** segment played on the way |
 | Transition Sync | When a change happens: immediately, next beat, next bar, or end of the segment |
 | Crossfade | Overlap between the old and the new segment |
 | Stingers | Short one-shots layered over the music on the next beat or bar |
 
 Transitions are scheduled on the audio clock (`AudioSettings.dspTime`), so they land exactly on the beat whatever the
 frame rate.
+
+## Bridges
+
+A link can name a **Bridge**: a short segment (a drum fill, a riser, a hit) that plays between the current segment and
+the linked one. The bridge starts on the transition boundary and the linked segment follows exactly when the bridge
+ends. The demo plays a one bar riser before the combat music.
 
 ## Playing music
 

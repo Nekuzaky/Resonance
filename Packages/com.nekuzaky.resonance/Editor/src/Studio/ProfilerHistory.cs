@@ -6,7 +6,7 @@ namespace Nekuzaky.Resonance.Editor
 {
     internal struct SoundSnapshot
     {
-        public SoundEvent Event;
+        public string EventName;
         public string Emitter;
         public string Bus;
         public int Voices;
@@ -53,6 +53,34 @@ namespace Nekuzaky.Resonance.Editor
                 sample.Sounds.Add(Snapshot(instance, engine.Preview));
         }
 
+        public void RecordRemote(RemoteFrame frame, double time)
+        {
+            var sample = _samples[_head] ??= new ProfilerSample();
+            _head = (_head + 1) % Capacity;
+            _count = Mathf.Min(_count + 1, Capacity);
+            sample.Time = time;
+            sample.Instances = frame.Instances;
+            sample.Real = frame.Real;
+            sample.Virtual = frame.Virtual;
+            sample.Cost = frame.Cost;
+            sample.Sounds.Clear();
+            foreach (var sound in frame.Sounds)
+            {
+                sample.Sounds.Add(new SoundSnapshot
+                {
+                    EventName = sound.Event,
+                    Emitter = sound.Emitter,
+                    Bus = sound.Bus,
+                    Voices = sound.Voices,
+                    Virtual = sound.Virtual,
+                    Spatial = sound.Spatial,
+                    Distance = sound.Distance,
+                    Level = sound.Level,
+                    Occlusion = sound.Occlusion
+                });
+            }
+        }
+
         public void Clear()
         {
             _count = 0;
@@ -70,7 +98,7 @@ namespace Nekuzaky.Resonance.Editor
 
         private static SoundSnapshot Snapshot(SoundInstance instance, bool preview) => new()
         {
-            Event = instance.Event,
+            EventName = instance.Event != null ? instance.Event.name : "(deleted)",
             Emitter = instance.EmitterName,
             Bus = instance.Event != null && instance.Event.bus != null ? instance.Event.bus.name : "-",
             Voices = instance.Voices.Count,

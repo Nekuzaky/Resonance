@@ -21,7 +21,9 @@ namespace Nekuzaky.Resonance.Editor
             _sliders.Clear();
             Add(Ui.GroupTitle(Glyphs.Playing, "Preview Controls"));
             CollectSyncs();
-            if (_parameters.Count == 0 && _switches.Count == 0)
+            if (_languages.Count > 0)
+                AddLanguage();
+            if (_parameters.Count == 0 && _switches.Count == 0 && _languages.Count == 0)
             {
                 Add(Ui.Help("This sound uses no parameter or switch. Press Play to hear it."));
                 return;
@@ -50,12 +52,14 @@ namespace Nekuzaky.Resonance.Editor
         private readonly SoundEvent _sound;
         private readonly List<SoundParameter> _parameters = new();
         private readonly List<SwitchGroup> _switches = new();
+        private readonly List<string> _languages = new();
         private readonly Dictionary<SoundParameter, Slider> _sliders = new();
 
         private void CollectSyncs()
         {
             _parameters.Clear();
             _switches.Clear();
+            _languages.Clear();
             foreach (var modulation in _sound.modulations)
             {
                 if (modulation?.parameter != null && !_parameters.Contains(modulation.parameter))
@@ -68,7 +72,32 @@ namespace Nekuzaky.Resonance.Editor
                     _parameters.Add(blend.parameter);
                 if (node is SwitchNode { group: not null } switchNode && !_switches.Contains(switchNode.group))
                     _switches.Add(switchNode.group);
+                if (node is DialogueNode dialogue)
+                    CollectLanguages(dialogue);
             }
+        }
+
+        private void CollectLanguages(DialogueNode dialogue)
+        {
+            foreach (var line in dialogue.lines)
+            {
+                if (line != null && !string.IsNullOrEmpty(line.language) && !_languages.Contains(line.language))
+                    _languages.Add(line.language);
+            }
+        }
+
+        private void AddLanguage()
+        {
+            var row = Ui.Box("rs-preview-row");
+            row.Add(Glyphs.Icon(Glyphs.Language, "rs-icon--small", "rs-icon--dim"));
+            row.Add(new Label("Language"));
+            var engine = PreviewEngine.Engine;
+            var dropdown = new DropdownField(new List<string>(_languages), 0);
+            dropdown.SetValueWithoutNotify(_languages.Contains(engine.Language) ? engine.Language : _languages[0]);
+            engine.Language = dropdown.value;
+            dropdown.RegisterValueChangedCallback(evt => PreviewEngine.Engine.Language = evt.newValue);
+            row.Add(dropdown);
+            Add(row);
         }
 
         private void AddParameter(SoundParameter parameter)

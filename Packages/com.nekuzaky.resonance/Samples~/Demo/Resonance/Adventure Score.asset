@@ -27,13 +27,20 @@ MonoBehaviour:
     bars: 4
     next: 
     volume: 0
+  - name: Rise
+    clip: {fileID: 8300000, guid: 432cf35abc3cf5b48ab9a715b7031b9e, type: 3}
+    bars: 1
+    next: 
+    volume: 0
   firstSegment: Explore
   stateGroup: {fileID: 11400000, guid: 1250fd8fdb449e9499681f900406b7d6, type: 2}
   links:
   - state: Explore
     segment: Explore
+    bridge: 
   - state: Combat
     segment: Combat
+    bridge: Rise
   transitionSync: 2
   crossfade: 0.15
   stingers:

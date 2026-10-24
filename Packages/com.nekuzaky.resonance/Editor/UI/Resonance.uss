@@ -40,6 +40,7 @@
 .rs-kind--switch { -unity-background-image-tint-color: rgb(63, 167, 160); }
 .rs-kind--blend { -unity-background-image-tint-color: rgb(79, 179, 126); }
 .rs-kind--layer { -unity-background-image-tint-color: rgb(164, 140, 230); }
+.rs-kind--dialogue { -unity-background-image-tint-color: rgb(208, 106, 138); }
 
 .rs-asset-icon { width: 16px; height: 16px; flex-shrink: 0; margin-right: 6px; }
 .rs-asset-icon--large { width: 40px; height: 40px; margin-right: 0; margin-bottom: 10px; }

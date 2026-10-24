@@ -56,6 +56,11 @@ See [Distance, occlusion and reverb](space.md).
 Loads a Sound Bank while the object is enabled and unloads it when it is disabled. See
 [Memory and loading](memory.md).
 
+## Subtitle Relay
+
+Forwards the subtitles of Dialogue nodes to Unity Events, so a text field shows them without code. See
+[Dialogue and subtitles](dialogue.md).
+
 ## Snapshot Trigger
 
 Applies a mix snapshot while the object is enabled, or when `Apply()` and `Remove()` are called.

@@ -16,6 +16,8 @@ namespace Nekuzaky.Resonance.Dev
         private float _deepestDuck;
         private float _wettest;
         private float _mostOccluded;
+        private int _subtitles;
+        private bool _bridged;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void Install()
@@ -71,6 +73,8 @@ namespace Nekuzaky.Resonance.Dev
             Check(engine.Memory.Banks.Count == 1 && engine.Memory.Clips.Count > 10, "the demo bank holds its clips");
             Check(_wettest > 0.9f, $"the stone hall reverb reached {_wettest:0.00}");
             Check(_mostOccluded > 0.3f, $"the wall occluded the car up to {_mostOccluded:0.00}");
+            Check(_subtitles > 0, $"the narrator sent {_subtitles} subtitles");
+            Check(_bridged, "the score went through the Rise bridge");
             Debug.Log(_failures == 0 ? "[Smoke] OK" : $"[Smoke] {_failures} FAILED");
             Application.Quit(_failures == 0 ? 0 : 1);
         }
@@ -80,12 +84,17 @@ namespace Nekuzaky.Resonance.Dev
 
         #region Unity Callbacks
 
-        private void Start() => _start = Time.realtimeSinceStartup;
+        private void Start()
+        {
+            _start = Time.realtimeSinceStartup;
+            Resonance.Engine.SubtitleStarted += _ => _subtitles++;
+        }
 
         private void Update()
         {
             var engine = Resonance.Engine;
             var elapsed = Time.realtimeSinceStartup - _start;
+            _bridged |= IsSegment(engine, "Rise");
             _deepestDuck = Mathf.Min(_deepestDuck, MusicDuck(engine));
             _wettest = Mathf.Max(_wettest, engine.Reverb.Wet);
             foreach (var instance in engine.Instances)

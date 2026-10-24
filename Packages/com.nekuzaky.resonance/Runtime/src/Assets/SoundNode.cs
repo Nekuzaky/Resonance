@@ -11,7 +11,8 @@ namespace Nekuzaky.Resonance
         Sequence,
         Switch,
         Blend,
-        Layer
+        Layer,
+        Dialogue
     }
 
     public enum SequenceMode
@@ -156,6 +157,7 @@ namespace Nekuzaky.Resonance
                 NodeKind.Switch => new SwitchNode(),
                 NodeKind.Blend => new BlendNode(),
                 NodeKind.Layer => new LayerNode(),
+                NodeKind.Dialogue => new DialogueNode(),
                 _ => new ClipNode()
             };
             node.name = kind.ToString();

@@ -64,6 +64,8 @@ namespace Nekuzaky.Resonance
 
         public MusicSegment Pending => _pending ? _decks[1 - _current].Segment : null;
 
+        public MusicSegment AfterBridge => _afterBridge;
+
         public double PendingTime => _pending ? _decks[1 - _current].Start : 0.0;
 
         public MusicPlayer(Transform host, SyncStore syncs, BusMixer mixer)
@@ -88,6 +90,8 @@ namespace Nekuzaky.Resonance
         private int _nextStinger;
         private bool _pending;
         private bool _stopping;
+        private MusicSegment _bridge;
+        private MusicSegment _afterBridge;
         private double _stopAt;
 
         #endregion
@@ -145,7 +149,21 @@ namespace Nekuzaky.Resonance
             if (_pending)
                 _decks[1 - _current].Halt();
             _pending = false;
+            _bridge = null;
+            _afterBridge = null;
             Schedule(segment, Boundary(sync, now), Track.crossfade, now);
+        }
+
+        public void RequestThrough(MusicSegment bridge, MusicSegment target, MusicSync sync)
+        {
+            if (bridge == null || bridge.clip == null)
+            {
+                Request(target, sync);
+                return;
+            }
+            Request(bridge, sync);
+            _bridge = bridge;
+            _afterBridge = target;
         }
 
         public void PlayStinger(string stingerName)

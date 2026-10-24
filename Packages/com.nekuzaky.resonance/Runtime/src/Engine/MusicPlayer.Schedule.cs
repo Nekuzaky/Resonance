@@ -29,7 +29,7 @@ namespace Nekuzaky.Resonance
                 var length = Track.LengthOf(deck.Segment);
                 if (length > 0.0 && now >= deck.Start + length - ScheduleAhead)
                 {
-                    var next = Track.Find(deck.Segment.next) ?? deck.Segment;
+                    var next = NextAfter(deck.Segment);
                     Schedule(next, deck.Start + length, 0f, now);
                 }
             }
@@ -114,6 +114,18 @@ namespace Nekuzaky.Resonance
             }
         }
 
+        private MusicSegment NextAfter(MusicSegment segment)
+        {
+            if (_bridge != null && segment == _bridge && _afterBridge != null)
+            {
+                var target = _afterBridge;
+                _bridge = null;
+                _afterBridge = null;
+                return target;
+            }
+            return Track.Find(segment.next) ?? segment;
+        }
+
         private float Gain(float decibels) => AudioMath.ToLinear(Track.volume + decibels) * _mixer.Gain(Track.bus);
 
         private void Finish()
@@ -129,9 +141,10 @@ namespace Nekuzaky.Resonance
         {
             if (Track == null || Track.stateGroup != group)
                 return;
-            var segment = Track.ForState(state);
+            var link = Track.LinkFor(state);
+            var segment = Track.Find(link?.segment);
             if (segment != null)
-                Request(segment, Track.transitionSync);
+                RequestThrough(Track.Find(link.bridge), segment, Track.transitionSync);
         }
 
         #endregion

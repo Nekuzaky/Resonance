@@ -144,6 +144,10 @@ namespace Nekuzaky.Resonance.Dev
             music.AddComponent<MusicSource>().track = assets.Score;
             var narrator = new GameObject("Narrator");
             narrator.transform.SetParent(audio.transform);
+            var subtitles = narrator.AddComponent<DemoSubtitles>();
+            var relay = narrator.AddComponent<SubtitleRelay>();
+            UnityEditor.Events.UnityEventTools.AddPersistentListener(relay.onSubtitle, subtitles.Show);
+            UnityEditor.Events.UnityEventTools.AddPersistentListener(relay.onSubtitleEnd, subtitles.Hide);
             var repeater = narrator.AddComponent<DemoRepeater>();
             repeater.sound = assets.Narrator;
             repeater.firstDelay = 5f;

@@ -10,6 +10,7 @@ project to be closed in the editor. Logs and results go to `Tools/Output`, which
 | `Test.ps1` | Runs the EditMode tests. `-Filter` runs a subset. |
 | `Check-Rules.ps1` | Checks function length, recursion, `goto`, `unsafe`, silenced warnings and `-warnaserror+` placement. |
 | `Build-Check.ps1` | Builds the Windows demo player and runs its headless smoke test. `-Platforms` compiles the player scripts for Android and WebGL. |
+| `Remote-Check.ps1` | Builds a development player, runs it and checks that the Studio Profiler receives its snapshots (opens the editor). |
 | `Build-Demo.ps1` | Regenerates the demo audio, Resonance assets and scene in `Assets/Demo`. |
 | `Capture-Media.ps1` | Records the README screenshots from the real editor. |
 | `Sync-Sample.ps1` | Copies `Assets/Demo` into the package sample, without `csc.rsp`. |

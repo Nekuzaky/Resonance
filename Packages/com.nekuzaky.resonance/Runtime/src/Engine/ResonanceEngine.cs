@@ -40,6 +40,14 @@ namespace Nekuzaky.Resonance
 
         internal bool Simulate { get; set; }
 
+        public static bool HasSpatializer => !string.IsNullOrEmpty(AudioSettings.GetSpatializerPluginName());
+
+        public string Language { get; set; } = "en";
+
+        public event System.Action<Subtitle> SubtitleStarted;
+
+        public event System.Action<Subtitle> SubtitleEnded;
+
         internal readonly SyncStore Syncs = new();
         internal readonly BusMixer Mixer = new();
         internal readonly MusicPlayer Music;
@@ -77,6 +85,7 @@ namespace Nekuzaky.Resonance
             if (admission != PlayResult.Played && admission != PlayResult.Stolen)
                 return Reject(sound, emitter, admission);
 
+            _resolver.Language = Language;
             _resolver.Resolve(sound.root, Syncs.ReaderFor(emitter), _plan);
             if (_plan.Layers.Count == 0)
                 return Reject(sound, emitter, PlayResult.Empty);

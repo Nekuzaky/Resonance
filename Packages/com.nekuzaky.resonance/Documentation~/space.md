@@ -16,6 +16,14 @@ An **Attenuation Preset** (Create > Resonance > Attenuation Preset) holds the sa
 small objects, footsteps, explosions, voices. Set it in the event's **Attenuation Preset** field and the event's own
 distance settings are ignored. Change the preset and every event that uses it follows.
 
+## Binaural audio
+
+Tick **Binaural** in an event's 3D settings to render it through the project's spatializer plugin: head-related
+transfer functions that place sounds above, below and behind the listener on headphones. Pick the plugin in
+**Project Settings > Audio > Spatializer Plugin**: Steam Audio, Meta XR Audio or any other plugin made for Unity.
+Without a plugin the setting has no effect, so the same events work everywhere. Keep it for the sounds where
+direction matters most; each binaural voice costs more CPU.
+
 ## Occlusion
 
 Turn on **Occlusion** in an event and Resonance casts three rays between the sound and the listener, a little apart

@@ -12,7 +12,7 @@ namespace Nekuzaky.Resonance.Editor
 
         private static readonly NodeKind[] MenuKinds =
         {
-            NodeKind.Clip, NodeKind.Random, NodeKind.Sequence, NodeKind.Switch, NodeKind.Blend, NodeKind.Layer
+            NodeKind.Clip, NodeKind.Random, NodeKind.Sequence, NodeKind.Switch, NodeKind.Blend, NodeKind.Layer, NodeKind.Dialogue
         };
 
         private static void ShowKindMenu(Action<NodeKind> pick)
@@ -32,6 +32,7 @@ namespace Nekuzaky.Resonance.Editor
                 case NodeKind.Switch: return "Switch  (pick by game value)";
                 case NodeKind.Blend: return "Blend  (crossfade by parameter)";
                 case NodeKind.Layer: return "Layer  (play all together)";
+                case NodeKind.Dialogue: return "Dialogue  (one line, in the player's language)";
                 default: return "Clip  (one audio file)";
             }
         }
@@ -47,7 +48,7 @@ namespace Nekuzaky.Resonance.Editor
                 return;
             foreach (var kind in MenuKinds)
             {
-                if (kind != NodeKind.Clip)
+                if (kind != NodeKind.Clip && kind != NodeKind.Dialogue)
                     evt.menu.AppendAction($"Wrap in/{Describe(kind)}", _ => Wrap(kind));
             }
             evt.menu.AppendSeparator();
@@ -103,7 +104,7 @@ namespace Nekuzaky.Resonance.Editor
         private void Wrap(NodeKind kind)
         {
             var row = _selected;
-            if (row == null || row.IsEvent || kind == NodeKind.Clip)
+            if (row == null || row.IsEvent || kind == NodeKind.Clip || kind == NodeKind.Dialogue)
                 return;
             var wrapper = (ContainerNode)SoundNodes.Create(kind);
             Commit("Wrap sound node", () =>

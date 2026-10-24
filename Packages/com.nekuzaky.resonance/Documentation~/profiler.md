@@ -17,6 +17,14 @@ top right says which).
 | Loaded on demand | Clips that were played before their data was loaded (they may have started late) |
 | Reverb around listener | The strongest Reverb Zone at the listener and how much reverb is applied |
 
+## Profiling a player build
+
+Build with **Development Build** and **Autoconnect Profiler** ticked (or connect to the player from the Unity
+Profiler's target menu). While the player runs, a **Show Player** button appears in the Profiler tab: press it to see
+the player's sounds, voices, cost, reverb and history instead of the editor's. It works for Windows, Android, iOS and
+any platform Unity can connect to. Development builds send a small snapshot five times a second; release builds do
+not include this code.
+
 ## History
 
 The Profiler records the last 60 seconds, ten times a second, while the Studio is open, even when another tab is

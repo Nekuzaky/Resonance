@@ -94,7 +94,12 @@ namespace Nekuzaky.Resonance.Editor
             var name = Ui.Styled(suggestion.Clip.name, "rs-cell");
             name.style.width = 180f;
             row.Add(name);
-            var change = Ui.Styled($"{suggestion.CurrentLoad} > {suggestion.SuggestedLoad}", "rs-cell", "rs-cell--warn");
+            var target = Ui.Styled(suggestion.Target, "rs-cell", "rs-cell--dim");
+            target.style.width = 70f;
+            row.Add(target);
+            var change = Ui.Styled(string.IsNullOrEmpty(suggestion.Platform)
+                ? $"{suggestion.CurrentLoad} > {suggestion.SuggestedLoad}"
+                : $"add override: {suggestion.SuggestedLoad}, Vorbis {suggestion.SuggestedQuality * 100f:0}%", "rs-cell", "rs-cell--warn");
             change.style.width = 300f;
             row.Add(change);
             row.Add(Ui.Styled(suggestion.Reason, "rs-cell", "rs-cell--dim"));

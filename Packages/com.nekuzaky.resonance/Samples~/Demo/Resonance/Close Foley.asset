@@ -19,6 +19,7 @@ MonoBehaviour:
     rolloff: 0
     spread: 0
     doppler: 1
+    binaural: 0
     customCurve:
       serializedVersion: 2
       m_Curve:

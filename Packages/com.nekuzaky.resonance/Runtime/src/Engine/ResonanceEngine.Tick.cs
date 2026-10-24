@@ -64,6 +64,7 @@ namespace Nekuzaky.Resonance
                 voice.Layer = layer;
                 if (layer.Clips.Count > 0)
                     Memory.NoteOnDemand(layer.Clips[0].Clip);
+                voice.SubtitleShown = false;
                 Configure(voice, sound, instance.Position);
                 instance.Voices.Add(voice);
                 voice.BlendWeight = BlendOf(voice);
@@ -100,6 +101,7 @@ namespace Nekuzaky.Resonance
                 source.SetCustomCurve(AudioSourceCurveType.CustomRolloff, spatial.customCurve);
             source.reverbZoneMix = Preview ? 0f : sound.reverbSend;
             source.spread = spatial.spread;
+            source.spatialize = spatial.binaural && sound.spatialize && !Preview && HasSpatializer;
             source.dopplerLevel = spatial.doppler;
             source.priority = 255 - Mathf.Clamp(sound.priority, 0, 255);
         }
@@ -123,6 +125,7 @@ namespace Nekuzaky.Resonance
                 voice.Finished = true;
                 return;
             }
+            BeginSubtitle(voice);
 
             var clip = voice.Clip;
             voice.Source.clip = clip.Clip;

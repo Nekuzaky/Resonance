@@ -19,10 +19,14 @@ namespace Nekuzaky.Resonance
         public SoundParameter BlendParameter;
         public Vector2 BlendRange;
         public float BlendFade;
+        public DialogueNode Dialogue;
+        public DialogueLine Line;
 
         public void Clear()
         {
             Clips.Clear();
+            Dialogue = null;
+            Line = null;
             Loop = false;
             BlendParameter = null;
             BlendRange = Vector2.zero;
@@ -82,6 +86,8 @@ namespace Nekuzaky.Resonance
         #region Main API
 
         public Resolver(int seed) => _random = new System.Random(seed);
+
+        public string Language { get; set; } = "en";
 
         public void Resolve(SoundNode root, ISyncReader syncs, Plan plan)
         {
@@ -164,6 +170,9 @@ namespace Nekuzaky.Resonance
                 case ClipNode clip:
                     AddClip(frame, clip, plan);
                     break;
+                case DialogueNode dialogue:
+                    AddLine(frame, dialogue, plan);
+                    break;
                 case RandomNode random:
                     PushChild(frame, random, PickRandom(random));
                     break;
@@ -198,6 +207,22 @@ namespace Nekuzaky.Resonance
                 Pitch = AudioMath.ToPitch(frame.Semitones),
                 Loop = node.loop,
                 RandomStart = node.randomStart
+            });
+        }
+
+        private void AddLine(Frame frame, DialogueNode node, Plan plan)
+        {
+            var line = node.LineFor(Language);
+            if (line == null)
+                return;
+            var layer = frame.Layer >= 0 ? plan.Layers[frame.Layer] : NewLayer(frame, plan);
+            layer.Dialogue = node;
+            layer.Line = line;
+            layer.Clips.Add(new PlanClip
+            {
+                Clip = line.clip,
+                Gain = AudioMath.ToLinear(frame.Decibels),
+                Pitch = AudioMath.ToPitch(frame.Semitones)
             });
         }
 

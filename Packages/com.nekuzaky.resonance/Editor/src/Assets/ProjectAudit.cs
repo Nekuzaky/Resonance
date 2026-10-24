@@ -109,6 +109,9 @@ namespace Nekuzaky.Resonance.Editor
                 case SwitchNode switchNode:
                     CheckSwitchValues(sound, switchNode, problems);
                     break;
+                case DialogueNode dialogue when dialogue.LineFor(dialogue.fallbackLanguage) == null:
+                    Add(problems, Severity.Error, sound, $"dialogue '{node.name}' has no line with a clip");
+                    break;
                 case BlendNode { parameter: null }:
                     Add(problems, Severity.Error, sound, $"blend '{node.name}' has no parameter");
                     break;

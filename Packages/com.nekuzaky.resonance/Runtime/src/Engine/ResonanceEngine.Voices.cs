@@ -27,7 +27,10 @@ namespace Nekuzaky.Resonance
                 AdvanceClip(voice, busGain);
 
             if (voice.Finished)
+            {
+                EndSubtitle(voice);
                 return;
+            }
             Mix(voice, busGain);
             Mixer.CountVoice(instance.Event.bus, voice.Virtual ? 0f : voice.Level);
         }
@@ -90,6 +93,31 @@ namespace Nekuzaky.Resonance
             return true;
         }
 
+        private void BeginSubtitle(Voice voice)
+        {
+            var layer = voice.Layer;
+            if (layer?.Line == null || voice.SubtitleShown)
+                return;
+            voice.SubtitleShown = true;
+            SubtitleStarted?.Invoke(SubtitleOf(voice));
+        }
+
+        private void EndSubtitle(Voice voice)
+        {
+            if (!voice.SubtitleShown || voice.Layer?.Line == null)
+                return;
+            voice.SubtitleShown = false;
+            SubtitleEnded?.Invoke(SubtitleOf(voice));
+        }
+
+        private Subtitle SubtitleOf(Voice voice)
+        {
+            var layer = voice.Layer;
+            var owner = voice.Owner;
+            var length = layer.Line.clip != null ? layer.Line.clip.length : 0f;
+            return new Subtitle(new SoundHandle(owner.Id), layer.Line.subtitle, layer.Dialogue.speaker, layer.Line.language, owner.Emitter, length);
+        }
+
         private float BlendOf(Voice voice)
         {
             var layer = voice.Layer;
@@ -135,6 +163,7 @@ namespace Nekuzaky.Resonance
         {
             foreach (var voice in instance.Voices)
             {
+                EndSubtitle(voice);
                 if (voice.Layer != null)
                     _layerPool.Push(voice.Layer);
                 voice.Reset();

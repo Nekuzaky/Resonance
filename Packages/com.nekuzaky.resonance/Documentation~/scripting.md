@@ -46,6 +46,14 @@ Resonance.SetSwitch(surface, "Metal", gameObject);
 Resonance.SetState(gameState, "Combat");
 ```
 
+## Dialogue
+
+```csharp
+Resonance.Language = "fr";
+Resonance.Engine.SubtitleStarted += subtitle => subtitles.text = subtitle.Text;
+Resonance.Engine.SubtitleEnded += _ => subtitles.text = string.Empty;
+```
+
 ## Music and mix
 
 ```csharp

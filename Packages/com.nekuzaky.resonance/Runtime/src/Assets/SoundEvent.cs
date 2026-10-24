@@ -42,6 +42,7 @@ namespace Nekuzaky.Resonance
         public AudioRolloffMode rolloff = AudioRolloffMode.Logarithmic;
         [Range(0f, 360f)] public float spread;
         [Range(0f, 5f)] public float doppler = 1f;
+        public bool binaural;
         public AnimationCurve customCurve = AnimationCurve.EaseInOut(0f, 1f, 1f, 0f);
         [Range(10f, 22000f)] public float lowPassAtMax = AudioMath.OpenLowPass;
 

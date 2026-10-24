@@ -98,6 +98,7 @@ namespace Nekuzaky.Resonance
         public bool Finished;
         public float Level;
         public float BlendWeight = 1f;
+        public bool SubtitleShown;
 
         public Voice(Transform parent, int index)
         {
@@ -132,6 +133,7 @@ namespace Nekuzaky.Resonance
             Finished = false;
             Level = 0f;
             BlendWeight = 1f;
+            SubtitleShown = false;
         }
 
         #endregion

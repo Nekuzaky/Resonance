@@ -28,6 +28,17 @@ namespace Nekuzaky.Resonance
             {
                 if (node is ClipNode { clip: not null } clip)
                     clips.Add(clip.clip);
+                if (node is DialogueNode dialogue)
+                    AddLines(dialogue, clips);
+            }
+        }
+
+        private static void AddLines(DialogueNode dialogue, HashSet<AudioClip> clips)
+        {
+            foreach (var line in dialogue.lines)
+            {
+                if (line?.clip != null)
+                    clips.Add(line.clip);
             }
         }
 

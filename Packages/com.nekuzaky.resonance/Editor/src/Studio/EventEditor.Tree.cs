@@ -161,6 +161,7 @@ namespace Nekuzaky.Resonance.Editor
                 SwitchNode switchNode => switchNode.group != null ? $"by {switchNode.group.name}" : "no switch group",
                 BlendNode blend => blend.parameter != null ? $"by {blend.parameter.name}" : "no parameter",
                 LayerNode layer => $"{layer.children.Count} layers",
+                DialogueNode dialogue => dialogue.lines.Count == 1 ? dialogue.lines[0].language : $"{dialogue.lines.Count} languages",
                 _ => string.Empty
             };
             switch (row.Parent)
@@ -183,6 +184,7 @@ namespace Nekuzaky.Resonance.Editor
                 case ClipNode clip: return clip.clip == null;
                 case SwitchNode switchNode: return switchNode.group == null;
                 case BlendNode blend: return blend.parameter == null;
+                case DialogueNode dialogue: return dialogue.LineFor(dialogue.fallbackLanguage) == null;
                 default: return false;
             }
         }

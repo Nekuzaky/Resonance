@@ -67,6 +67,9 @@ namespace Nekuzaky.Resonance.Editor
         public const string Reverb = "bricks";
         public const string Memory = "hdd-stack";
         public const string Delay = "clock";
+        public const string Dialogue = "chat-quote-fill";
+        public const string Language = "translate";
+        public const string Remote = "phone";
 
         public static string Of(NodeKind kind)
         {
@@ -77,6 +80,7 @@ namespace Nekuzaky.Resonance.Editor
                 case NodeKind.Switch: return Switch;
                 case NodeKind.Blend: return Blend;
                 case NodeKind.Layer: return Layer;
+                case NodeKind.Dialogue: return Dialogue;
                 default: return Clip;
             }
         }

@@ -38,7 +38,13 @@ namespace Nekuzaky.Resonance
 
         private void Awake() => Engine = new ResonanceEngine(transform) { Metering = Application.isEditor };
 
-        private void LateUpdate() => Engine.Tick(Time.unscaledDeltaTime);
+        private readonly RemoteSender _remote = new();
+
+        private void LateUpdate()
+        {
+            Engine.Tick(Time.unscaledDeltaTime);
+            _remote.Tick(Engine);
+        }
 
         private void OnDestroy()
         {

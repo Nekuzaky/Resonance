@@ -90,6 +90,16 @@ namespace Nekuzaky.Resonance
 
         public static void RemoveSnapshot(MixSnapshot snapshot) => Engine?.Mixer.Remove(snapshot);
 
+        public static string Language
+        {
+            get => Engine?.Language ?? "en";
+            set
+            {
+                if (Engine != null)
+                    Engine.Language = string.IsNullOrEmpty(value) ? "en" : value;
+            }
+        }
+
         public static void LoadBank(SoundBank bank) => Engine?.Memory.Load(bank);
 
         public static void UnloadBank(SoundBank bank) => Engine?.Memory.Unload(bank);

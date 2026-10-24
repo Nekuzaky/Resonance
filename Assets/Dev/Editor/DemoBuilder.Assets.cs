@@ -91,7 +91,10 @@ namespace Nekuzaky.Resonance.Dev
             assets.Click.cooldown = 0.05f;
 
             assets.Narrator = Fresh<SoundEvent>("Narrator");
-            assets.Narrator.root = Clip("voice_line");
+            var line = new DialogueNode { name = "Welcome", speaker = "Narrator", fallbackLanguage = "en" };
+            line.lines.Add(new DialogueLine { language = "en", clip = ClipAt("voice_line"), subtitle = "Stone floors ring, grass hushes. Listen to the hall." });
+            line.lines.Add(new DialogueLine { language = "fr", clip = ClipAt("voice_line_fr"), subtitle = "La pierre resonne, l'herbe etouffe. Ecoute la salle." });
+            assets.Narrator.root = line;
             assets.Narrator.bus = assets.Voice;
             assets.Narrator.spatialize = false;
             assets.Narrator.priority = 220;
@@ -143,10 +146,11 @@ namespace Nekuzaky.Resonance.Dev
             score.bus = assets.Music;
             score.segments.Add(new MusicSegment { name = "Explore", clip = ClipAt("music_explore"), bars = 4 });
             score.segments.Add(new MusicSegment { name = "Combat", clip = ClipAt("music_combat"), bars = 4 });
+            score.segments.Add(new MusicSegment { name = "Rise", clip = ClipAt("stinger_alert"), bars = 1 });
             score.firstSegment = "Explore";
             score.stateGroup = assets.Game;
             score.links.Add(new MusicStateLink { state = "Explore", segment = "Explore" });
-            score.links.Add(new MusicStateLink { state = "Combat", segment = "Combat" });
+            score.links.Add(new MusicStateLink { state = "Combat", segment = "Combat", bridge = "Rise" });
             score.transitionSync = MusicSync.NextBar;
             score.crossfade = 0.15f;
             score.stingers.Add(new Stinger { name = "Alert", clip = ClipAt("stinger_alert"), sync = MusicSync.NextBeat });

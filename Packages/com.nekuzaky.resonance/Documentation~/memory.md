@@ -33,3 +33,7 @@ suggests:
 
 Clips used by a Sound Bank are set not to preload, so the bank decides when they load. The tool lists the changes and
 asks before applying them.
+
+For **Android** and **iOS**, the Audit tab also suggests a platform override for every clip that has none: Vorbis at
+35% quality for effects and 50% for music, with the sample rate optimized. Phones get smaller builds and less memory
+use, desktop keeps the full quality.

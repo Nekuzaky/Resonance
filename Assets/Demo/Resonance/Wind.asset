@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Wind
   m_EditorClassIdentifier: Nekuzaky.Resonance::Nekuzaky.Resonance.SoundEvent
   root:
-    rid: 5255168061877780494
+    rid: 5255168063938232334
   bus: {fileID: 11400000, guid: c494108448b1c0947bb9c9cc1b0650ac, type: 2}
   volume: 0
   pitch: 0
@@ -25,6 +25,7 @@ MonoBehaviour:
     rolloff: 0
     spread: 0
     doppler: 1
+    binaural: 0
     customCurve:
       serializedVersion: 2
       m_Curve:
@@ -78,7 +79,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 5255168061877780494
+    - rid: 5255168063938232334
       type: {class: ClipNode, ns: Nekuzaky.Resonance, asm: Nekuzaky.Resonance}
       data:
         name: Wind Loop

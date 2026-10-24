@@ -18,6 +18,7 @@ in the editor.
 | `Tools/Test.ps1` | Runs the EditMode tests. |
 | `Tools/Check-Rules.ps1` | Checks the code rules listed below. |
 | `Tools/Build-Check.ps1` | Builds the demo player, runs a headless smoke test in it; `-Platforms` compiles for Android and WebGL. |
+| `Tools/Remote-Check.ps1` | Profiles a development player from the editor, end to end. |
 | `Tools/Build-Demo.ps1` | Regenerates the demo audio, assets and scene. |
 | `Tools/Capture-Media.ps1` | Records the README screenshots from the real editor. |
 | `Tools/Sync-Sample.ps1` | Copies `Assets/Demo` into the package sample. |

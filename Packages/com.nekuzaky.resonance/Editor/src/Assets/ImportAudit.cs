@@ -13,6 +13,10 @@ namespace Nekuzaky.Resonance.Editor
         public bool CurrentPreload;
         public bool SuggestedPreload;
         public string Reason;
+        public string Platform;
+        public float SuggestedQuality = -1f;
+
+        public string Target => string.IsNullOrEmpty(Platform) ? "Default" : Platform;
     }
 
     internal static class ImportAudit
@@ -21,6 +25,10 @@ namespace Nekuzaky.Resonance.Editor
 
         public const float StreamingSeconds = 15f;
         public const float DecompressSeconds = 3f;
+        public const float MobileQuality = 0.35f;
+        public const float MobileMusicQuality = 0.5f;
+
+        public static readonly string[] MobilePlatforms = { "Android", "iOS" };
 
         [MenuItem("Tools/Resonance/Optimize Audio Import Settings", priority = 21)]
         public static void OptimizeFromMenu()
@@ -53,6 +61,7 @@ namespace Nekuzaky.Resonance.Editor
                 var suggestion = Suggest(clip, music.Contains(clip), banked.Contains(clip));
                 if (suggestion != null)
                     suggestions.Add(suggestion);
+                AddMobile(clip, music.Contains(clip), banked.Contains(clip), suggestions);
             }
             suggestions.Sort((a, b) => string.CompareOrdinal(a.Path, b.Path));
             return suggestions;
@@ -65,13 +74,8 @@ namespace Nekuzaky.Resonance.Editor
             {
                 foreach (var suggestion in suggestions)
                 {
-                    if (AssetImporter.GetAtPath(suggestion.Path) is not AudioImporter importer)
-                        continue;
-                    var settings = importer.defaultSampleSettings;
-                    settings.loadType = suggestion.SuggestedLoad;
-                    settings.preloadAudioData = suggestion.SuggestedPreload;
-                    importer.defaultSampleSettings = settings;
-                    importer.SaveAndReimport();
+                    if (AssetImporter.GetAtPath(suggestion.Path) is AudioImporter importer)
+                        ApplyOne(importer, suggestion);
                 }
             }
             finally
@@ -93,6 +97,52 @@ namespace Nekuzaky.Resonance.Editor
 
 
         #region Private and Protected
+
+        private static void ApplyOne(AudioImporter importer, ImportSuggestion suggestion)
+        {
+            var mobile = !string.IsNullOrEmpty(suggestion.Platform);
+            var settings = mobile ? importer.GetOverrideSampleSettings(suggestion.Platform) : importer.defaultSampleSettings;
+            settings.loadType = suggestion.SuggestedLoad;
+            settings.preloadAudioData = suggestion.SuggestedPreload;
+            if (mobile)
+            {
+                settings.compressionFormat = AudioCompressionFormat.Vorbis;
+                settings.quality = suggestion.SuggestedQuality;
+                settings.sampleRateSetting = AudioSampleRateSetting.OptimizeSampleRate;
+                importer.SetOverrideSampleSettings(suggestion.Platform, settings);
+            }
+            else
+            {
+                importer.defaultSampleSettings = settings;
+            }
+            importer.SaveAndReimport();
+        }
+
+        public static float SuggestedMobileQuality(bool isMusic) => isMusic ? MobileMusicQuality : MobileQuality;
+
+        private static void AddMobile(AudioClip clip, bool isMusic, bool isBanked, List<ImportSuggestion> suggestions)
+        {
+            var path = AssetDatabase.GetAssetPath(clip);
+            if (AssetImporter.GetAtPath(path) is not AudioImporter importer)
+                return;
+            foreach (var platform in MobilePlatforms)
+            {
+                if (importer.ContainsSampleSettingsOverride(platform))
+                    continue;
+                var load = SuggestedLoad(clip.length, isMusic);
+                suggestions.Add(new ImportSuggestion
+                {
+                    Clip = clip,
+                    Path = path,
+                    Platform = platform,
+                    CurrentLoad = importer.defaultSampleSettings.loadType,
+                    SuggestedLoad = load,
+                    SuggestedPreload = !isBanked && load != AudioClipLoadType.Streaming,
+                    SuggestedQuality = SuggestedMobileQuality(isMusic),
+                    Reason = $"smaller on phones: Vorbis at {SuggestedMobileQuality(isMusic) * 100f:0}% quality, optimized sample rate"
+                });
+            }
+        }
 
         private static ImportSuggestion Suggest(AudioClip clip, bool isMusic, bool isBanked)
         {

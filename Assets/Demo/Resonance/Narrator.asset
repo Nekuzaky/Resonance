@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Narrator
   m_EditorClassIdentifier: Nekuzaky.Resonance::Nekuzaky.Resonance.SoundEvent
   root:
-    rid: 5255168061877780501
+    rid: 5255168063938232341
   bus: {fileID: 11400000, guid: fe6443226210f004c9ba79c80d238d22, type: 2}
   volume: 0
   pitch: 0
@@ -25,6 +25,7 @@ MonoBehaviour:
     rolloff: 0
     spread: 0
     doppler: 1
+    binaural: 0
     customCurve:
       serializedVersion: 2
       m_Curve:
@@ -78,10 +79,10 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 5255168061877780501
-      type: {class: ClipNode, ns: Nekuzaky.Resonance, asm: Nekuzaky.Resonance}
+    - rid: 5255168063938232341
+      type: {class: DialogueNode, ns: Nekuzaky.Resonance, asm: Nekuzaky.Resonance}
       data:
-        name: voice_line
+        name: Welcome
         volume: 0
         volumeRandom: 0
         pitch: 0
@@ -90,6 +91,12 @@ MonoBehaviour:
         switchValue: 
         blendRange: {x: 0, y: 1}
         blendFade: 0
-        clip: {fileID: 8300000, guid: 333936f098d26fa40962cc0c86808e54, type: 3}
-        loop: 0
-        randomStart: 0
+        speaker: Narrator
+        fallbackLanguage: en
+        lines:
+        - language: en
+          clip: {fileID: 8300000, guid: 333936f098d26fa40962cc0c86808e54, type: 3}
+          subtitle: Stone floors ring, grass hushes. Listen to the hall.
+        - language: fr
+          clip: {fileID: 8300000, guid: c730a29cd178cbf4e810d29ea0aafdac, type: 3}
+          subtitle: La pierre resonne, l'herbe etouffe. Ecoute la salle.

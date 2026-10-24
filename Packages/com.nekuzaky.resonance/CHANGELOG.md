@@ -3,6 +3,23 @@
 All notable changes to this package are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [0.3.0] - 2026-10-24
+
+### Added
+
+- Dialogue nodes: one line per language with subtitles, a fallback language, `Resonance.Language`, and
+  `SubtitleStarted` and `SubtitleEnded` engine events. Subtitle Relay component to show subtitles without code.
+- Music bridges: a state link can play a bridge segment before the linked segment.
+- Binaural option on 3D settings, rendered through the project's spatializer plugin when one is selected.
+- Remote profiling: development builds send snapshots to the editor, and the Profiler tab shows the player with its
+  history.
+- Mobile import overrides (Android and iOS) suggested by the Audit tab.
+- The demo narrator speaks in English or French with subtitles on screen, and the score plays a riser before combat.
+
+### Verified
+
+- A development Windows player streamed 80 snapshots to the editor's Profiler during the smoke test.
+
 ## [0.2.0] - 2026-10-24
 
 ### Added

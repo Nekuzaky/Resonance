@@ -109,6 +109,30 @@ namespace Nekuzaky.Resonance.Tests
     public sealed class ProfilerHistoryTests : Fixture
     {
         [Test]
+        public void RemoteFrames_SurviveTheRoundTrip()
+        {
+            var bus = Asset<AudioBus>("SFX");
+            var sound = Event(ClipNode("loop", 1f, true), "Engine Loop");
+            sound.bus = bus;
+            var car = Track(new GameObject("Car"));
+            Engine.Play(sound, car, Vector3.zero);
+            Engine.Tick(0.05f);
+            var sent = new RemoteFrame();
+            sent.Capture(Engine);
+
+            var received = new RemoteFrame();
+            Assert.IsTrue(received.Read(sent.Write()));
+
+            Assert.AreEqual(1, received.Instances);
+            Assert.AreEqual("Engine Loop", received.Sounds[0].Event);
+            Assert.AreEqual("Car", received.Sounds[0].Emitter);
+            Assert.AreEqual("SFX", received.Sounds[0].Bus);
+            Assert.AreEqual(sent.Cost, received.Cost);
+            Assert.AreEqual(sent.Buses.Count, received.Buses.Count);
+            Assert.IsFalse(received.Read(new byte[] { 99 }));
+        }
+
+        [Test]
         public void History_KeepsTheLastSixtySecondsInOrder()
         {
             var history = new ProfilerHistory();
@@ -123,7 +147,7 @@ namespace Nekuzaky.Resonance.Tests
             Assert.AreEqual(25 * 0.1, history[0].Time, 1e-6);
             Assert.AreEqual((ProfilerHistory.Capacity + 24) * 0.1, history[history.Count - 1].Time, 1e-6);
             Assert.AreEqual(1, history[0].Sounds.Count);
-            Assert.AreSame(sound, history[0].Sounds[0].Event);
+            Assert.AreEqual(sound.name, history[0].Sounds[0].EventName);
         }
     }
 }

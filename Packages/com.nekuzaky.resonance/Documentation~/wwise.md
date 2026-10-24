@@ -21,6 +21,11 @@
 | Auxiliary busses with reverb, Rooms | Reverb Zones blended at the listener, Reverb Send per event |
 | SoundBanks for memory | Sound Banks and Sound Bank Loader, reference counted; Optimize Audio Import Settings |
 | Initial delay, random start offset, shuffle | Delay and Delay Random, Random Start, Shuffle |
+| Dialogue Events, languages, external sources | Dialogue nodes with a line per language, fallback language, subtitle events |
+| Music transition segments | Bridges on state links |
+| Spatial audio, 3D spatializer plugins | Binaural option through the project's spatializer plugin (Steam Audio, Meta XR...) |
+| Remote profiling of a game build | Show Player in the Profiler tab (development builds) |
+| Conversion settings per platform | Mobile overrides suggested by the Audit tab |
 | Music Switch Container, Music Segment, transitions | Music Track: segments, state links, transition sync, crossfade |
 | Stingers | Stingers |
 | AkGameObj, AkEvent, AkState, AkSwitch, AkRTPC | Sound Emitter, State Zone, Switch Setter, Parameter Driver |
@@ -29,5 +34,5 @@
 | Wwise Timeline track | Resonance Track with Sound Event and Game State clips |
 
 What Resonance does not do in this version: its own DSP and plug-ins (use a bus Output to a Unity Audio Mixer for
-effects), sound propagation through portals and diffraction, dialogue and localization pipelines, and memory budgets
-per bank.
+effects), sound propagation through portals and diffraction, dialogue trees and voice-over recording workflows,
+and memory budgets per bank.

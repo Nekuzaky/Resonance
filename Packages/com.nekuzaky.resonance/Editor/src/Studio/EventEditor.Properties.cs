@@ -131,6 +131,7 @@ namespace Nekuzaky.Resonance.Editor
                 case SequenceNode: SequenceProperties(path); break;
                 case SwitchNode switchNode: SwitchProperties(path, switchNode); break;
                 case BlendNode: Field(path + "parameter", "Parameter"); break;
+                case DialogueNode: DialogueProperties(path); break;
             }
 
             _props.Add(Ui.GroupTitle(Glyphs.Bus, "Mix"));
@@ -150,6 +151,7 @@ namespace Nekuzaky.Resonance.Editor
                 case NodeKind.Switch: return "Plays the child whose value matches the switch on the emitter: surface, weapon, character...";
                 case NodeKind.Blend: return "Plays every child at once and fades each one in or out with a parameter: speed, intensity, rain...";
                 case NodeKind.Layer: return "Plays every child at the same time.";
+                case NodeKind.Dialogue: return "Plays the line recorded in the player's language, or the fallback language, and sends its subtitle.";
                 default: return "Plays one audio file.";
             }
         }
@@ -166,6 +168,13 @@ namespace Nekuzaky.Resonance.Editor
             _props.Add(waveform);
             var info = clip.clip;
             _props.Add(Ui.Help($"{info.length:0.00} s   ·   {info.channels} ch   ·   {info.frequency} Hz   ·   {info.loadType}"));
+        }
+
+        private void DialogueProperties(string path)
+        {
+            Field(path + "speaker", "Speaker", "Shown before the subtitle and used by Subtitle Relay filters.");
+            Field(path + "fallbackLanguage", "Fallback Language", "Played when no line exists in the player's language.");
+            Field(path + "lines", "Lines");
         }
 
         private void RandomProperties(string path)

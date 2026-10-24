@@ -27,6 +27,7 @@ namespace Nekuzaky.Resonance
     {
         public string state = string.Empty;
         public string segment = string.Empty;
+        public string bridge = string.Empty;
     }
 
     [Serializable]
@@ -71,12 +72,14 @@ namespace Nekuzaky.Resonance
 
         public MusicSegment First => Find(firstSegment) ?? (segments.Count > 0 ? segments[0] : null);
 
-        public MusicSegment ForState(string state)
+        public MusicSegment ForState(string state) => Find(LinkFor(state)?.segment);
+
+        public MusicStateLink LinkFor(string state)
         {
             foreach (var link in links)
             {
                 if (link != null && link.state == state)
-                    return Find(link.segment);
+                    return link;
             }
             return null;
         }

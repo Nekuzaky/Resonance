@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Footsteps
   m_EditorClassIdentifier: Nekuzaky.Resonance::Nekuzaky.Resonance.SoundEvent
   root:
-    rid: 5255168061877780482
+    rid: 5255168063938232322
   bus: {fileID: 11400000, guid: 6048dbf8d48e78e41a16d531be2eafa1, type: 2}
   volume: 0
   pitch: 0
@@ -25,6 +25,7 @@ MonoBehaviour:
     rolloff: 0
     spread: 0
     doppler: 1
+    binaural: 0
     customCurve:
       serializedVersion: 2
       m_Curve:
@@ -78,7 +79,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 5255168061877780482
+    - rid: 5255168063938232322
       type: {class: SwitchNode, ns: Nekuzaky.Resonance, asm: Nekuzaky.Resonance}
       data:
         name: By Surface
@@ -91,11 +92,11 @@ MonoBehaviour:
         blendRange: {x: 0, y: 1}
         blendFade: 0
         children:
-        - rid: 5255168061877780483
-        - rid: 5255168061877780484
+        - rid: 5255168063938232323
+        - rid: 5255168063938232324
         group: {fileID: 11400000, guid: ae163f02cae395242b2c7078ca09a522, type: 2}
         fallback: 0
-    - rid: 5255168061877780483
+    - rid: 5255168063938232323
       type: {class: RandomNode, ns: Nekuzaky.Resonance, asm: Nekuzaky.Resonance}
       data:
         name: Grass
@@ -108,13 +109,13 @@ MonoBehaviour:
         blendRange: {x: 0, y: 1}
         blendFade: 0
         children:
-        - rid: 5255168061877780485
-        - rid: 5255168061877780486
-        - rid: 5255168061877780487
-        - rid: 5255168061877780488
+        - rid: 5255168063938232325
+        - rid: 5255168063938232326
+        - rid: 5255168063938232327
+        - rid: 5255168063938232328
         avoidRepeat: 1
         shuffle: 0
-    - rid: 5255168061877780484
+    - rid: 5255168063938232324
       type: {class: RandomNode, ns: Nekuzaky.Resonance, asm: Nekuzaky.Resonance}
       data:
         name: Stone
@@ -127,13 +128,13 @@ MonoBehaviour:
         blendRange: {x: 0, y: 1}
         blendFade: 0
         children:
-        - rid: 5255168061877780489
-        - rid: 5255168061877780490
-        - rid: 5255168061877780491
-        - rid: 5255168061877780492
+        - rid: 5255168063938232329
+        - rid: 5255168063938232330
+        - rid: 5255168063938232331
+        - rid: 5255168063938232332
         avoidRepeat: 1
         shuffle: 0
-    - rid: 5255168061877780485
+    - rid: 5255168063938232325
       type: {class: ClipNode, ns: Nekuzaky.Resonance, asm: Nekuzaky.Resonance}
       data:
         name: footstep_grass_1
@@ -148,7 +149,7 @@ MonoBehaviour:
         clip: {fileID: 8300000, guid: 5aa1b4a54c9c60147a552a5e9d7bc019, type: 3}
         loop: 0
         randomStart: 0
-    - rid: 5255168061877780486
+    - rid: 5255168063938232326
       type: {class: ClipNode, ns: Nekuzaky.Resonance, asm: Nekuzaky.Resonance}
       data:
         name: footstep_grass_2
@@ -163,7 +164,7 @@ MonoBehaviour:
         clip: {fileID: 8300000, guid: 70c1f676714848547b4b7cffa40c7e1c, type: 3}
         loop: 0
         randomStart: 0
-    - rid: 5255168061877780487
+    - rid: 5255168063938232327
       type: {class: ClipNode, ns: Nekuzaky.Resonance, asm: Nekuzaky.Resonance}
       data:
         name: footstep_grass_3
@@ -178,7 +179,7 @@ MonoBehaviour:
         clip: {fileID: 8300000, guid: db692ceed22ceed4daea3ccf6bd3c346, type: 3}
         loop: 0
         randomStart: 0
-    - rid: 5255168061877780488
+    - rid: 5255168063938232328
       type: {class: ClipNode, ns: Nekuzaky.Resonance, asm: Nekuzaky.Resonance}
       data:
         name: footstep_grass_4
@@ -193,7 +194,7 @@ MonoBehaviour:
         clip: {fileID: 8300000, guid: b8cf6d217e9d5d04281216ac5a35b343, type: 3}
         loop: 0
         randomStart: 0
-    - rid: 5255168061877780489
+    - rid: 5255168063938232329
       type: {class: ClipNode, ns: Nekuzaky.Resonance, asm: Nekuzaky.Resonance}
       data:
         name: footstep_stone_1
@@ -208,7 +209,7 @@ MonoBehaviour:
         clip: {fileID: 8300000, guid: cede288737233724bb3d9cd1c7870e70, type: 3}
         loop: 0
         randomStart: 0
-    - rid: 5255168061877780490
+    - rid: 5255168063938232330
       type: {class: ClipNode, ns: Nekuzaky.Resonance, asm: Nekuzaky.Resonance}
       data:
         name: footstep_stone_2
@@ -223,7 +224,7 @@ MonoBehaviour:
         clip: {fileID: 8300000, guid: a6098862cd9956047bf2ce8f8fccfeb8, type: 3}
         loop: 0
         randomStart: 0
-    - rid: 5255168061877780491
+    - rid: 5255168063938232331
       type: {class: ClipNode, ns: Nekuzaky.Resonance, asm: Nekuzaky.Resonance}
       data:
         name: footstep_stone_3
@@ -238,7 +239,7 @@ MonoBehaviour:
         clip: {fileID: 8300000, guid: d16ffc264a638644fb94a2c4878b04e3, type: 3}
         loop: 0
         randomStart: 0
-    - rid: 5255168061877780492
+    - rid: 5255168063938232332
       type: {class: ClipNode, ns: Nekuzaky.Resonance, asm: Nekuzaky.Resonance}
       data:
         name: footstep_stone_4
