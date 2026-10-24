@@ -27,6 +27,13 @@ external authoring tool, no soundbank to build, and no code to write unless you 
 **Wwise-style sound design, without leaving Unity.**
 
 <p align="center">
+  <img src="docs/images/resonance-demo.gif" alt="The narrator speaks and the voice bus ducks music and ambience, then the game state switches and the score moves to combat on the next bar" width="100%">
+</p>
+
+<p align="center"><sub>The demo running: the narrator speaks and the Voice bus ducks Music by 10 dB and Ambience by 6 dB.
+Then the game state becomes Combat and the score moves to the combat segment exactly on the next bar.</sub></p>
+
+<p align="center">
   <img src="docs/images/studio-events.png" alt="Resonance Studio: a footstep event that picks a random variation by surface" width="100%">
 </p>
 

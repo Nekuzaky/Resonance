@@ -171,7 +171,7 @@ namespace Nekuzaky.Resonance.Dev
             Debug.Log($"Captured {name}");
         }
 
-        private static Texture2D GrabView(EditorWindow window)
+        internal static Texture2D GrabView(EditorWindow window)
         {
             var flags = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public;
             var parent = typeof(EditorWindow).GetField("m_Parent", flags)?.GetValue(window);
