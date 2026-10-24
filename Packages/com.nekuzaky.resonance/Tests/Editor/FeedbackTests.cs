@@ -106,16 +106,16 @@ namespace Nekuzaky.Resonance.Tests
         {
             var blocks = new List<float> { 0.01f, 0.01f, 0.01f, 0.01f, 1e-12f, 1e-12f };
 
-            Assert.AreEqual(-20f, Loudness.Gated(blocks), 0.01f);
+            Assert.AreEqual(-20.69f, Loudness.Gated(blocks), 0.01f);
         }
 
         [Test]
-        public void Measure_ReadsASineAtItsRmsLevel()
+        public void Measure_ReadsAOneKilohertzSineAtItsRmsLevel()
         {
-            var clip = Track(AudioClip.Create("sine", 16000, 1, 8000, false));
-            var data = new float[16000];
+            var clip = Track(AudioClip.Create("sine", 96000, 1, 48000, false));
+            var data = new float[96000];
             for (var i = 0; i < data.Length; i++)
-                data[i] = 0.5f * Mathf.Sin(2f * Mathf.PI * 440f * i / 8000f);
+                data[i] = 0.5f * Mathf.Sin(2f * Mathf.PI * 1000f * i / 48000f);
             clip.SetData(data, 0);
 
             var result = Loudness.Measure(clip);

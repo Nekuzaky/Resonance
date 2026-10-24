@@ -31,8 +31,11 @@ Click a problem to open the asset in the Studio. The tab also lists the clips wh
 
 ## Loudness
 
-The Audit tab measures the loudness of every clip (gated RMS over 400 ms blocks, the gating used by broadcast loudness
-meters, without frequency weighting) and lists the events whose variations differ by more than 6 dB: one footstep much
+The Audit tab measures the integrated loudness of every clip in LUFS, as defined by ITU-R BS.1770 (K-weighting, 400 ms
+blocks with 75% overlap, absolute and relative gating). It matches the EBU Tech 3341 reference signals within 0.1 LU.
+The standard needs at least 400 ms of audio; for shorter clips such as footsteps and clicks, Resonance measures the
+K-weighted level of the whole clip instead, so they can still be compared with each other. The Audit tab lists the
+events whose variations differ by more than 6 LU: one footstep much
 louder than the others, a quiet impact in a set of loud ones. **Balance** sets each clip node's volume so every
 variation sounds as loud as the middle one; Undo works. A clip's loudness and peak are also shown under its waveform.
 

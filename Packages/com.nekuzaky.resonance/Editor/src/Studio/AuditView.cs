@@ -58,7 +58,7 @@ namespace Nekuzaky.Resonance.Editor
         {
             var imbalances = Loudness.FindImbalances();
             _content.Add(Ui.GroupTitle(Glyphs.Loudness, $"Loudness ({imbalances.Count})"));
-            _content.Add(Ui.Help($"Events whose variations differ by more than {Loudness.AllowedSpread:0} dB in loudness (gated RMS). " +
+            _content.Add(Ui.Help($"Events whose variations differ by more than {Loudness.AllowedSpread:0} LU in loudness (LUFS). " +
                                  "Balance sets each clip's volume so they all sound as loud as the middle one."));
             if (imbalances.Count == 0)
                 return;

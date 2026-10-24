@@ -17,7 +17,8 @@ in the editor.
 | `Tools/Compile.ps1` | Compiles every assembly and lists errors and warnings. |
 | `Tools/Test.ps1` | Runs the EditMode tests. |
 | `Tools/Check-Rules.ps1` | Checks the code rules listed below. |
-| `Tools/Build-Check.ps1` | Builds the demo player, runs a headless smoke test in it; `-Platforms` compiles for Android and WebGL. |
+| `Tools/Build-Check.ps1` | Builds the demo player, runs a headless smoke test in it (Timeline, Addressables, 400 sounds); `-Record` records and checks the real mix; `-Platforms` compiles for Android and WebGL. |
+| `Tools/Editor-Check.ps1` | Checks preview audio in Edit Mode, the loudness meter against ffmpeg, and the Scene view gizmos. |
 | `Tools/Remote-Check.ps1` | Profiles a development player from the editor, end to end. |
 | `Tools/Build-Demo.ps1` | Regenerates the demo audio, assets and scene. |
 | `Tools/Capture-Media.ps1` | Records the README screenshots from the real editor. |

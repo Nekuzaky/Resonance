@@ -2,7 +2,12 @@
     "name": "Nekuzaky.Resonance.Dev",
     "rootNamespace": "Nekuzaky.Resonance.Dev",
     "references": [
-        "Nekuzaky.Resonance"
+        "Nekuzaky.Resonance",
+        "Nekuzaky.Resonance.Timeline",
+        "Nekuzaky.Resonance.Addressables",
+        "Unity.Timeline",
+        "Unity.Addressables",
+        "Unity.ResourceManager"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

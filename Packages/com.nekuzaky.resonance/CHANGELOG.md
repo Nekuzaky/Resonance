@@ -3,6 +3,24 @@
 All notable changes to this package are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [0.5.1] - 2026-10-24
+
+### Changed
+
+- Loudness is now measured in LUFS as defined by ITU-R BS.1770 (K-weighting, overlapping 400 ms blocks, absolute and
+  relative gates). It matches the EBU Tech 3341 reference signals within 0.1 LU and ffmpeg's EBU R128 meter within
+  0.2 LU on the demo clips. Clips shorter than 400 ms, which the standard does not measure, use the K-weighted level of
+  the whole clip.
+- The demo's Master bus leaves 6 dB of headroom: a recording of the demo showed peaks above 0 dBFS when a coin and a
+  footstep played together. The narrator lines fade out instead of ending with a click.
+
+### Verified
+
+- In a Windows player: a Timeline played by a PlayableDirector, the demo bank loaded through Addressables, and 400
+  sounds at once (0.17 ms per frame on average).
+- The player's real mix, recorded from the Audio Listener: no clipping, no unexpected silence.
+- The Studio preview plays audio in Edit Mode, and the Scene view draws the Resonance gizmos.
+
 ## [0.5.0] - 2026-10-24
 
 ### Added

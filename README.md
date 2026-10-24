@@ -8,7 +8,7 @@
   <img alt="No soundbanks" src="https://img.shields.io/badge/soundbanks-none-3ddc84">
   <img alt="Engine update in a player: 0.005 ms" src="https://img.shields.io/badge/engine%20update-0.005%20ms-3ddc84">
   <img alt="GC per play: 0 B" src="https://img.shields.io/badge/GC%20per%20play-0%20B-3ddc84">
-  <img alt="Tests: 103 EditMode" src="https://img.shields.io/badge/tests-103%20EditMode-38bdf8">
+  <img alt="Tests: 112 EditMode" src="https://img.shields.io/badge/tests-112%20EditMode-38bdf8">
   <img alt="Built-in, URP, HDRP" src="https://img.shields.io/badge/pipelines-Built--in%20%7C%20URP%20%7C%20HDRP-8b92a2">
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-8b92a2"></a>
 </p>
@@ -115,7 +115,7 @@ In Unity: **Window > Package Manager > + > Install package from git URL...** and
 https://github.com/Nekuzaky/Resonance.git?path=Packages/com.nekuzaky.resonance
 ```
 
-Add `#v0.5.0` at the end of the URL to pin a version.
+Add `#v0.5.1` at the end of the URL to pin a version.
 
 ## Quick start
 
@@ -157,6 +157,10 @@ Every sound in it is generated, so it has no third-party audio.
 
 <p align="center">
   <img src="docs/images/inspector-components.png" alt="Component inspectors with menus for tags, states and speakers" width="420">
+</p>
+
+<p align="center">
+  <img src="docs/images/scene-gizmos.png" alt="Scene view gizmos: the selected car's attenuation range with its label, and the combat state zone" width="100%">
 </p>
 
 ## Scripting

@@ -115,3 +115,4 @@ InitTestScene*.unity*
 
 # Resonance tooling output (logs, test results, benchmark, media frames)
 /Tools/Output/
+Assets/AddressableAssetsData/*/addressables_content_state.bin*

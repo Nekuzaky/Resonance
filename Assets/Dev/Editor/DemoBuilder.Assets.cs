@@ -29,6 +29,7 @@ namespace Nekuzaky.Resonance.Dev
             assets.Sfx = Fresh<AudioBus>("SFX");
             assets.Voice = Fresh<AudioBus>("Voice");
             assets.Ambience = Fresh<AudioBus>("Ambience");
+            assets.Master.volume = -6f;
             assets.Music.parent = assets.Master;
             assets.Music.volume = -4f;
             assets.Sfx.parent = assets.Master;

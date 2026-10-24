@@ -1,5 +1,7 @@
 using System.IO;
 using UnityEditor;
+using UnityEditor.AddressableAssets;
+using UnityEditor.AddressableAssets.Settings;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
 
@@ -9,7 +11,17 @@ namespace Nekuzaky.Resonance.Dev
     {
         public const string Output = "Tools/Output/build/windows/ResonanceDemo.exe";
 
-        public static void Run() => Build(BuildTarget.StandaloneWindows64, BuildTargetGroup.Standalone, Output);
+        public const string BankPath = "Assets/Demo/Resonance/Demo Bank.asset";
+
+        public static void Run()
+        {
+            if (!BuildAddressables())
+            {
+                EditorApplication.Exit(1);
+                return;
+            }
+            Build(BuildTarget.StandaloneWindows64, BuildTargetGroup.Standalone, Output);
+        }
 
         public static void RunAndroid() => CompileScripts(BuildTarget.Android, BuildTargetGroup.Android);
 
@@ -24,6 +36,18 @@ namespace Nekuzaky.Resonance.Dev
             var compiled = result.assemblies != null && result.assemblies.Contains("Nekuzaky.Resonance.dll");
             Debug.Log($"[BuildCheck] {target} player scripts: {(compiled ? "compiled" : "FAILED")}, {result.assemblies?.Count ?? 0} assemblies");
             EditorApplication.Exit(compiled ? 0 : 1);
+        }
+
+        private static bool BuildAddressables()
+        {
+            var settings = AddressableAssetSettingsDefaultObject.GetSettings(true);
+            var entry = settings.CreateOrMoveEntry(AssetDatabase.AssetPathToGUID(BankPath), settings.DefaultGroup);
+            entry.address = "Demo Bank";
+            AssetDatabase.SaveAssets();
+            AddressableAssetSettings.BuildPlayerContent(out var result);
+            var built = string.IsNullOrEmpty(result.Error);
+            Debug.Log($"[BuildCheck] Addressables content: {(built ? "built" : result.Error)} in {result.Duration:0.0} s");
+            return built;
         }
 
         private static void Build(BuildTarget target, BuildTargetGroup group, string output)

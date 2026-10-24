@@ -82,7 +82,8 @@ namespace Nekuzaky.Resonance.Dev
                 phase = (phase + pitch / Rate) % 1f;
                 var formant = Mathf.Sin(2f * Mathf.PI * phase) + 0.5f * Mathf.Sin(2f * Mathf.PI * phase * (3f + index % 3));
                 var gap = index % 7 == 6 ? 0f : 1f;
-                data[i] = formant * Mathf.Sin(Mathf.PI * local) * gap * 0.45f;
+                var tail = Mathf.Clamp01((data.Length - i) / (0.03f * Rate));
+                data[i] = formant * Mathf.Sin(Mathf.PI * local) * gap * tail * 0.45f;
             }
         }
 

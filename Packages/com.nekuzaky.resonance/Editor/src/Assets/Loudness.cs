@@ -29,7 +29,6 @@ namespace Nekuzaky.Resonance.Editor
     {
         #region Public
 
-        public const float BlockSeconds = 0.4f;
         public const float AbsoluteGate = -70f;
         public const float RelativeGate = -10f;
         public const float AllowedSpread = 6f;
@@ -138,7 +137,13 @@ namespace Nekuzaky.Resonance.Editor
 
         private static readonly Dictionary<AudioClip, ClipLoudness> Cache = new();
 
-        private static float ToDb(float meanSquare) => meanSquare <= 1e-10f ? AudioMath.SilenceDb : 10f * Mathf.Log10(meanSquare);
+        private const float Offset = -0.691f;
+        private const float HopSeconds = 0.1f;
+        private const int HopsPerBlock = 4;
+
+        private static float ToDb(float meanSquare) => meanSquare <= 1e-10f ? AudioMath.SilenceDb : Offset + 10f * Mathf.Log10(meanSquare);
+
+        private static float Weight(int channel, int channels) => channels != 6 ? 1f : channel == 3 ? 0f : channel >= 4 ? 1.41f : 1f;
 
         private static List<float> Blocks(AudioClip clip, out float peak)
         {
@@ -148,27 +153,95 @@ namespace Nekuzaky.Resonance.Editor
             if (clip.loadState != AudioDataLoadState.Loaded && !clip.LoadAudioData())
                 return null;
             var channels = Mathf.Max(1, clip.channels);
-            var frames = Mathf.Max(1, Mathf.RoundToInt(clip.frequency * BlockSeconds));
-            var buffer = new float[frames * channels];
-            var blocks = new List<float>();
-            for (var offset = 0; offset < clip.samples; offset += frames)
+            var hop = Mathf.Max(1, Mathf.RoundToInt(clip.frequency * HopSeconds));
+            var filters = new KWeighting[channels];
+            for (var c = 0; c < channels; c++)
+                filters[c] = new KWeighting(clip.frequency);
+            var buffer = new float[hop * channels];
+            var hops = new List<float>();
+            var total = 0.0;
+            for (var offset = 0; offset < clip.samples; offset += hop)
             {
-                var read = Mathf.Min(frames, clip.samples - offset);
-                var data = read == frames ? buffer : new float[read * channels];
+                var read = Mathf.Min(hop, clip.samples - offset);
+                var data = read == hop ? buffer : new float[read * channels];
                 if (!clip.GetData(data, offset))
                     return null;
                 var sum = 0.0;
-                foreach (var sample in data)
+                for (var i = 0; i < data.Length; i++)
                 {
-                    sum += sample * sample;
-                    peak = Mathf.Max(peak, Mathf.Abs(sample));
+                    var channel = i % channels;
+                    var weighted = filters[channel].Process(data[i]);
+                    sum += Weight(channel, channels) * weighted * weighted;
+                    peak = Mathf.Max(peak, Mathf.Abs(data[i]));
                 }
-                blocks.Add((float)(sum / data.Length));
-                if (read < frames)
-                    break;
+                total += sum;
+                if (read == hop)
+                    hops.Add((float)(sum / hop));
             }
+            return Overlap(hops, (float)(total / clip.samples));
+        }
+
+        private static List<float> Overlap(List<float> hops, float whole)
+        {
+            var blocks = new List<float>();
+            if (hops.Count < HopsPerBlock)
+            {
+                blocks.Add(whole);
+                return blocks;
+            }
+            for (var i = HopsPerBlock - 1; i < hops.Count; i++)
+                blocks.Add((hops[i] + hops[i - 1] + hops[i - 2] + hops[i - 3]) / HopsPerBlock);
             return blocks;
         }
+
+        #endregion
+    }
+
+    internal sealed class KWeighting
+    {
+        #region Public
+
+        public KWeighting(int sampleRate)
+        {
+            var k = System.Math.Tan(System.Math.PI * ShelfFrequency / sampleRate);
+            var gain = System.Math.Pow(10.0, ShelfGain / 20.0);
+            var boost = System.Math.Pow(gain, 0.4996667741545416);
+            var norm = 1.0 + k / ShelfQ + k * k;
+            _s0 = (gain + boost * k / ShelfQ + k * k) / norm;
+            _s1 = 2.0 * (k * k - gain) / norm;
+            _s2 = (gain - boost * k / ShelfQ + k * k) / norm;
+            _sa1 = 2.0 * (k * k - 1.0) / norm;
+            _sa2 = (1.0 - k / ShelfQ + k * k) / norm;
+            k = System.Math.Tan(System.Math.PI * HighPassFrequency / sampleRate);
+            norm = 1.0 + k / HighPassQ + k * k;
+            _ha1 = 2.0 * (k * k - 1.0) / norm;
+            _ha2 = (1.0 - k / HighPassQ + k * k) / norm;
+        }
+
+        public double Process(double input)
+        {
+            var shelved = _s0 * input + _sz1;
+            _sz1 = _s1 * input - _sa1 * shelved + _sz2;
+            _sz2 = _s2 * input - _sa2 * shelved;
+            var output = shelved + _hz1;
+            _hz1 = -2.0 * shelved - _ha1 * output + _hz2;
+            _hz2 = shelved - _ha2 * output;
+            return output;
+        }
+
+        #endregion
+
+
+        #region Private and Protected
+
+        private const double ShelfFrequency = 1681.974450955533;
+        private const double ShelfGain = 3.999843853973347;
+        private const double ShelfQ = 0.7071752369554196;
+        private const double HighPassFrequency = 38.13547087602444;
+        private const double HighPassQ = 0.5003270373238773;
+
+        private readonly double _s0, _s1, _s2, _sa1, _sa2, _ha1, _ha2;
+        private double _sz1, _sz2, _hz1, _hz2;
 
         #endregion
     }

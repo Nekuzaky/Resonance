@@ -36,6 +36,64 @@ namespace Nekuzaky.Resonance.Tests
             Assert.That(() => Cycle(sound, emitter, parameter, 500), Is.Not.AllocatingGCMemory());
         }
 
+        [Test]
+        public void Tick_StaysFastWithFiveHundredVoices()
+        {
+            var listener = Track(new GameObject("Listener"));
+            Engine.Listener = listener.transform;
+            Engine.MaxVoices = 512;
+            var parameter = Asset<SoundParameter>("Speed");
+            var sound = Event(Container<BlendNode>(ClipNode("low", 4f, true), ClipNode("high", 4f, true)));
+            ((BlendNode)sound.root).parameter = parameter;
+            sound.bus = Asset<AudioBus>("SFX");
+            sound.modulations.Add(new Modulation { parameter = parameter, curve = AnimationCurve.Linear(0f, 0f, 1f, -6f) });
+            for (var i = 0; i < 250; i++)
+            {
+                var emitter = Track(new GameObject("Emitter"));
+                emitter.transform.position = new Vector3(i % 25 * 4f, 0f, i / 25 * 4f);
+                Engine.Play(sound, emitter, Vector3.zero);
+            }
+
+            var milliseconds = AverageTick(120);
+
+            Assert.AreEqual(500, Engine.Stats.VirtualVoices + Engine.Stats.RealVoices);
+            Debug.Log($"[Scale] 250 sounds, 500 voices: {milliseconds:0.000} ms per tick");
+            Assert.Less(milliseconds, 1f);
+        }
+
+        [Test]
+        public void Tick_StaysFastWhileStealingEveryFrame()
+        {
+            var listener = Track(new GameObject("Listener"));
+            Engine.Listener = listener.transform;
+            var sound = Event(ClipNode("hit", 0.5f));
+            sound.maxInstances = 48;
+            AverageTick(1);
+            var started = System.Diagnostics.Stopwatch.GetTimestamp();
+            for (var frame = 0; frame < 120; frame++)
+            {
+                for (var i = 0; i < 20; i++)
+                    Engine.Play(sound, null, new Vector3(i, 0f, frame % 7));
+                Engine.Tick(1f / 60f);
+            }
+            var milliseconds = (System.Diagnostics.Stopwatch.GetTimestamp() - started) * 1000.0 / System.Diagnostics.Stopwatch.Frequency / 120.0;
+
+            Assert.LessOrEqual(Engine.CountPlaying(sound, null), 48);
+            Assert.LessOrEqual(Engine.Stats.Instances, Engine.MaxVoices);
+            Debug.Log($"[Scale] 20 plays per frame against a limit of 48: {milliseconds:0.000} ms per frame");
+            Assert.Less(milliseconds, 1f);
+        }
+
+        private double AverageTick(int frames)
+        {
+            for (var i = 0; i < 10; i++)
+                Engine.Tick(1f / 60f);
+            var started = System.Diagnostics.Stopwatch.GetTimestamp();
+            for (var i = 0; i < frames; i++)
+                Engine.Tick(1f / 60f);
+            return (System.Diagnostics.Stopwatch.GetTimestamp() - started) * 1000.0 / System.Diagnostics.Stopwatch.Frequency / frames;
+        }
+
         private void Cycle(SoundEvent sound, GameObject emitter, SoundParameter parameter, int plays)
         {
             for (var i = 0; i < plays; i++)

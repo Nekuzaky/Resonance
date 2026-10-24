@@ -12,7 +12,6 @@ namespace Nekuzaky.Resonance.Dev
 
         private float _start;
         private int _step;
-        private int _failures;
         private float _deepestDuck;
         private float _wettest;
         private float _mostOccluded;
@@ -30,14 +29,11 @@ namespace Nekuzaky.Resonance.Dev
             var host = new GameObject("Resonance Smoke Test");
             DontDestroyOnLoad(host);
             host.AddComponent<SmokeTest>();
+            host.AddComponent<TimelineCheck>();
+            host.AddComponent<AddressablesCheck>();
         }
 
-        private void Check(bool condition, string message)
-        {
-            Debug.Log($"[Smoke] {(condition ? "PASS" : "FAIL")} {message}");
-            if (!condition)
-                _failures++;
-        }
+        private static void Check(bool condition, string message) => Smoke.Check(condition, message);
 
         private static float MusicDuck(ResonanceEngine engine)
         {
@@ -81,8 +77,13 @@ namespace Nekuzaky.Resonance.Dev
             Check(_beats >= 16, $"music beat events fired {_beats} times");
             Check(_markers > 0, $"clip markers fired {_markers} times");
             Check(_loudestLayer > 0.05f, $"the lead layer rose to {_loudestLayer:0.00} near the combat zone");
-            Debug.Log(_failures == 0 ? "[Smoke] OK" : $"[Smoke] {_failures} FAILED");
-            Application.Quit(_failures == 0 ? 0 : 1);
+            gameObject.AddComponent<ScaleCheck>();
+        }
+
+        private static void Finish()
+        {
+            Debug.Log(Smoke.Failures == 0 ? "[Smoke] OK" : $"[Smoke] {Smoke.Failures} FAILED");
+            Application.Quit(Smoke.Failures == 0 ? 0 : 1);
         }
 
         #endregion
@@ -92,7 +93,7 @@ namespace Nekuzaky.Resonance.Dev
 
         private void Start()
         {
-            _start = Time.realtimeSinceStartup;
+            _start = Time.time;
             Resonance.Engine.SubtitleStarted += _ => _subtitles++;
             Resonance.Engine.MusicBeat += (_, _) => _beats++;
             Resonance.Engine.MarkerReached += _ => _markers++;
@@ -101,7 +102,7 @@ namespace Nekuzaky.Resonance.Dev
         private void Update()
         {
             var engine = Resonance.Engine;
-            var elapsed = Time.realtimeSinceStartup - _start;
+            var elapsed = Time.time - _start;
             _bridged |= IsSegment(engine, "Rise");
             _loudestLayer = Mathf.Max(_loudestLayer, engine.Music.LayerVolume(0));
             _deepestDuck = Mathf.Min(_deepestDuck, MusicDuck(engine));
@@ -117,6 +118,11 @@ namespace Nekuzaky.Resonance.Dev
             {
                 SecondCheck(engine);
                 _step = 2;
+            }
+            else if (_step == 2 && Smoke.Pending == 0)
+            {
+                Finish();
+                _step = 3;
             }
         }
 

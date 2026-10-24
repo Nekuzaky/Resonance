@@ -171,7 +171,7 @@ namespace Nekuzaky.Resonance.Editor
             _props.Add(waveform);
             var loudness = Loudness.Measure(clip.clip);
             if (loudness.Valid)
-                _props.Add(Ui.Help($"Loudness {loudness.Loudness:0.0} dB (gated RMS)   ·   peak {Ui.Decibels(loudness.Peak)}"));
+                _props.Add(Ui.Help($"Loudness {loudness.Loudness:0.0} LUFS   ·   peak {Ui.Decibels(loudness.Peak)}"));
             Field(path + "markers", "Markers", "Named points in the clip. A Sound Callbacks component on the emitter receives them while the clip plays.");
             _props.TrackSerializedObjectValue(_serialized, _ => waveform.SetClip(clip.clip, clip.markers));
             var info = clip.clip;

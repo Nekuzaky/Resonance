@@ -9,7 +9,8 @@ project to be closed in the editor. Logs and results go to `Tools/Output`, which
 | `Compile.ps1` | Compiles every assembly; fails on any error or warning. `-Full` rebuilds everything. |
 | `Test.ps1` | Runs the EditMode tests. `-Filter` runs a subset. |
 | `Check-Rules.ps1` | Checks function length, recursion, `goto`, `unsafe`, silenced warnings and `-warnaserror+` placement. |
-| `Build-Check.ps1` | Builds the Windows demo player and runs its headless smoke test. `-Platforms` compiles the player scripts for Android and WebGL. |
+| `Build-Check.ps1` | Builds the Windows demo player and runs its headless smoke test (sounds, music, ducking, Timeline, Addressables, 400 sounds at once). `-Record` records the real mix and checks it does not clip. `-Platforms` compiles the player scripts for Android and WebGL. |
+| `Editor-Check.ps1` | Checks the Studio preview audio in Edit Mode, compares the loudness meter with ffmpeg's EBU R128 meter and saves the Scene view gizmos (opens the editor). |
 | `Remote-Check.ps1` | Builds a development player, runs it and checks that the Studio Profiler receives its snapshots (opens the editor). |
 | `Build-Demo.ps1` | Regenerates the demo audio, Resonance assets and scene in `Assets/Demo`. |
 | `Capture-Media.ps1` | Records the README screenshots from the real editor. |

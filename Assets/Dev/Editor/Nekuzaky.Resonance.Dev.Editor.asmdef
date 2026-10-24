@@ -5,7 +5,9 @@
         "Nekuzaky.Resonance",
         "Nekuzaky.Resonance.Editor",
         "Nekuzaky.Resonance.Demo",
-        "Nekuzaky.Resonance.Dev"
+        "Nekuzaky.Resonance.Dev",
+        "Unity.Addressables",
+        "Unity.Addressables.Editor"
     ],
     "includePlatforms": [
         "Editor"

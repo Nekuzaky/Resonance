@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Master
   m_EditorClassIdentifier: Nekuzaky.Resonance::Nekuzaky.Resonance.AudioBus
   parent: {fileID: 0}
-  volume: 0
+  volume: -6
   mute: 0
   output: {fileID: 0}
   ducking: []
