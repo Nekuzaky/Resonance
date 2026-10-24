@@ -8,7 +8,7 @@
   <img alt="No soundbanks" src="https://img.shields.io/badge/soundbanks-none-3ddc84">
   <img alt="Engine update in a player: 0.005 ms" src="https://img.shields.io/badge/engine%20update-0.005%20ms-3ddc84">
   <img alt="GC per play: 0 B" src="https://img.shields.io/badge/GC%20per%20play-0%20B-3ddc84">
-  <img alt="Tests: 84 EditMode" src="https://img.shields.io/badge/tests-84%20EditMode-38bdf8">
+  <img alt="Tests: 103 EditMode" src="https://img.shields.io/badge/tests-103%20EditMode-38bdf8">
   <img alt="Built-in, URP, HDRP" src="https://img.shields.io/badge/pipelines-Built--in%20%7C%20URP%20%7C%20HDRP-8b92a2">
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-8b92a2"></a>
 </p>
@@ -61,15 +61,18 @@ Studio, presses space to hear the result, and adds a component to the scene. Cha
 - **Voice management.** Instance limits per event or per emitter, steal oldest or quietest, priorities against a
   global voice budget, cooldowns, and virtual voices: sounds too far to hear stop using an audio source and resume
   in the right place when you come back.
+- **Accessibility.** Captions and on-screen arrows that show where sounds come from, for players who are deaf or hard
+  of hearing, generated from the same Sound Events.
 - **Dialogue and subtitles.** One line per language with a fallback language, subtitle events, and a component
   that shows them without code.
 - **Space.** Binaural rendering through any spatializer plugin (Steam Audio, Meta XR...), occlusion with three rays (a sound half behind a corner is half muffled), Reverb Zones that blend at the
   listener, attenuation presets shared by many sounds, custom rolloff curves and a low pass that closes with distance.
 - **Memory.** Sound Banks load and unload audio data with reference counting, the Profiler flags clips that were
   played before they were loaded, and one command suggests the right load type for every clip.
-- **Interactive music.** Segments, state links, bridge segments, transitions on the next beat, bar or segment end
+- **Interactive music.** Segments, layers faded by a parameter, beat and bar events, state links, bridge segments, transitions on the next beat, bar or segment end
   scheduled on the audio clock, crossfades, and stingers.
-- **Playback options.** Shuffle without repeats, random start for loops, delays with a random part.
+- **Playback options.** Shuffle without repeats, random start for loops, delays with a random part, and markers in
+  clips that call your code or Unity Events.
 - **No code needed.** Sound Emitter, Parameter Driver, Switch Setter, State Zone, Reverb Zone, Music Source, Sound
   Bank Loader, Subtitle Relay, Animation Sounds and Snapshot Trigger components cover the usual hookups, each with
   its own icon. Their inspectors use menus instead of typed names, explain problems in plain words and fix them in one
@@ -77,6 +80,8 @@ Studio, presses space to hear the result, and adds a component to the scene. Cha
 - **Live profiler with history.** Active sounds, real and virtual voices, occlusion, the reason every refused play was
   refused, states and parameters, the engine's cost per frame, and the last 60 seconds to scrub through, in the
   editor or from a development build running on another machine or a phone.
+- **See your sound.** Attenuation spheres and zones in the Scene view, a Debug Overlay in the Game view, loudness
+  analysis that balances variations in one click.
 - **Audit and bulk import.** Find broken events, sounds nothing uses and clips with poor import settings; turn a
   folder of `step_grass_01`, `step_stone_01` clips into a Switch of Randoms in one click; see where an event is used.
 - **Timeline.** A Resonance Track plays Sound Events and sets game states in cutscenes.
@@ -110,7 +115,7 @@ In Unity: **Window > Package Manager > + > Install package from git URL...** and
 https://github.com/Nekuzaky/Resonance.git?path=Packages/com.nekuzaky.resonance
 ```
 
-Add `#v0.4.0` at the end of the URL to pin a version.
+Add `#v0.5.0` at the end of the URL to pin a version.
 
 ## Quick start
 
@@ -140,6 +145,15 @@ Every sound in it is generated, so it has no third-party audio.
 | <img src="Packages/com.nekuzaky.resonance/Editor/Icons/ReverbZone.png" width="24"> | Reverb Zone | Gives a room, corridor or cave its reverb, faded at the edges |
 | <img src="Packages/com.nekuzaky.resonance/Editor/Icons/SoundBankLoader.png" width="24"> | Sound Bank Loader | Loads a Sound Bank's audio while the object is enabled |
 | <img src="Packages/com.nekuzaky.resonance/Editor/Icons/SubtitleRelay.png" width="24"> | Subtitle Relay | Sends dialogue subtitles to a text field through Unity Events |
+| <img src="Packages/com.nekuzaky.resonance/Editor/Icons/VolumeSetting.png" width="24"> | Volume Setting | Connects an options menu slider to a bus and saves it |
+| <img src="Packages/com.nekuzaky.resonance/Editor/Icons/MusicBeatEvents.png" width="24"> | Music Beat Events | Unity Events on the music's beats, bars and segments |
+| <img src="Packages/com.nekuzaky.resonance/Editor/Icons/SoundCallbacks.png" width="24"> | Sound Callbacks | Unity Events on clip markers and when a sound ends |
+| <img src="Packages/com.nekuzaky.resonance/Editor/Icons/SoundIndicators.png" width="24"> | Sound Indicators | On-screen captions and direction arrows for accessibility |
+| <img src="Packages/com.nekuzaky.resonance/Editor/Icons/ResonanceDebugOverlay.png" width="24"> | Debug Overlay | Shows every playing sound in the Game view |
+
+<p align="center">
+  <img src="docs/images/game-view.png" alt="The demo in the Game view: subtitles, accessibility captions and arrows, and the debug overlay" width="100%">
+</p>
 
 <p align="center">
   <img src="docs/images/inspector-components.png" alt="Component inspectors with menus for tags, states and speakers" width="420">
@@ -191,6 +205,7 @@ The full mapping, and what Resonance does not do yet, is in
 - [Memory and loading](Packages/com.nekuzaky.resonance/Documentation~/memory.md)
 - [Interactive music](Packages/com.nekuzaky.resonance/Documentation~/music.md)
 - [Dialogue and subtitles](Packages/com.nekuzaky.resonance/Documentation~/dialogue.md)
+- [Accessibility](Packages/com.nekuzaky.resonance/Documentation~/accessibility.md)
 - [Components](Packages/com.nekuzaky.resonance/Documentation~/components.md)
 - [Profiler](Packages/com.nekuzaky.resonance/Documentation~/profiler.md)
 - [Workflow tools](Packages/com.nekuzaky.resonance/Documentation~/workflow.md)

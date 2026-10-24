@@ -133,6 +133,16 @@ namespace Nekuzaky.Resonance.Dev
             assets.Engine.occlusion.lowPass = 900f;
             assets.Engine.spatial.lowPassAtMax = 6000f;
 
+            assets.Footsteps.caption = "Footsteps";
+            assets.Footsteps.indicator = true;
+            assets.Engine.caption = "Engine";
+            assets.Engine.indicator = true;
+            assets.Coin.caption = "Coin";
+            assets.Coin.indicator = true;
+            assets.Narrator.caption = "Narrator speaking";
+            assets.Narrator.indicator = true;
+            ((ClipNode)((RandomNode)assets.Coin.root).children[0]).markers.Add(new ClipMarker { name = "sparkle", time = 0.08f });
+
             assets.Bank = Fresh<SoundBank>("Demo Bank");
             assets.Bank.events.AddRange(new[] { assets.Footsteps, assets.Wind, assets.Engine, assets.Coin, assets.Click, assets.Narrator });
             assets.Bank.music.Add(assets.Score);
@@ -144,7 +154,11 @@ namespace Nekuzaky.Resonance.Dev
             score.bpm = MusicSynth.Bpm;
             score.beatsPerBar = 4;
             score.bus = assets.Music;
-            score.segments.Add(new MusicSegment { name = "Explore", clip = ClipAt("music_explore"), bars = 4 });
+            assets.Intensity = Fresh<SoundParameter>("Intensity");
+            assets.Intensity.seekSpeed = 0.6f;
+            var explore = new MusicSegment { name = "Explore", clip = ClipAt("music_explore"), bars = 4 };
+            explore.layers.Add(new MusicLayer { name = "Lead", clip = ClipAt("music_explore_lead"), parameter = assets.Intensity, range = new Vector2(0.45f, 1f), fade = 0.3f });
+            score.segments.Add(explore);
             score.segments.Add(new MusicSegment { name = "Combat", clip = ClipAt("music_combat"), bars = 4 });
             score.segments.Add(new MusicSegment { name = "Rise", clip = ClipAt("stinger_alert"), bars = 1 });
             score.firstSegment = "Explore";

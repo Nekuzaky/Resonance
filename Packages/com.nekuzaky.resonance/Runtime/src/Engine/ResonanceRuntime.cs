@@ -15,6 +15,8 @@ namespace Nekuzaky.Resonance
         {
             if (_instance != null)
                 return _instance;
+            if (_closed)
+                return null;
             var host = new GameObject("Resonance") { hideFlags = HideFlags.NotEditable };
             DontDestroyOnLoad(host);
             _instance = host.AddComponent<ResonanceRuntime>();
@@ -27,9 +29,14 @@ namespace Nekuzaky.Resonance
         #region Private and Protected
 
         private static ResonanceRuntime _instance;
+        private static bool _closed;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        private static void ResetStatics() => _instance = null;
+        private static void ResetStatics()
+        {
+            _instance = null;
+            _closed = false;
+        }
 
         #endregion
 
@@ -49,8 +56,10 @@ namespace Nekuzaky.Resonance
         private void OnDestroy()
         {
             Engine?.Shutdown();
-            if (_instance == this)
-                _instance = null;
+            if (_instance != this)
+                return;
+            _instance = null;
+            _closed = true;
         }
 
         #endregion

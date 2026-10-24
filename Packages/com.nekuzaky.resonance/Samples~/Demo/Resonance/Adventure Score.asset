@@ -22,16 +22,25 @@ MonoBehaviour:
     bars: 4
     next: 
     volume: 0
+    layers:
+    - name: Lead
+      clip: {fileID: 8300000, guid: bcac5651806dcbc4d8235f9e04a261a9, type: 3}
+      parameter: {fileID: 11400000, guid: 956411f6654a91841bf8571fdc6b015e, type: 2}
+      range: {x: 0.45, y: 1}
+      fade: 0.3
+      volume: 0
   - name: Combat
     clip: {fileID: 8300000, guid: 4783ce3f42bc3394580dd3de8e0deef9, type: 3}
     bars: 4
     next: 
     volume: 0
+    layers: []
   - name: Rise
     clip: {fileID: 8300000, guid: 432cf35abc3cf5b48ab9a715b7031b9e, type: 3}
     bars: 1
     next: 
     volume: 0
+    layers: []
   firstSegment: Explore
   stateGroup: {fileID: 11400000, guid: 1250fd8fdb449e9499681f900406b7d6, type: 2}
   links:

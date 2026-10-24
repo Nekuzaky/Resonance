@@ -1,0 +1,26 @@
+{
+    "name": "Nekuzaky.Resonance.Addressables",
+    "rootNamespace": "Nekuzaky.Resonance",
+    "references": [
+        "Nekuzaky.Resonance",
+        "Unity.Addressables",
+        "Unity.ResourceManager"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "RESONANCE_ADDRESSABLES"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.unity.addressables",
+            "expression": "1.21.0",
+            "define": "RESONANCE_ADDRESSABLES"
+        }
+    ],
+    "noEngineReferences": false
+}

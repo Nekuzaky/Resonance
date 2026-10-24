@@ -14,8 +14,9 @@ need one. There are no soundbanks to build and no external tool to keep in sync.
 | [Mixing](mixing.md) | Buses, ducking, snapshots, mute and solo, Audio Mixer output |
 | [Distance, occlusion and reverb](space.md) | Attenuation curves and presets, occlusion, reverb zones |
 | [Memory and loading](memory.md) | Sound Banks, loading on demand, import settings |
-| [Interactive music](music.md) | Segments, beat-synced transitions, state links, bridges, stingers |
+| [Interactive music](music.md) | Segments, layers, beat-synced transitions, state links, bridges, stingers, beat events |
 | [Dialogue and subtitles](dialogue.md) | Lines in every language, fallback language, subtitle events |
+| [Accessibility](accessibility.md) | Captions and on-screen indicators that show where sounds come from |
 | [Components](components.md) | Every component, for setups that need no code |
 | [Scripting](scripting.md) | The `Resonance` API for programmers |
 | [Profiler](profiler.md) | Live view of voices, events and game syncs, its 60 second history, and profiling a player build |

@@ -80,8 +80,32 @@ namespace Nekuzaky.Resonance
         public AudioClip clip;
         public bool loop;
         public bool randomStart;
+        public List<ClipMarker> markers = new();
 
         public override NodeKind Kind => NodeKind.Clip;
+    }
+
+    [Serializable]
+    public sealed class ClipMarker
+    {
+        public string name = "Marker";
+        [Min(0f)] public float time;
+    }
+
+    public readonly struct SoundMarker
+    {
+        public readonly SoundHandle Handle;
+        public readonly string Name;
+        public readonly float Time;
+        public readonly GameObject Emitter;
+
+        public SoundMarker(SoundHandle handle, string name, float time, GameObject emitter)
+        {
+            Handle = handle;
+            Name = name;
+            Time = time;
+            Emitter = emitter;
+        }
     }
 
     [Serializable]

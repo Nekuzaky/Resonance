@@ -49,6 +49,7 @@ namespace Nekuzaky.Resonance.Dev
             public MusicTrack Score;
             public AttenuationPreset Foley;
             public SoundBank Bank;
+            public SoundParameter Intensity;
         }
 
         private static void WriteAudio()
@@ -67,6 +68,7 @@ namespace Nekuzaky.Resonance.Dev
             Write("voice_line_fr", Normalized(data => Synth.Voice(data, 21), 2.9f, 0.75f));
             Write("music_explore", MusicSynth.Explore());
             Write("music_combat", MusicSynth.Combat());
+            Write("music_explore_lead", MusicSynth.ExploreLead());
             Write("stinger_alert", MusicSynth.Stinger());
             AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
             foreach (var guid in AssetDatabase.FindAssets("t:AudioClip", new[] { AudioFolder }))

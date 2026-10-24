@@ -10,6 +10,9 @@ namespace Nekuzaky.Resonance
         public float Pitch;
         public bool Loop;
         public bool RandomStart;
+        public List<ClipMarker> Markers;
+        public DialogueNode Dialogue;
+        public DialogueLine Line;
     }
 
     internal sealed class PlanLayer
@@ -19,14 +22,9 @@ namespace Nekuzaky.Resonance
         public SoundParameter BlendParameter;
         public Vector2 BlendRange;
         public float BlendFade;
-        public DialogueNode Dialogue;
-        public DialogueLine Line;
-
         public void Clear()
         {
             Clips.Clear();
-            Dialogue = null;
-            Line = null;
             Loop = false;
             BlendParameter = null;
             BlendRange = Vector2.zero;
@@ -206,7 +204,8 @@ namespace Nekuzaky.Resonance
                 Gain = AudioMath.ToLinear(frame.Decibels),
                 Pitch = AudioMath.ToPitch(frame.Semitones),
                 Loop = node.loop,
-                RandomStart = node.randomStart
+                RandomStart = node.randomStart,
+                Markers = node.markers != null && node.markers.Count > 0 ? node.markers : null
             });
         }
 
@@ -216,13 +215,13 @@ namespace Nekuzaky.Resonance
             if (line == null)
                 return;
             var layer = frame.Layer >= 0 ? plan.Layers[frame.Layer] : NewLayer(frame, plan);
-            layer.Dialogue = node;
-            layer.Line = line;
             layer.Clips.Add(new PlanClip
             {
                 Clip = line.clip,
                 Gain = AudioMath.ToLinear(frame.Decibels),
-                Pitch = AudioMath.ToPitch(frame.Semitones)
+                Pitch = AudioMath.ToPitch(frame.Semitones),
+                Dialogue = node,
+                Line = line
             });
         }
 

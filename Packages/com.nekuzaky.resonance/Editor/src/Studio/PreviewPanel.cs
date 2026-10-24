@@ -142,9 +142,11 @@ namespace Nekuzaky.Resonance.Editor
             generateVisualContent += Draw;
         }
 
-        public void SetClip(AudioClip clip)
+        public void SetClip(AudioClip clip, List<ClipMarker> markers = null)
         {
             _peaks = Peaks(clip);
+            _length = clip != null ? clip.length : 0f;
+            _markers = markers;
             MarkDirtyRepaint();
         }
 
@@ -157,6 +159,9 @@ namespace Nekuzaky.Resonance.Editor
         private static readonly Color Wave = new(47f / 255f, 169f / 255f, 184f / 255f, 1f);
 
         private float[] _peaks;
+        private float _length;
+        private List<ClipMarker> _markers;
+        private static readonly Color MarkerColor = new(0.87f, 0.67f, 0.28f, 1f);
 
         private static float[] Peaks(AudioClip clip)
         {
@@ -203,6 +208,25 @@ namespace Nekuzaky.Resonance.Editor
                 var height = Mathf.Max(0.5f, _peaks[i] * middle * 0.95f);
                 painter.MoveTo(new Vector2(x, middle - height));
                 painter.LineTo(new Vector2(x, middle + height));
+            }
+            painter.Stroke();
+            DrawMarkers(painter, rect);
+        }
+
+        private void DrawMarkers(Painter2D painter, Rect rect)
+        {
+            if (_markers == null || _length <= 0f)
+                return;
+            painter.strokeColor = MarkerColor;
+            painter.lineWidth = 2f;
+            painter.BeginPath();
+            foreach (var marker in _markers)
+            {
+                if (marker == null)
+                    continue;
+                var x = Mathf.Clamp01(marker.time / _length) * rect.width;
+                painter.MoveTo(new Vector2(x, 0f));
+                painter.LineTo(new Vector2(x, rect.height));
             }
             painter.Stroke();
         }

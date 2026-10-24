@@ -70,6 +70,8 @@ namespace Nekuzaky.Resonance.Editor
         public const string Dialogue = "chat-quote-fill";
         public const string Language = "translate";
         public const string Remote = "phone";
+        public const string Accessibility = "universal-access-circle";
+        public const string Loudness = "bar-chart-fill";
 
         public static string Of(NodeKind kind)
         {

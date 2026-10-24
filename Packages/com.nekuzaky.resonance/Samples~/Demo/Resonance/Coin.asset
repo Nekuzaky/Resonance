@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Coin
   m_EditorClassIdentifier: Nekuzaky.Resonance::Nekuzaky.Resonance.SoundEvent
   root:
-    rid: 5255168063938232336
+    rid: 5255168064793870352
   bus: {fileID: 11400000, guid: 6048dbf8d48e78e41a16d531be2eafa1, type: 2}
   volume: 0
   pitch: 0
@@ -76,10 +76,12 @@ MonoBehaviour:
   followEmitter: 1
   stopWhenEmitterDestroyed: 1
   modulations: []
+  caption: Coin
+  indicator: 1
   references:
     version: 2
     RefIds:
-    - rid: 5255168063938232336
+    - rid: 5255168064793870352
       type: {class: RandomNode, ns: Nekuzaky.Resonance, asm: Nekuzaky.Resonance}
       data:
         name: Coin
@@ -92,10 +94,10 @@ MonoBehaviour:
         blendRange: {x: 0, y: 1}
         blendFade: 0
         children:
-        - rid: 5255168063938232337
+        - rid: 5255168064793870353
         avoidRepeat: 1
         shuffle: 0
-    - rid: 5255168063938232337
+    - rid: 5255168064793870353
       type: {class: ClipNode, ns: Nekuzaky.Resonance, asm: Nekuzaky.Resonance}
       data:
         name: coin
@@ -110,3 +112,6 @@ MonoBehaviour:
         clip: {fileID: 8300000, guid: 1007f6ab746fcb54ca7028dad3d85dd4, type: 3}
         loop: 0
         randomStart: 0
+        markers:
+        - name: sparkle
+          time: 0.08

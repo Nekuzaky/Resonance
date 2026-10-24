@@ -17,6 +17,18 @@ A **Music Track** holds the pieces of a score and the rules to move between them
 Transitions are scheduled on the audio clock (`AudioSettings.dspTime`), so they land exactly on the beat whatever the
 frame rate.
 
+## Layers
+
+A segment can have **Layers**: stems (drums, lead, choir) that play in sync with it, each faded in and out by a
+parameter. Give a layer a parameter such as Intensity and a range: the layer is at full volume inside the range and
+fades out over **Fade** outside it. Drive the parameter from the game (distance to enemies, health, speed) and the music
+thickens and thins without changing segment. The demo's lead melody rises as the player approaches the combat zone.
+
+## Beat events
+
+The engine raises `MusicBeat(bar, beat)` and `MusicSegmentStarted(segment)`, scheduled on the audio clock. The **Music
+Beat Events** component turns them into Unity Events.
+
 ## Bridges
 
 A link can name a **Bridge**: a short segment (a drum fill, a riser, a hit) that plays between the current segment and

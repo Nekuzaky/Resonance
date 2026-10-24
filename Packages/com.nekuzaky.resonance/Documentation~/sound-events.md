@@ -34,6 +34,13 @@ A Random node can **Shuffle**: it plays every child once, in a random order, bef
 never plays the same child twice across two rounds. A Clip node can use **Random Start**, so several copies of the
 same loop (rain, engines, crowds) never sound in sync.
 
+## Markers
+
+A Clip node can carry **Markers**: named points in the clip ("hit", "unlatch", "breath"). They appear as amber lines on
+the waveform. When playback passes a marker, the engine raises `MarkerReached` (and again on every loop), and a
+**Sound Callbacks** component on the emitter turns it into a Unity Event. The engine also raises `SoundEnded` when a
+sound finishes.
+
 ## Timing
 
 **Delay** waits before the sound starts, and **Delay Random** adds a random part. Stopping a sound during its delay

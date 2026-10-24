@@ -17,11 +17,7 @@ namespace Nekuzaky.Resonance
                 return;
             }
 
-            if (_pending && now >= _decks[1 - _current].Start)
-            {
-                _current = 1 - _current;
-                _pending = false;
-            }
+            Promote(now);
 
             var deck = _decks[_current];
             if (!_pending && deck.Active)
@@ -34,6 +30,7 @@ namespace Nekuzaky.Resonance
                 }
             }
             ApplyVolumes(now);
+            Announce();
         }
 
         public double Boundary(MusicSync sync, double now)
@@ -82,6 +79,7 @@ namespace Nekuzaky.Resonance
             deck.Source.volume = 0f;
             if (segment.clip != null)
                 deck.Source.PlayScheduled(time);
+            StartLayers(deck, segment, time);
 
             if (!hasPrevious)
             {
@@ -90,8 +88,7 @@ namespace Nekuzaky.Resonance
                 return;
             }
             previous.FadeTowards(0f, time, crossfade, now);
-            if (previous.Source.isPlaying)
-                previous.Source.SetScheduledEndTime(time + crossfade);
+            previous.EndAt(time + crossfade);
             _pending = true;
         }
 
@@ -108,10 +105,106 @@ namespace Nekuzaky.Resonance
                     deck.Halt();
                     continue;
                 }
-                deck.Source.volume = UnityEngine.Mathf.Clamp01(Gain(deck.Segment.volume) * deck.FadeAt(now));
-                if (Metering && deck.Source.isPlaying)
-                    _mixer.CountVoice(Track.bus, ClipEnvelopes.At(deck.Source.clip, deck.Source.timeSamples) * deck.Source.volume);
+                var fade = deck.FadeAt(now);
+                deck.Source.volume = UnityEngine.Mathf.Clamp01(Gain(deck.Segment.volume) * fade);
+                Meter(deck.Source);
+                LayerVolumes(deck, fade);
             }
+            StingerVolumes(now);
+        }
+
+        private void Promote(double now)
+        {
+            if (!_pending || now < _decks[1 - _current].Start)
+                return;
+            _current = 1 - _current;
+            _pending = false;
+        }
+
+        private void CancelPending(double now)
+        {
+            _decks[1 - _current].Halt();
+            _pending = false;
+            var deck = _decks[_current];
+            deck.FadeFrom = 1f;
+            deck.FadeTo = 1f;
+            deck.FadeLength = 0.0;
+            deck.EndAt(now + 86400.0);
+        }
+
+        private void ClearBridge()
+        {
+            _bridge = null;
+            _afterBridge = null;
+        }
+
+        private void StingerVolumes(double now)
+        {
+            foreach (var stinger in _stingers)
+            {
+                if (!stinger.Active)
+                    continue;
+                if (!stinger.Source.isPlaying && now > stinger.Start + 0.1)
+                {
+                    stinger.Active = false;
+                    continue;
+                }
+                stinger.Source.volume = UnityEngine.Mathf.Clamp01(Gain(stinger.Volume));
+            }
+        }
+
+        private void StartLayers(MusicDeck deck, MusicSegment segment, double time)
+        {
+            for (var i = 0; i < segment.layers.Count; i++)
+            {
+                var layer = segment.layers[i];
+                var source = deck.Layer(i);
+                source.clip = layer?.clip;
+                source.outputAudioMixerGroup = deck.Source.outputAudioMixerGroup;
+                source.volume = 0f;
+                if (source.clip != null)
+                    source.PlayScheduled(time);
+            }
+        }
+
+        private void LayerVolumes(MusicDeck deck, float fade)
+        {
+            var layers = deck.Segment.layers;
+            for (var i = 0; i < layers.Count && i < deck.Layers.Count; i++)
+            {
+                var layer = layers[i];
+                if (layer == null)
+                    continue;
+                var weight = layer.parameter == null ? 1f : AudioMath.BlendWeight(_syncs.GetParameter(layer.parameter, null), layer.range, layer.fade);
+                deck.Layers[i].volume = UnityEngine.Mathf.Clamp01(Gain(deck.Segment.volume + layer.volume) * fade * weight);
+                Meter(deck.Layers[i]);
+            }
+        }
+
+        private void Meter(UnityEngine.AudioSource source)
+        {
+            if (!source.isPlaying)
+                return;
+            var level = Metering ? ClipEnvelopes.At(source.clip, source.timeSamples) * source.volume : source.volume;
+            _mixer.CountVoice(Track.bus, level);
+        }
+
+        private void Announce()
+        {
+            if (!Position(out var bar, out var beat, out _))
+                return;
+            var segment = _decks[_current].Segment;
+            if (segment != _announced)
+            {
+                _announced = segment;
+                _lastBar = -1;
+                SegmentStarted?.Invoke(segment);
+            }
+            if (bar == _lastBar && beat == _lastBeat)
+                return;
+            _lastBar = bar;
+            _lastBeat = beat;
+            BeatReached?.Invoke(bar, beat);
         }
 
         private MusicSegment NextAfter(MusicSegment segment)
@@ -132,8 +225,12 @@ namespace Nekuzaky.Resonance
         {
             foreach (var deck in _decks)
                 deck.Halt();
+            foreach (var stinger in _stingers)
+                stinger.Halt();
             _pending = false;
             _stopping = false;
+            _announced = null;
+            ClearBridge();
             Track = null;
         }
 

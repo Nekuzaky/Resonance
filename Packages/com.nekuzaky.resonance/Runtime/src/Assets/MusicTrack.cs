@@ -20,6 +20,18 @@ namespace Nekuzaky.Resonance
         [Min(0)] public int bars;
         public string next = string.Empty;
         [Range(-48f, 12f)] public float volume;
+        public List<MusicLayer> layers = new();
+    }
+
+    [Serializable]
+    public sealed class MusicLayer
+    {
+        public string name = "Layer";
+        public AudioClip clip;
+        public SoundParameter parameter;
+        public Vector2 range = new(0.5f, 1f);
+        [Min(0f)] public float fade = 0.25f;
+        [Range(-48f, 12f)] public float volume;
     }
 
     [Serializable]

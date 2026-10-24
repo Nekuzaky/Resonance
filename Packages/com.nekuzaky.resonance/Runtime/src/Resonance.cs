@@ -37,7 +37,7 @@ namespace Nekuzaky.Resonance
                 if (_override != null)
                     return _override;
                 if (Application.isPlaying)
-                    return ResonanceRuntime.Ensure().Engine;
+                    return ResonanceRuntime.Ensure()?.Engine;
                 return EditorEngine?.Invoke();
             }
         }

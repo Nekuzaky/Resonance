@@ -12,15 +12,32 @@ namespace Nekuzaky.Resonance
         public float FadeFrom;
         public float FadeTo = 1f;
         public bool Active;
+        public float Volume;
+        public readonly System.Collections.Generic.List<AudioSource> Layers = new();
+
+        private readonly GameObject _host;
 
         public MusicDeck(Transform parent, string name)
         {
-            var host = new GameObject(name) { hideFlags = parent.gameObject.hideFlags };
-            host.transform.SetParent(parent, false);
-            Source = host.AddComponent<AudioSource>();
-            Source.playOnAwake = false;
-            Source.spatialBlend = 0f;
-            Source.priority = 0;
+            _host = new GameObject(name) { hideFlags = parent.gameObject.hideFlags };
+            _host.transform.SetParent(parent, false);
+            Source = NewSource();
+        }
+
+        public AudioSource Layer(int index)
+        {
+            for (var guard = 0; guard < 16 && Layers.Count <= index; guard++)
+                Layers.Add(NewSource());
+            return Layers[index];
+        }
+
+        private AudioSource NewSource()
+        {
+            var source = _host.AddComponent<AudioSource>();
+            source.playOnAwake = false;
+            source.spatialBlend = 0f;
+            source.priority = 0;
+            return source;
         }
 
         public float FadeAt(double time)
@@ -40,10 +57,26 @@ namespace Nekuzaky.Resonance
             FadeLength = length;
         }
 
+        public void EndAt(double time)
+        {
+            if (Source != null && Source.isPlaying)
+                Source.SetScheduledEndTime(time);
+            foreach (var layer in Layers)
+            {
+                if (layer != null && layer.isPlaying)
+                    layer.SetScheduledEndTime(time);
+            }
+        }
+
         public void Halt()
         {
             if (Source != null)
                 Source.Stop();
+            foreach (var layer in Layers)
+            {
+                if (layer != null)
+                    layer.Stop();
+            }
             Active = false;
             Segment = null;
         }
@@ -65,6 +98,16 @@ namespace Nekuzaky.Resonance
         public MusicSegment Pending => _pending ? _decks[1 - _current].Segment : null;
 
         public MusicSegment AfterBridge => _afterBridge;
+
+        internal float LayerVolume(int index)
+        {
+            var deck = _decks[_current];
+            return deck.Active && index < deck.Layers.Count ? deck.Layers[index].volume : -1f;
+        }
+
+        public event System.Action<int, int> BeatReached;
+
+        public event System.Action<MusicSegment> SegmentStarted;
 
         public double PendingTime => _pending ? _decks[1 - _current].Start : 0.0;
 
@@ -92,6 +135,9 @@ namespace Nekuzaky.Resonance
         private bool _stopping;
         private MusicSegment _bridge;
         private MusicSegment _afterBridge;
+        private MusicSegment _announced;
+        private int _lastBar = -1;
+        private int _lastBeat = -1;
         private double _stopAt;
 
         #endregion
@@ -109,6 +155,7 @@ namespace Nekuzaky.Resonance
             Stop(track.crossfade);
             Track = track;
             _stopping = false;
+            ClearBridge();
             var first = track.ForState(_syncs.GetState(track.stateGroup)) ?? track.First;
             if (first == null)
                 return;
@@ -118,14 +165,17 @@ namespace Nekuzaky.Resonance
         public void Stop(float fade)
         {
             var now = AudioSettings.dspTime;
-            foreach (var deck in _decks)
-            {
-                if (deck.Active)
-                    deck.FadeTowards(0f, now, fade, now);
-            }
             if (_pending)
                 _decks[1 - _current].Halt();
+            foreach (var deck in _decks)
+            {
+                if (!deck.Active)
+                    continue;
+                deck.FadeTowards(0f, now, fade, now);
+                deck.EndAt(now + Mathf.Max(0f, fade) + 0.05);
+            }
             _pending = false;
+            ClearBridge();
             _stopping = Track != null;
             _stopAt = now + fade;
             if (fade <= 0f)
@@ -138,20 +188,30 @@ namespace Nekuzaky.Resonance
                 Request(Track.Find(segmentName), sync);
         }
 
-        public void Request(MusicSegment segment, MusicSync sync)
+        public bool Request(MusicSegment segment, MusicSync sync)
         {
             if (Track == null || segment == null || _stopping)
-                return;
-            if (Current == segment && !_pending)
-                return;
-
+                return false;
             var now = AudioSettings.dspTime;
+            Promote(now);
+            ClearBridge();
+            if (Current == segment)
+            {
+                if (_pending)
+                    CancelPending(now);
+                return true;
+            }
+            var boundary = Boundary(sync, now);
             if (_pending)
+            {
+                var planned = _decks[1 - _current].Start;
+                if (planned >= now && planned < boundary)
+                    boundary = planned;
                 _decks[1 - _current].Halt();
+            }
             _pending = false;
-            _bridge = null;
-            _afterBridge = null;
-            Schedule(segment, Boundary(sync, now), Track.crossfade, now);
+            Schedule(segment, boundary, Track.crossfade, now);
+            return true;
         }
 
         public void RequestThrough(MusicSegment bridge, MusicSegment target, MusicSync sync)
@@ -161,7 +221,8 @@ namespace Nekuzaky.Resonance
                 Request(target, sync);
                 return;
             }
-            Request(bridge, sync);
+            if (!Request(bridge, sync))
+                return;
             _bridge = bridge;
             _afterBridge = target;
         }
@@ -178,6 +239,7 @@ namespace Nekuzaky.Resonance
             deck.Halt();
             deck.Source.clip = stinger.clip;
             deck.Source.outputAudioMixerGroup = Track.bus != null ? Track.bus.ResolveOutput() : null;
+            deck.Volume = stinger.volume;
             deck.Source.volume = Gain(stinger.volume);
             deck.Start = Boundary(stinger.sync, now);
             deck.Source.PlayScheduled(deck.Start);

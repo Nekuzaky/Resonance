@@ -62,6 +62,10 @@ namespace Nekuzaky.Resonance.Editor
             var next = new ChoiceField(property.FindPropertyRelative("next"), "Then Play", () => MusicChoices.Segments(property), "(loop this one)", null);
             root.Add(next);
             root.Add(new PropertyField(property.FindPropertyRelative("volume"), "Volume (dB)"));
+            root.Add(new PropertyField(property.FindPropertyRelative("layers"), "Layers")
+            {
+                tooltip = "Stems that play in sync with the segment. Each fades in and out with a parameter, like intensity."
+            });
             MusicChoices.RefreshOnChange(root, property, next);
             return root;
         }

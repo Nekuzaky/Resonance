@@ -101,8 +101,8 @@ namespace Nekuzaky.Resonance
         public bool followEmitter = true;
         public bool stopWhenEmitterDestroyed = true;
         public List<Modulation> modulations = new();
-
-        [NonSerialized] internal float LastPlayTime = float.NegativeInfinity;
+        public string caption = string.Empty;
+        public bool indicator;
 
         public Spatial Spatial => attenuation != null && attenuation.spatial != null ? attenuation.spatial : spatial;
 
@@ -122,7 +122,6 @@ namespace Nekuzaky.Resonance
 
         public void ResetRuntimeState()
         {
-            LastPlayTime = float.NegativeInfinity;
             var visitor = new NodeWalker(root);
             for (var guard = 0; guard < NodeWalker.MaxNodes && visitor.Next(out var node); guard++)
             {
@@ -136,11 +135,6 @@ namespace Nekuzaky.Resonance
         #endregion
 
 
-        #region Unity Callbacks
-
-        private void OnEnable() => LastPlayTime = float.NegativeInfinity;
-
-        #endregion
     }
 
     public struct NodeWalker

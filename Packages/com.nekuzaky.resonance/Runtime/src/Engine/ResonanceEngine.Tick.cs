@@ -23,6 +23,7 @@ namespace Nekuzaky.Resonance
             {
                 if (_instances[i].State != InstanceState.Done)
                     continue;
+                QueueEnded(_instances[i]);
                 Release(_instances[i]);
                 _instances.RemoveAt(i);
             }
@@ -33,6 +34,7 @@ namespace Nekuzaky.Resonance
             Music.Tick(AudioSettings.dspTime);
             Mixer.Tick(deltaTime);
             Measure(started);
+            Dispatch();
         }
 
         #endregion
@@ -64,7 +66,6 @@ namespace Nekuzaky.Resonance
                 voice.Layer = layer;
                 if (layer.Clips.Count > 0)
                     Memory.NoteOnDemand(layer.Clips[0].Clip);
-                voice.SubtitleShown = false;
                 Configure(voice, sound, instance.Position);
                 instance.Voices.Add(voice);
                 voice.BlendWeight = BlendOf(voice);
@@ -101,7 +102,7 @@ namespace Nekuzaky.Resonance
                 source.SetCustomCurve(AudioSourceCurveType.CustomRolloff, spatial.customCurve);
             source.reverbZoneMix = Preview ? 0f : sound.reverbSend;
             source.spread = spatial.spread;
-            source.spatialize = spatial.binaural && sound.spatialize && !Preview && HasSpatializer;
+            source.spatialize = spatial.binaural && sound.spatialize && !Preview && _hasSpatializer;
             source.dopplerLevel = spatial.doppler;
             source.priority = 255 - Mathf.Clamp(sound.priority, 0, 255);
         }
@@ -125,13 +126,17 @@ namespace Nekuzaky.Resonance
                 voice.Finished = true;
                 return;
             }
-            BeginSubtitle(voice);
-
             var clip = voice.Clip;
+            if (!ReferenceEquals(voice.ShownLine, clip.Line))
+            {
+                EndSubtitle(voice);
+                BeginSubtitle(voice, clip);
+            }
             voice.Source.clip = clip.Clip;
             voice.Source.loop = clip.Loop;
             voice.Source.time = Mathf.Clamp(time, 0f, Mathf.Max(0f, clip.Clip.length - 0.01f));
             voice.VirtualTime = time;
+            voice.LastTime = time - 0.0001f;
             Mix(voice, busGain);
             if (!voice.Virtual)
                 voice.Source.Play();
@@ -171,6 +176,8 @@ namespace Nekuzaky.Resonance
 
         private static void Fade(SoundInstance instance, float deltaTime)
         {
+            if (instance.Delay > 0f)
+                return;
             if (instance.State == InstanceState.Playing)
                 instance.Fade = AudioMath.Approach(instance.Fade, 1f, instance.Event.fadeIn, 1f, deltaTime);
             else if (instance.State == InstanceState.Stopping)

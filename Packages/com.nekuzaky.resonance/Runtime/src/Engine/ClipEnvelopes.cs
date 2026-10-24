@@ -8,25 +8,26 @@ namespace Nekuzaky.Resonance
         #region Public
 
         public const int Window = 1024;
+        public const int WindowsPerCall = 8;
         public const float Unknown = 0.25f;
 
         public static float At(AudioClip clip, int sample)
         {
-            var envelope = Get(clip);
-            if (envelope == null || envelope.Length == 0)
+            var entry = Entry(clip);
+            if (entry == null || entry.Values.Length == 0)
                 return Unknown;
-            return envelope[Mathf.Clamp(sample / Window, 0, envelope.Length - 1)];
+            Advance(entry, clip, WindowsPerCall);
+            var index = Mathf.Clamp(sample / Window, 0, entry.Values.Length - 1);
+            return index < entry.Done ? entry.Values[index] : Unknown;
         }
 
         public static float[] Get(AudioClip clip)
         {
-            if (clip == null)
+            var entry = Entry(clip);
+            if (entry == null)
                 return null;
-            if (Cache.TryGetValue(clip, out var cached))
-                return cached;
-            var envelope = Compute(clip);
-            Cache[clip] = envelope;
-            return envelope;
+            Advance(entry, clip, entry.Values.Length);
+            return entry.Values;
         }
 
         public static void Clear() => Cache.Clear();
@@ -36,33 +37,54 @@ namespace Nekuzaky.Resonance
 
         #region Private and Protected
 
-        private static readonly Dictionary<AudioClip, float[]> Cache = new();
-
-        private static float[] Compute(AudioClip clip)
+        private sealed class Envelope
         {
-            if (clip.loadType == AudioClipLoadType.Streaming || clip.samples <= 0)
-                return null;
-            if (clip.loadState != AudioDataLoadState.Loaded && !clip.LoadAudioData())
-                return null;
+            public float[] Values;
+            public float[] Buffer;
+            public int Done;
+            public bool Failed;
+        }
 
-            var channels = Mathf.Max(1, clip.channels);
-            var windows = Mathf.Max(1, (clip.samples + Window - 1) / Window);
-            var envelope = new float[windows];
-            var buffer = new float[Window * channels];
-            for (var index = 0; index < windows; index++)
+        private static readonly Dictionary<AudioClip, Envelope> Cache = new();
+
+        private static Envelope Entry(AudioClip clip)
+        {
+            if (clip == null)
+                return null;
+            if (Cache.TryGetValue(clip, out var cached))
+                return cached.Failed ? null : cached;
+            var entry = new Envelope();
+            Cache[clip] = entry;
+            if (clip.loadType == AudioClipLoadType.Streaming || clip.samples <= 0 ||
+                (clip.loadState != AudioDataLoadState.Loaded && !clip.LoadAudioData()))
             {
-                var offset = index * Window;
-                if (offset + Window > clip.samples || !clip.GetData(buffer, offset))
-                {
-                    envelope[index] = index > 0 ? envelope[index - 1] : Unknown;
-                    continue;
-                }
-                var sum = 0f;
-                foreach (var sample in buffer)
-                    sum += sample * sample;
-                envelope[index] = Mathf.Sqrt(sum / buffer.Length);
+                entry.Failed = true;
+                return null;
             }
-            return envelope;
+            entry.Values = new float[Mathf.Max(1, (clip.samples + Window - 1) / Window)];
+            entry.Buffer = new float[Window * Mathf.Max(1, clip.channels)];
+            return entry;
+        }
+
+        private static void Advance(Envelope entry, AudioClip clip, int windows)
+        {
+            for (var step = 0; step < windows && entry.Done < entry.Values.Length; step++)
+            {
+                var index = entry.Done;
+                var offset = index * Window;
+                if (offset + Window > clip.samples || !clip.GetData(entry.Buffer, offset))
+                {
+                    entry.Values[index] = index > 0 ? entry.Values[index - 1] : Unknown;
+                }
+                else
+                {
+                    var sum = 0f;
+                    foreach (var sample in entry.Buffer)
+                        sum += sample * sample;
+                    entry.Values[index] = Mathf.Sqrt(sum / entry.Buffer.Length);
+                }
+                entry.Done++;
+            }
         }
 
         #endregion

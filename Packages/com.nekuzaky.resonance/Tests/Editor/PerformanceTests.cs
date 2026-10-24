@@ -28,6 +28,7 @@ namespace Nekuzaky.Resonance.Tests
             var sound = Event(Container<SwitchNode>(grass));
             ((SwitchNode)sound.root).group = surface;
             sound.bus = Asset<AudioBus>("SFX");
+            sound.spatial.binaural = true;
             sound.modulations.Add(new Modulation { parameter = parameter, curve = AnimationCurve.Linear(0f, 0f, 1f, -6f) });
 
             Cycle(sound, emitter, parameter, 50);

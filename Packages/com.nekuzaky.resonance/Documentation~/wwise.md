@@ -26,6 +26,10 @@
 | Spatial audio, 3D spatializer plugins | Binaural option through the project's spatializer plugin (Steam Audio, Meta XR...) |
 | Remote profiling of a game build | Show Player in the Profiler tab (development builds) |
 | Conversion settings per platform | Mobile overrides suggested by the Audit tab |
+| Music tracks with sub-tracks driven by RTPCs | Music layers driven by parameters |
+| Callbacks on markers, beats, bars and end of event | MarkerReached, MusicBeat, MusicSegmentStarted, SoundEnded; Sound Callbacks and Music Beat Events |
+| Loudness normalization | Loudness analysis and Balance in the Audit tab |
+| Game Object 3D viewer | Scene view gizmos and the Debug Overlay |
 | Music Switch Container, Music Segment, transitions | Music Track: segments, state links, transition sync, crossfade |
 | Stingers | Stingers |
 | AkGameObj, AkEvent, AkState, AkSwitch, AkRTPC | Sound Emitter, State Zone, Switch Setter, Parameter Driver |

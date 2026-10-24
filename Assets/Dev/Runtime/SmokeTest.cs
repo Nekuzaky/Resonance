@@ -18,6 +18,9 @@ namespace Nekuzaky.Resonance.Dev
         private float _mostOccluded;
         private int _subtitles;
         private bool _bridged;
+        private int _beats;
+        private int _markers;
+        private float _loudestLayer;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void Install()
@@ -75,6 +78,9 @@ namespace Nekuzaky.Resonance.Dev
             Check(_mostOccluded > 0.3f, $"the wall occluded the car up to {_mostOccluded:0.00}");
             Check(_subtitles > 0, $"the narrator sent {_subtitles} subtitles");
             Check(_bridged, "the score went through the Rise bridge");
+            Check(_beats >= 16, $"music beat events fired {_beats} times");
+            Check(_markers > 0, $"clip markers fired {_markers} times");
+            Check(_loudestLayer > 0.05f, $"the lead layer rose to {_loudestLayer:0.00} near the combat zone");
             Debug.Log(_failures == 0 ? "[Smoke] OK" : $"[Smoke] {_failures} FAILED");
             Application.Quit(_failures == 0 ? 0 : 1);
         }
@@ -88,6 +94,8 @@ namespace Nekuzaky.Resonance.Dev
         {
             _start = Time.realtimeSinceStartup;
             Resonance.Engine.SubtitleStarted += _ => _subtitles++;
+            Resonance.Engine.MusicBeat += (_, _) => _beats++;
+            Resonance.Engine.MarkerReached += _ => _markers++;
         }
 
         private void Update()
@@ -95,6 +103,7 @@ namespace Nekuzaky.Resonance.Dev
             var engine = Resonance.Engine;
             var elapsed = Time.realtimeSinceStartup - _start;
             _bridged |= IsSegment(engine, "Rise");
+            _loudestLayer = Mathf.Max(_loudestLayer, engine.Music.LayerVolume(0));
             _deepestDuck = Mathf.Min(_deepestDuck, MusicDuck(engine));
             _wettest = Mathf.Max(_wettest, engine.Reverb.Wet);
             foreach (var instance in engine.Instances)

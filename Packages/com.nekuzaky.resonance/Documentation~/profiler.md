@@ -32,6 +32,11 @@ shown. The strip under the toolbar draws real voices (teal), virtual voices (amb
 Click or drag on it to stop on that moment: the counters and the Active Sounds table show what was playing then.
 Press **Live** to follow the game again, **Clear History** to start over.
 
+## Debug overlay
+
+Add a **Debug Overlay** component to see every playing sound in the Game view, at its position, with its distance,
+occlusion and level, and a summary of sounds, voices, cost and music at the top.
+
 ## Tables
 
 - **Active Sounds**: event, emitter, bus, voices (or virtual), distance to the listener, occlusion and level.

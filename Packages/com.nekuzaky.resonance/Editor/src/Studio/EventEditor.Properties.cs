@@ -47,6 +47,9 @@ namespace Nekuzaky.Resonance.Editor
             SpatialProperties();
             SpaceProperties();
             VoiceProperties();
+            _props.Add(Ui.GroupTitle(Glyphs.Accessibility, "Accessibility"));
+            Field("caption", "Caption", "Short text for players who cannot hear it: \"Footsteps\", \"Gunfire\", \"Door opens\".");
+            Field("indicator", "Visual Indicator", "Shown by the Sound Indicators component: an arrow for 3D sounds, a caption for 2D sounds.");
             _props.Add(Ui.GroupTitle(Glyphs.Parameter, "Parameter Modulation"));
             _props.Add(Ui.Help("Each curve reads a parameter (X goes from its minimum to its maximum) and outputs dB for Volume, " +
                                "semitones for Pitch or Hz for Low Pass and High Pass."));
@@ -164,8 +167,13 @@ namespace Nekuzaky.Resonance.Editor
             if (clip.clip == null)
                 return;
             var waveform = new WaveformView();
-            waveform.SetClip(clip.clip);
+            waveform.SetClip(clip.clip, clip.markers);
             _props.Add(waveform);
+            var loudness = Loudness.Measure(clip.clip);
+            if (loudness.Valid)
+                _props.Add(Ui.Help($"Loudness {loudness.Loudness:0.0} dB (gated RMS)   ·   peak {Ui.Decibels(loudness.Peak)}"));
+            Field(path + "markers", "Markers", "Named points in the clip. A Sound Callbacks component on the emitter receives them while the clip plays.");
+            _props.TrackSerializedObjectValue(_serialized, _ => waveform.SetClip(clip.clip, clip.markers));
             var info = clip.clip;
             _props.Add(Ui.Help($"{info.length:0.00} s   ·   {info.channels} ch   ·   {info.frequency} Hz   ·   {info.loadType}"));
         }

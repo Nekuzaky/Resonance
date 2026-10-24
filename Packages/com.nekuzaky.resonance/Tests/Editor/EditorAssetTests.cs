@@ -46,7 +46,8 @@ namespace Nekuzaky.Resonance.Tests
             {
                 typeof(SoundEmitter), typeof(SoundListener), typeof(ParameterDriver), typeof(SwitchSetter),
                 typeof(StateZone), typeof(MusicSource), typeof(AnimationSounds), typeof(SnapshotTrigger),
-                typeof(ReverbZone), typeof(SoundBankLoader)
+                typeof(ReverbZone), typeof(SoundBankLoader), typeof(SubtitleRelay), typeof(VolumeSetting), typeof(MusicBeatEvents),
+                typeof(SoundCallbacks), typeof(SoundIndicators), typeof(ResonanceDebugOverlay)
             };
             foreach (var type in components)
             {

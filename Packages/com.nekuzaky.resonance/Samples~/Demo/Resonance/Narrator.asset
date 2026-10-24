@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Narrator
   m_EditorClassIdentifier: Nekuzaky.Resonance::Nekuzaky.Resonance.SoundEvent
   root:
-    rid: 5255168063938232341
+    rid: 5255168064793870357
   bus: {fileID: 11400000, guid: fe6443226210f004c9ba79c80d238d22, type: 2}
   volume: 0
   pitch: 0
@@ -76,10 +76,12 @@ MonoBehaviour:
   followEmitter: 1
   stopWhenEmitterDestroyed: 1
   modulations: []
+  caption: Narrator speaking
+  indicator: 1
   references:
     version: 2
     RefIds:
-    - rid: 5255168063938232341
+    - rid: 5255168064793870357
       type: {class: DialogueNode, ns: Nekuzaky.Resonance, asm: Nekuzaky.Resonance}
       data:
         name: Welcome

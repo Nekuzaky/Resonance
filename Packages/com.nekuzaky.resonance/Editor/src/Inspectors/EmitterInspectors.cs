@@ -94,7 +94,7 @@ namespace Nekuzaky.Resonance.Editor
             InspectorKit.Watch(root, serializedObject, () =>
             {
                 warnings.Clear(false);
-                var count = FindObjectsByType<SoundListener>(FindObjectsInactive.Exclude, FindObjectsSortMode.None).Length;
+                var count = ActiveListeners();
                 if (count > 1)
                     warnings.Add(HelpBoxMessageType.Warning, $"There are {count} Sound Listeners in the scene. Keep one; the last enabled wins.");
                 if (listener != null && listener.GetComponent<AudioListener>() == null)
@@ -103,6 +103,17 @@ namespace Nekuzaky.Resonance.Editor
                 warnings.Render();
             });
             return root;
+        }
+
+        private static int ActiveListeners()
+        {
+            var count = 0;
+            foreach (var listener in Resources.FindObjectsOfTypeAll<SoundListener>())
+            {
+                if (!EditorUtility.IsPersistent(listener) && listener.gameObject.scene.IsValid() && listener.isActiveAndEnabled)
+                    count++;
+            }
+            return count;
         }
     }
 

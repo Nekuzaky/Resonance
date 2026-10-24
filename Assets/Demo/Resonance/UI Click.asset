@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: UI Click
   m_EditorClassIdentifier: Nekuzaky.Resonance::Nekuzaky.Resonance.SoundEvent
   root:
-    rid: 5255168063938232339
+    rid: 5255168064793870355
   bus: {fileID: 11400000, guid: 6048dbf8d48e78e41a16d531be2eafa1, type: 2}
   volume: 0
   pitch: 0
@@ -76,10 +76,12 @@ MonoBehaviour:
   followEmitter: 1
   stopWhenEmitterDestroyed: 1
   modulations: []
+  caption: 
+  indicator: 0
   references:
     version: 2
     RefIds:
-    - rid: 5255168063938232339
+    - rid: 5255168064793870355
       type: {class: ClipNode, ns: Nekuzaky.Resonance, asm: Nekuzaky.Resonance}
       data:
         name: ui_click
@@ -94,3 +96,4 @@ MonoBehaviour:
         clip: {fileID: 8300000, guid: 63c5b1648f537a74cb9cbbac46acdf18, type: 3}
         loop: 0
         randomStart: 0
+        markers: []

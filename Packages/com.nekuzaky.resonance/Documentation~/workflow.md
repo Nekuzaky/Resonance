@@ -29,6 +29,13 @@ The **Audit** tab checks the whole project:
 Click a problem to open the asset in the Studio. The tab also lists the clips whose import settings can improve (see
 [Memory and loading](memory.md)) with a button to apply them all.
 
+## Loudness
+
+The Audit tab measures the loudness of every clip (gated RMS over 400 ms blocks, the gating used by broadcast loudness
+meters, without frequency weighting) and lists the events whose variations differ by more than 6 dB: one footstep much
+louder than the others, a quiet impact in a set of loud ones. **Balance** sets each clip node's volume so every
+variation sounds as loud as the middle one; Undo works. A clip's loudness and peak are also shown under its waveform.
+
 ## Used By
 
 The **Used By** button of the Sound Event editor lists every scene, prefab and asset that references the event. Click

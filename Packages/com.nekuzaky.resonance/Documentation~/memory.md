@@ -19,6 +19,12 @@ are unloaded, and loading the same bank twice needs two unloads.
 The Profiler shows how many clips banks hold, and how many clips were **loaded on demand**: played while their data
 was not loaded. Each of those may have started late. Add their events to a bank that is loaded before they play.
 
+## Addressables
+
+With the Addressables package installed, the **Addressable Bank Loader** component loads a Sound Bank through an
+Addressable reference, so the bank and its clips can live in remote or downloadable content. Without Addressables this
+part of Resonance is not compiled.
+
 ## Import settings
 
 **Tools > Resonance > Optimize Audio Import Settings** checks every clip used by a Sound Event or a Music Track and

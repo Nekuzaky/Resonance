@@ -31,8 +31,10 @@ namespace Nekuzaky.Resonance
                 EndSubtitle(voice);
                 return;
             }
+            CheckMarkers(voice);
             Mix(voice, busGain);
-            Mixer.CountVoice(instance.Event.bus, voice.Virtual ? 0f : voice.Level);
+            if (!voice.Virtual)
+                Mixer.CountVoice(instance.Event.bus, voice.Level);
         }
 
         private bool IsFar(SoundInstance instance)
@@ -93,29 +95,47 @@ namespace Nekuzaky.Resonance
             return true;
         }
 
-        private void BeginSubtitle(Voice voice)
+        private void BeginSubtitle(Voice voice, PlanClip clip)
         {
-            var layer = voice.Layer;
-            if (layer?.Line == null || voice.SubtitleShown)
+            if (clip.Line == null || voice.Owner == null)
                 return;
-            voice.SubtitleShown = true;
-            SubtitleStarted?.Invoke(SubtitleOf(voice));
+            voice.ShownLine = clip.Line;
+            voice.ShownDialogue = clip.Dialogue;
+            QueueSubtitle(PendingKind.SubtitleStarted, SubtitleOf(voice));
         }
 
         private void EndSubtitle(Voice voice)
         {
-            if (!voice.SubtitleShown || voice.Layer?.Line == null)
+            if (voice.ShownLine == null || voice.Owner == null)
                 return;
-            voice.SubtitleShown = false;
-            SubtitleEnded?.Invoke(SubtitleOf(voice));
+            QueueSubtitle(PendingKind.SubtitleEnded, SubtitleOf(voice));
+            voice.ShownLine = null;
+            voice.ShownDialogue = null;
         }
 
-        private Subtitle SubtitleOf(Voice voice)
+        private static Subtitle SubtitleOf(Voice voice)
         {
-            var layer = voice.Layer;
+            var line = voice.ShownLine;
             var owner = voice.Owner;
-            var length = layer.Line.clip != null ? layer.Line.clip.length : 0f;
-            return new Subtitle(new SoundHandle(owner.Id), layer.Line.subtitle, layer.Dialogue.speaker, layer.Line.language, owner.Emitter, length);
+            var length = line.clip != null ? line.clip.length : 0f;
+            var speaker = voice.ShownDialogue != null ? voice.ShownDialogue.speaker : string.Empty;
+            return new Subtitle(new SoundHandle(owner.Id), line.subtitle, speaker, line.language, owner.Emitter, length);
+        }
+
+        private void CheckMarkers(Voice voice)
+        {
+            var markers = voice.Clip.Markers;
+            if (markers == null || MarkerReached == null)
+                return;
+            var now = voice.Virtual ? voice.VirtualTime : voice.Source.time;
+            var wrapped = now < voice.LastTime;
+            foreach (var marker in markers)
+            {
+                var passed = wrapped ? marker.time > voice.LastTime || marker.time <= now : marker.time > voice.LastTime && marker.time <= now;
+                if (passed)
+                    QueueMarker(new SoundMarker(new SoundHandle(voice.Owner.Id), marker.name, marker.time, voice.Owner.Emitter));
+            }
+            voice.LastTime = now;
         }
 
         private float BlendOf(Voice voice)
@@ -145,14 +165,14 @@ namespace Nekuzaky.Resonance
             if (highPass)
                 voice.HighPass.cutoffFrequency = instance.HighPass;
 
-            voice.Level = Metering && !voice.Virtual ? MeteredLevel(voice, source.volume) : 0f;
+            voice.Level = voice.Virtual ? 0f : LevelOf(voice, source.volume);
         }
 
-        private float MeteredLevel(Voice voice, float volume)
+        private float LevelOf(Voice voice, float volume)
         {
             var instance = voice.Owner;
             var sound = instance.Event;
-            var level = ClipEnvelopes.At(voice.Source.clip, voice.Source.timeSamples) * volume;
+            var level = Metering ? ClipEnvelopes.At(voice.Source.clip, voice.Source.timeSamples) * volume : volume;
             if (!sound.spatialize || Preview)
                 return level;
             var attenuation = sound.Spatial.Attenuation(instance.Distance);

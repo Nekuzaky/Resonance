@@ -31,6 +31,7 @@ namespace Nekuzaky.Resonance
             _plan = new Plan(_layerPool);
             Music = new MusicPlayer(host, Syncs, Mixer);
             Reverb = new ReverbMixer(host);
+            _hasSpatializer = HasSpatializer;
         }
 
         #endregion
@@ -47,6 +48,22 @@ namespace Nekuzaky.Resonance
         public event System.Action<Subtitle> SubtitleStarted;
 
         public event System.Action<Subtitle> SubtitleEnded;
+
+        public event System.Action<SoundMarker> MarkerReached;
+
+        public event System.Action<SoundHandle, GameObject> SoundEnded;
+
+        public event System.Action<int, int> MusicBeat
+        {
+            add => Music.BeatReached += value;
+            remove => Music.BeatReached -= value;
+        }
+
+        public event System.Action<MusicSegment> MusicSegmentStarted
+        {
+            add => Music.SegmentStarted += value;
+            remove => Music.SegmentStarted -= value;
+        }
 
         internal readonly SyncStore Syncs = new();
         internal readonly BusMixer Mixer = new();
@@ -70,6 +87,8 @@ namespace Nekuzaky.Resonance
         private float _nextListenerSearch;
         private float _time;
         private int _nextId = 1;
+        private readonly bool _hasSpatializer;
+        private readonly Dictionary<SoundEvent, float> _lastPlay = new();
 
         #endregion
 
@@ -100,8 +119,10 @@ namespace Nekuzaky.Resonance
             var instance = Begin(sound, emitter, position);
             var stolen = room > 0 || admission == PlayResult.Stolen;
             Stats.Record(new EventLogEntry(_time, sound, emitter, stolen ? PlayResult.Stolen : PlayResult.Played));
-            sound.LastPlayTime = _time;
-            return new SoundHandle(instance.Id);
+            _lastPlay[sound] = _time;
+            var handle = new SoundHandle(instance.Id);
+            Dispatch();
+            return handle;
         }
 
         internal bool IsPlaying(int id)
@@ -121,7 +142,7 @@ namespace Nekuzaky.Resonance
         {
             foreach (var instance in _instances)
             {
-                if (emitter == null || instance.Emitter == emitter)
+                if (ReferenceEquals(emitter, null) || ReferenceEquals(instance.Emitter, emitter))
                     BeginStop(instance, fade < 0f ? instance.Event.fadeOut : fade);
             }
         }
@@ -140,7 +161,8 @@ namespace Nekuzaky.Resonance
             var count = 0;
             foreach (var instance in _instances)
             {
-                if (instance.State == InstanceState.Playing && instance.Event == sound && (emitter == null || instance.Emitter == emitter))
+                if (instance.State == InstanceState.Playing && instance.Event == sound &&
+                    (ReferenceEquals(emitter, null) || ReferenceEquals(instance.Emitter, emitter)))
                     count++;
             }
             return count;
@@ -153,6 +175,7 @@ namespace Nekuzaky.Resonance
             _instances.Clear();
             Music.Stop(0f);
             Memory.Clear();
+            Dispatch();
         }
 
         #endregion
@@ -162,7 +185,7 @@ namespace Nekuzaky.Resonance
 
         private PlayResult Admit(SoundEvent sound, GameObject emitter)
         {
-            if (sound.cooldown > 0f && _time - sound.LastPlayTime < sound.cooldown)
+            if (sound.cooldown > 0f && _lastPlay.TryGetValue(sound, out var last) && _time - last < sound.cooldown)
                 return PlayResult.Cooldown;
             if (sound.maxInstances <= 0)
                 return PlayResult.Played;
@@ -185,7 +208,8 @@ namespace Nekuzaky.Resonance
             SoundInstance victim = null;
             foreach (var instance in _instances)
             {
-                if (instance.State != InstanceState.Playing || instance.Event != sound || (scope != null && instance.Emitter != scope))
+                if (instance.State != InstanceState.Playing || instance.Event != sound ||
+                    (!ReferenceEquals(scope, null) && !ReferenceEquals(instance.Emitter, scope)))
                     continue;
                 if (victim == null)
                     victim = instance;
@@ -203,6 +227,7 @@ namespace Nekuzaky.Resonance
                 var victim = LowestPriority(sound.priority);
                 if (victim == null)
                     return -1;
+                QueueEnded(victim);
                 Release(victim);
                 _instances.Remove(victim);
                 stole = 1;
@@ -215,7 +240,7 @@ namespace Nekuzaky.Resonance
             SoundInstance lowest = null;
             foreach (var instance in _instances)
             {
-                if (instance.Event.priority > priority)
+                if (instance.State == InstanceState.Done || instance.Event.priority > priority)
                     continue;
                 if (lowest == null || instance.Event.priority < lowest.Event.priority ||
                     (instance.Event.priority == lowest.Event.priority && instance.Age > lowest.Age))

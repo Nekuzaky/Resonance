@@ -64,6 +64,22 @@ namespace Nekuzaky.Resonance.Dev
             return data;
         }
 
+        public static float[] ExploreLead()
+        {
+            var data = Synth.Buffer(Bar * 4f);
+            var pattern = new[] { 0, 1, 2, 1, 2, 0, 1, 2 };
+            for (var bar = 0; bar < 4; bar++)
+            {
+                for (var step = 0; step < 8; step++)
+                {
+                    var note = Chords[bar][pattern[step]] * 2f;
+                    Tone(data, bar * Bar + step * Beat * 0.5f, Beat * 0.45f, note, 0.22f, 5f, false);
+                }
+            }
+            Synth.Normalize(data, 0.6f);
+            return data;
+        }
+
         public static float[] Stinger()
         {
             var data = Synth.Buffer(Bar);

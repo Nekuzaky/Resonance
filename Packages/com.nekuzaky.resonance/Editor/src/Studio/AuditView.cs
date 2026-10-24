@@ -51,6 +51,38 @@ namespace Nekuzaky.Resonance.Editor
             foreach (var problem in problems)
                 _content.Add(ProblemRow(problem));
             AddImportSuggestions();
+            AddLoudness();
+        }
+
+        private void AddLoudness()
+        {
+            var imbalances = Loudness.FindImbalances();
+            _content.Add(Ui.GroupTitle(Glyphs.Loudness, $"Loudness ({imbalances.Count})"));
+            _content.Add(Ui.Help($"Events whose variations differ by more than {Loudness.AllowedSpread:0} dB in loudness (gated RMS). " +
+                                 "Balance sets each clip's volume so they all sound as loud as the middle one."));
+            if (imbalances.Count == 0)
+                return;
+            _content.Add(Ui.TextButton(Glyphs.Magic, "Balance All", () =>
+            {
+                foreach (var imbalance in imbalances)
+                    Loudness.Balance(imbalance);
+                Rebuild(false);
+            }));
+            foreach (var imbalance in imbalances)
+            {
+                var row = Ui.Box("rs-table-row");
+                var name = Ui.Styled(imbalance.Event.name, "rs-cell");
+                name.style.width = 180f;
+                row.Add(name);
+                row.Add(Ui.Styled($"{imbalance.Clips.Count} clips, {imbalance.Spread:0.0} dB apart", "rs-cell", "rs-cell--warn"));
+                var target = imbalance;
+                row.Add(Ui.TextButton(null, "Balance", () =>
+                {
+                    Loudness.Balance(target);
+                    Rebuild(false);
+                }));
+                _content.Add(row);
+            }
         }
 
         private static VisualElement ProblemRow(Problem problem)
@@ -95,9 +127,9 @@ namespace Nekuzaky.Resonance.Editor
             name.style.width = 180f;
             row.Add(name);
             var target = Ui.Styled(suggestion.Target, "rs-cell", "rs-cell--dim");
-            target.style.width = 70f;
+            target.style.width = 100f;
             row.Add(target);
-            var change = Ui.Styled(string.IsNullOrEmpty(suggestion.Platform)
+            var change = Ui.Styled(suggestion.Platforms is not { Length: > 0 }
                 ? $"{suggestion.CurrentLoad} > {suggestion.SuggestedLoad}"
                 : $"add override: {suggestion.SuggestedLoad}, Vorbis {suggestion.SuggestedQuality * 100f:0}%", "rs-cell", "rs-cell--warn");
             change.style.width = 300f;

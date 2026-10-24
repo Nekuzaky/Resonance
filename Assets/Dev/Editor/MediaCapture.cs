@@ -42,6 +42,7 @@ namespace Nekuzaky.Resonance.Dev
             CaptureMusic,
             CaptureProfiler,
             CaptureAudit,
+            CaptureGame,
             ExitPlay,
             Quit
         }
@@ -87,7 +88,8 @@ namespace Nekuzaky.Resonance.Dev
                 case Stage.CaptureMixer: CaptureTab(StudioWindow.MixerTab, "studio-mixer", Stage.CaptureMusic); break;
                 case Stage.CaptureMusic: CaptureTab(StudioWindow.MusicTab, "studio-music", Stage.CaptureProfiler); break;
                 case Stage.CaptureProfiler: CaptureTab(StudioWindow.ProfilerTab, "studio-profiler", Stage.CaptureAudit); break;
-                case Stage.CaptureAudit: CaptureTab(StudioWindow.AuditTab, "studio-audit", Stage.ExitPlay); break;
+                case Stage.CaptureAudit: CaptureTab(StudioWindow.AuditTab, "studio-audit", Stage.CaptureGame); break;
+                case Stage.CaptureGame: CaptureGame(); break;
                 case Stage.ExitPlay: ExitPlay(); break;
                 case Stage.Quit: Quit(); break;
             }
@@ -160,6 +162,23 @@ namespace Nekuzaky.Resonance.Dev
             _tabShown = false;
             Save(window, name);
             Advance(next, tab == StudioWindow.MixerTab ? 3.0 : 1.5);
+        }
+
+        private static void CaptureGame()
+        {
+            var type = typeof(UnityEditor.Editor).Assembly.GetType("UnityEditor.GameView");
+            var game = EditorWindow.GetWindow(type);
+            if (!_tabShown)
+            {
+                game.position = new Rect(60f, 60f, 1280f, 760f);
+                game.Focus();
+                _tabShown = true;
+                _due = EditorApplication.timeSinceStartup + 1.5;
+                return;
+            }
+            _tabShown = false;
+            Save(game, "game-view");
+            Advance(Stage.ExitPlay, 0.5);
         }
 
         private static void ExitPlay()

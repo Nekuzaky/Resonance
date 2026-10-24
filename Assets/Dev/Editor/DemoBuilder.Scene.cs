@@ -14,6 +14,8 @@ namespace Nekuzaky.Resonance.Dev
             var camera = Camera.main;
             camera.transform.SetPositionAndRotation(new Vector3(0f, 22f, -16f), Quaternion.Euler(52f, 0f, 0f));
             Object.DestroyImmediate(camera.GetComponent<AudioListener>());
+            camera.gameObject.AddComponent<SoundIndicators>();
+            camera.gameObject.AddComponent<ResonanceDebugOverlay>();
 
             Ground("Grass", new Vector3(-7.5f, 0f, 0f), new Color(0.32f, 0.52f, 0.3f));
             Ground("Stone", new Vector3(7.5f, 0f, 0f), new Color(0.5f, 0.5f, 0.52f));
@@ -50,6 +52,9 @@ namespace Nekuzaky.Resonance.Dev
             body.isKinematic = true;
             player.AddComponent<AudioListener>();
             player.AddComponent<SoundListener>();
+            var intensity = player.AddComponent<DemoIntensity>();
+            intensity.parameter = assets.Intensity;
+            intensity.range = 10f;
             var walker = player.AddComponent<DemoWalker>();
             walker.footsteps = assets.Footsteps;
             walker.surface = assets.Surface;
@@ -78,6 +83,9 @@ namespace Nekuzaky.Resonance.Dev
             zone.transform.localScale = new Vector3(7f, 2f, 4f);
             Paint(zone, new Color(0.85f, 0.3f, 0.3f));
             zone.GetComponent<Collider>().isTrigger = true;
+            var player = GameObject.Find("Player");
+            if (player != null)
+                player.GetComponent<DemoIntensity>().target = zone.transform;
             var state = zone.AddComponent<StateZone>();
             state.group = assets.Game;
             state.enterState = "Combat";

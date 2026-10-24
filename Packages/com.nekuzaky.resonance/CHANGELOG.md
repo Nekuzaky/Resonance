@@ -3,6 +3,43 @@
 All notable changes to this package are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [0.5.0] - 2026-10-24
+
+### Added
+
+- Music layers: stems that play in sync with a segment, faded by a parameter.
+- Beat events: `MusicBeat` and `MusicSegmentStarted` on the engine, and the Music Beat Events component.
+- Clip markers with `MarkerReached`, `SoundEnded`, and the Sound Callbacks component. Markers are drawn on the waveform.
+- Accessibility: captions and visual indicators on Sound Events, and the Sound Indicators component.
+- Volume Setting component for options menus, saved between sessions.
+- Debug Overlay component for the Game view.
+- Scene view gizmos: attenuation spheres, occlusion line, labeled state zones.
+- Loudness analysis (gated RMS) with Balance in the Audit tab; loudness and peak under each clip's waveform.
+- Addressable Bank Loader, compiled only when the Addressables package is installed.
+- Mobile import suggestions are grouped per clip.
+
+### Fixed
+
+These come from an independent code review; each has a regression test.
+
+- Engine events (subtitles, markers, sound ended) are queued and raised after the engine update, so a handler can play
+  a sound without corrupting the engine's state.
+- Sounds stolen for the voice budget now raise `SoundEnded`, and a sound that already ended can no longer be stolen.
+- `StopAll` and per-emitter limits no longer treat a destroyed GameObject as "every object".
+- Cooldowns belong to each engine, so auditioning in the Studio no longer blocks the sound in Play Mode.
+- Fade In starts after Delay instead of being spent during it.
+- Each dialogue line in a continuous sequence sends its own subtitle; a line that goes virtual and comes back does not
+  repeat its subtitle.
+- Steal Quietest uses an estimated level in builds, where meters are off.
+- Virtual voices no longer duck other buses; music ducks other buses in builds too.
+- Stopping the music during a pending transition fades out instead of cutting at the boundary.
+- Going back to the current segment before a pending transition cancels it instead of restarting the segment.
+- A request right at a transition no longer halts the music that is already playing or leaves a gap.
+- Stopping or replaying a track forgets a planned bridge; stingers stop with the music and follow the mix.
+- `Resonance.Engine` no longer recreates the runtime while the game quits or leaves Play Mode.
+- Binaural voices no longer allocate on play, and meters build clip envelopes a little at a time instead of all at once.
+- The Sound Listener inspector no longer uses an API deprecated in Unity 6000.5.
+
 ## [0.4.0] - 2026-10-24
 
 ### Added

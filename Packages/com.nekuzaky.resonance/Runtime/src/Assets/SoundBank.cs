@@ -51,6 +51,16 @@ namespace Nekuzaky.Resonance
                 if (segment?.clip != null)
                     clips.Add(segment.clip);
             }
+            foreach (var segment in track.segments)
+            {
+                if (segment?.layers == null)
+                    continue;
+                foreach (var layer in segment.layers)
+                {
+                    if (layer?.clip != null)
+                        clips.Add(layer.clip);
+                }
+            }
             foreach (var stinger in track.stingers)
             {
                 if (stinger?.clip != null)
