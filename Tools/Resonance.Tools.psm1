@@ -1,4 +1,3 @@
-# Shared helpers for the scripts in this folder. Windows PowerShell 5.1 or PowerShell 7.
 
 Set-StrictMode -Version Latest
 
@@ -60,7 +59,6 @@ function Invoke-Unity {
     if (-not $Interactive) { $all = @('-batchmode') + $all }
     $all += $Arguments
 
-    # Start-Process -Wait would also wait for the helper processes Unity leaves running, so wait on Unity only.
     $process = Start-Process -FilePath $unity -ArgumentList $all -PassThru -WindowStyle Hidden
     $process.WaitForExit()
     $process.ExitCode

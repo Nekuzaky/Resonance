@@ -33,7 +33,6 @@ foreach ($file in $files) {
         if ($line -cmatch '\bunsafe\b' -and $line -notmatch '^\s*//') { $problems.Add("${relative}:$($i + 1) uses unsafe code") }
         if ($line -match '#pragma\s+warning\s+disable') { $problems.Add("${relative}:$($i + 1) silences a warning") }
 
-        # A signature may wrap over a few lines: join them until the parameter list closes.
         $start = $i
         $header = $line
         for ($k = 0; $k -lt 4 -and $header.TrimEnd().EndsWith(',') -and $i + 1 -lt $lines.Count; $k++) {
@@ -45,7 +44,6 @@ foreach ($file in $files) {
         $name = $Matches['name']
         if ($i + 1 -ge $lines.Count -or $lines[$i + 1].Trim() -ne '{') { $i = $start; continue }
 
-        # Walk the body until its closing brace.
         $depth = 0
         $end = $i + 1
         for ($j = $i + 1; $j -lt $lines.Count; $j++) {

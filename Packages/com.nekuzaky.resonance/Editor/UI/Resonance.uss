@@ -1,5 +1,3 @@
-/* Resonance Studio. The studio uses its own dark theme so meters and waveforms read the same in both editor skins. */
-
 :root {
     --rs-bg: rgb(23, 24, 27);
     --rs-panel: rgb(29, 31, 35);
@@ -15,8 +13,6 @@
     --rs-warn: rgb(222, 170, 72);
     --rs-bad: rgb(226, 96, 96);
 }
-
-/* ------------------------------------------------------------------ icons */
 
 .rs-icon {
     width: 14px;
@@ -44,8 +40,6 @@
 
 .rs-asset-icon { width: 16px; height: 16px; flex-shrink: 0; margin-right: 6px; }
 .rs-asset-icon--large { width: 40px; height: 40px; margin-right: 0; margin-bottom: 10px; }
-
-/* ------------------------------------------------------------------ shell */
 
 .rs-root {
     flex-grow: 1;
@@ -102,8 +96,6 @@
 
 .rs-body { flex-grow: 1; flex-direction: row; }
 
-/* ------------------------------------------------------------------ buttons */
-
 .rs-button {
     flex-direction: row;
     align-items: center;
@@ -130,8 +122,6 @@
 .rs-button--on { background-color: var(--rs-accent-soft); border-color: rgb(47, 169, 184); }
 .rs-button--mute-on { background-color: rgba(226, 96, 96, 0.25); border-color: rgb(226, 96, 96); }
 .rs-button--solo-on { background-color: rgba(222, 170, 72, 0.25); border-color: rgb(222, 170, 72); }
-
-/* ------------------------------------------------------------------ browser */
 
 .rs-browser {
     width: 240px;
@@ -194,8 +184,6 @@
 }
 
 .rs-drop-hint--active { border-color: rgb(47, 169, 184); color: var(--rs-text); background-color: var(--rs-accent-soft); }
-
-/* ------------------------------------------------------------------ editor area */
 
 .rs-main { flex-grow: 1; flex-direction: column; }
 
@@ -264,8 +252,6 @@
 
 .rs-props .unity-base-field__label { min-width: 130px; color: var(--rs-text-2); }
 
-/* ------------------------------------------------------------------ preview */
-
 .rs-preview {
     flex-shrink: 0;
     border-top-width: 1px;
@@ -286,8 +272,6 @@
     background-color: var(--rs-bg);
 }
 
-/* ------------------------------------------------------------------ empty state */
-
 .rs-empty {
     flex-grow: 1;
     align-items: center;
@@ -297,8 +281,6 @@
 
 .rs-empty-title { font-size: 15px; -unity-font-style: bold; margin-bottom: 6px; }
 .rs-empty-text { color: var(--rs-text-2); white-space: normal; -unity-text-align: middle-center; max-width: 420px; margin-bottom: 14px; }
-
-/* ------------------------------------------------------------------ mixer */
 
 .rs-mixer { flex-grow: 1; }
 .rs-strips { flex-direction: row; padding: 12px; }
@@ -326,8 +308,6 @@
 
 .rs-snapshots { padding: 0 12px 12px 12px; }
 
-/* ------------------------------------------------------------------ music */
-
 .rs-music { flex-grow: 1; padding: 12px; }
 .rs-transport { flex-direction: row; align-items: center; margin-bottom: 12px; }
 .rs-position { font-size: 18px; -unity-font-style: bold; margin: 0 14px; min-width: 120px; }
@@ -353,8 +333,6 @@
 .rs-card--pending { border-color: rgb(222, 170, 72); }
 .rs-card-title { -unity-font-style: bold; margin-bottom: 2px; }
 .rs-card-detail { color: var(--rs-text-2); font-size: 11px; }
-
-/* ------------------------------------------------------------------ profiler */
 
 .rs-profiler { flex-grow: 1; padding: 12px; }
 .rs-stats { flex-direction: row; flex-wrap: wrap; margin-bottom: 12px; flex-shrink: 0; }

@@ -43,7 +43,6 @@ foreach ($failure in $failures) {
 }
 
 $invariant = [Globalization.CultureInfo]::InvariantCulture
-# Unity writes the duration with the machine's decimal separator.
 $seconds = [double]::Parse(($run.duration -replace ',', '.'), $invariant)
 $color = if ([int]$run.failed -eq 0) { 'Green' } else { 'Red' }
 $summary = [string]::Format($invariant, '{0} tests: {1} passed, {2} failed, {3} skipped ({4:0.0} s)', $run.total, $run.passed, $run.failed, $run.skipped, $seconds)
