@@ -1,0 +1,25 @@
+{
+    "name": "Nekuzaky.Resonance.Timeline",
+    "rootNamespace": "Nekuzaky.Resonance.Timeline",
+    "references": [
+        "Nekuzaky.Resonance",
+        "Unity.Timeline"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "RESONANCE_TIMELINE"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.unity.timeline",
+            "expression": "1.7.0",
+            "define": "RESONANCE_TIMELINE"
+        }
+    ],
+    "noEngineReferences": false
+}

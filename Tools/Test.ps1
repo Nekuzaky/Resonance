@@ -18,7 +18,7 @@ $results = Join-Path $outputDirectory 'results.xml'
 $logFile = Join-Path (Get-OutputDirectory 'logs') 'tests.log'
 Remove-Item $results -ErrorAction SilentlyContinue
 
-$arguments = @('-runTests', '-testPlatform', 'EditMode', '-testResults', "`"$results`"", '-assemblyNames', 'Nekuzaky.Resonance.Tests')
+$arguments = @('-runTests', '-testPlatform', 'EditMode', '-testResults', "`"$results`"", '-assemblyNames', 'Nekuzaky.Resonance.Tests;Nekuzaky.Resonance.Timeline.Tests')
 if ($Filter) { $arguments += @('-testFilter', $Filter) }
 
 Write-Host "Running EditMode tests with Unity $(Get-UnityVersion)..."

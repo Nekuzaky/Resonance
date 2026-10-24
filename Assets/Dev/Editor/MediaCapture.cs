@@ -40,6 +40,7 @@ namespace Nekuzaky.Resonance.Dev
             CaptureMixer,
             CaptureMusic,
             CaptureProfiler,
+            CaptureAudit,
             ExitPlay,
             Quit
         }
@@ -83,7 +84,8 @@ namespace Nekuzaky.Resonance.Dev
                 case Stage.EnterPlay: EnterPlay(); break;
                 case Stage.CaptureMixer: CaptureTab(StudioWindow.MixerTab, "studio-mixer", Stage.CaptureMusic); break;
                 case Stage.CaptureMusic: CaptureTab(StudioWindow.MusicTab, "studio-music", Stage.CaptureProfiler); break;
-                case Stage.CaptureProfiler: CaptureTab(StudioWindow.ProfilerTab, "studio-profiler", Stage.ExitPlay); break;
+                case Stage.CaptureProfiler: CaptureTab(StudioWindow.ProfilerTab, "studio-profiler", Stage.CaptureAudit); break;
+                case Stage.CaptureAudit: CaptureTab(StudioWindow.AuditTab, "studio-audit", Stage.ExitPlay); break;
                 case Stage.ExitPlay: ExitPlay(); break;
                 case Stage.Quit: Quit(); break;
             }

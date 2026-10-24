@@ -13,7 +13,7 @@ namespace Nekuzaky.Resonance.Dev
             var scene = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneMode.Single);
             var camera = Camera.main;
             camera.transform.SetPositionAndRotation(new Vector3(0f, 22f, -16f), Quaternion.Euler(52f, 0f, 0f));
-            camera.gameObject.AddComponent<SoundListener>();
+            Object.DestroyImmediate(camera.GetComponent<AudioListener>());
 
             Ground("Grass", new Vector3(-7.5f, 0f, 0f), new Color(0.32f, 0.52f, 0.3f));
             Ground("Stone", new Vector3(7.5f, 0f, 0f), new Color(0.5f, 0.5f, 0.52f));
@@ -22,6 +22,8 @@ namespace Nekuzaky.Resonance.Dev
             BuildZone(assets);
             BuildCoins(assets);
             BuildAmbience(assets);
+            BuildHall();
+            BuildWall();
 
             EditorSceneManager.SaveScene(scene, ScenePath);
         }
@@ -46,6 +48,8 @@ namespace Nekuzaky.Resonance.Dev
             Paint(player, new Color(0.18f, 0.66f, 0.72f));
             var body = player.AddComponent<Rigidbody>();
             body.isKinematic = true;
+            player.AddComponent<AudioListener>();
+            player.AddComponent<SoundListener>();
             var walker = player.AddComponent<DemoWalker>();
             walker.footsteps = assets.Footsteps;
             walker.surface = assets.Surface;
@@ -79,6 +83,36 @@ namespace Nekuzaky.Resonance.Dev
             state.enterState = "Combat";
         }
 
+        private static void BuildHall()
+        {
+            var hall = new GameObject("Stone Hall");
+            hall.transform.position = new Vector3(8f, 2f, 0f);
+            var trigger = hall.AddComponent<BoxCollider>();
+            trigger.isTrigger = true;
+            trigger.size = new Vector3(5f, 4f, 7f);
+            var zone = hall.AddComponent<ReverbZone>();
+            zone.preset = AudioReverbPreset.StoneCorridor;
+            zone.fadeDistance = 2f;
+            for (var side = -1; side <= 1; side += 2)
+            {
+                var wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                wall.name = side < 0 ? "Hall Wall West" : "Hall Wall East";
+                wall.transform.SetParent(hall.transform, false);
+                wall.transform.localPosition = new Vector3(side * 2.7f, 0f, 0f);
+                wall.transform.localScale = new Vector3(0.4f, 4f, 7f);
+                Paint(wall, new Color(0.42f, 0.47f, 0.58f));
+            }
+        }
+
+        private static void BuildWall()
+        {
+            var wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            wall.name = "Occluding Wall";
+            wall.transform.position = new Vector3(5f, 1.5f, -6.5f);
+            wall.transform.localScale = new Vector3(8f, 3f, 0.4f);
+            Paint(wall, new Color(0.62f, 0.42f, 0.36f));
+        }
+
         private static void BuildCoins(DemoAssets assets)
         {
             for (var i = 0; i < 6; i++)
@@ -104,6 +138,7 @@ namespace Nekuzaky.Resonance.Dev
             var wind = new GameObject("Wind");
             wind.transform.SetParent(audio.transform);
             wind.AddComponent<SoundEmitter>().sound = assets.Wind;
+            audio.AddComponent<SoundBankLoader>().bank = assets.Bank;
             var music = new GameObject("Music");
             music.transform.SetParent(audio.transform);
             music.AddComponent<MusicSource>().track = assets.Score;

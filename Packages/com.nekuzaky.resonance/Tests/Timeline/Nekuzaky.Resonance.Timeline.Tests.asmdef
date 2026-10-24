@@ -1,0 +1,33 @@
+{
+    "name": "Nekuzaky.Resonance.Timeline.Tests",
+    "rootNamespace": "Nekuzaky.Resonance.Timeline.Tests",
+    "references": [
+        "Nekuzaky.Resonance",
+        "Nekuzaky.Resonance.Timeline",
+        "Unity.Timeline",
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS",
+        "RESONANCE_TIMELINE"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.unity.timeline",
+            "expression": "1.7.0",
+            "define": "RESONANCE_TIMELINE"
+        }
+    ],
+    "noEngineReferences": false
+}

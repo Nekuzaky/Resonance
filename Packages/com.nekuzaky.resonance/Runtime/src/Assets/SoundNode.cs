@@ -78,6 +78,7 @@ namespace Nekuzaky.Resonance
     {
         public AudioClip clip;
         public bool loop;
+        public bool randomStart;
 
         public override NodeKind Kind => NodeKind.Clip;
     }
@@ -96,6 +97,7 @@ namespace Nekuzaky.Resonance
     public sealed class RandomNode : ContainerNode
     {
         [Min(0)] public int avoidRepeat = 1;
+        public bool shuffle;
 
         [NonSerialized] internal List<int> History = new();
 

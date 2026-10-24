@@ -33,6 +33,24 @@ namespace Nekuzaky.Resonance
             return Mathf.Clamp01(1f - distance / fade);
         }
 
+        public static float Attenuation(AudioRolloffMode mode, float minDistance, float maxDistance, float distance)
+        {
+            minDistance = Mathf.Max(0.01f, minDistance);
+            maxDistance = Mathf.Max(minDistance + 0.01f, maxDistance);
+            if (distance <= minDistance)
+                return 1f;
+            if (mode == AudioRolloffMode.Linear)
+                return Mathf.Clamp01(1f - (distance - minDistance) / (maxDistance - minDistance));
+            return minDistance / Mathf.Min(distance, maxDistance);
+        }
+
+        public static float LogLerp(float from, float to, float t)
+        {
+            from = Mathf.Max(1f, from);
+            to = Mathf.Max(1f, to);
+            return Mathf.Exp(Mathf.Lerp(Mathf.Log(from), Mathf.Log(to), Mathf.Clamp01(t)));
+        }
+
         public static double NextBoundary(double origin, double time, double unit)
         {
             if (unit <= 0.0 || time <= origin)

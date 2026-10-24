@@ -90,6 +90,14 @@ namespace Nekuzaky.Resonance
 
         public static void RemoveSnapshot(MixSnapshot snapshot) => Engine?.Mixer.Remove(snapshot);
 
+        public static void LoadBank(SoundBank bank) => Engine?.Memory.Load(bank);
+
+        public static void UnloadBank(SoundBank bank) => Engine?.Memory.Unload(bank);
+
+        public static bool IsBankLoaded(SoundBank bank) => Engine != null && Engine.Memory.IsLoaded(bank);
+
+        public static bool IsBankReady(SoundBank bank) => Engine != null && Engine.Memory.IsReady(bank);
+
         public static void SetBusVolume(AudioBus bus, float decibels)
         {
             if (bus != null && Engine != null)

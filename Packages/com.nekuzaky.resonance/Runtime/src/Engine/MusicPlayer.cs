@@ -58,6 +58,8 @@ namespace Nekuzaky.Resonance
 
         public MusicTrack Track { get; private set; }
 
+        public bool Metering { get; set; }
+
         public MusicSegment Current => _decks[_current].Segment;
 
         public MusicSegment Pending => _pending ? _decks[1 - _current].Segment : null;

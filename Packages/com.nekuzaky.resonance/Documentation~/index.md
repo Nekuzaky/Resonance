@@ -12,10 +12,14 @@ need one. There are no soundbanks to build and no external tool to keep in sync.
 | [Sound Events](sound-events.md) | Containers (Random, Sequence, Switch, Blend, Layer), randomization, 3D, voice limits |
 | [Game syncs](game-syncs.md) | Parameters, switches and states, and how sounds react to them |
 | [Mixing](mixing.md) | Buses, ducking, snapshots, mute and solo, Audio Mixer output |
+| [Distance, occlusion and reverb](space.md) | Attenuation curves and presets, occlusion, reverb zones |
+| [Memory and loading](memory.md) | Sound Banks, loading on demand, import settings |
 | [Interactive music](music.md) | Segments, beat-synced transitions, state links, stingers |
 | [Components](components.md) | Every component, for setups that need no code |
 | [Scripting](scripting.md) | The `Resonance` API for programmers |
-| [Profiler](profiler.md) | Reading the live view of voices, events and game syncs |
+| [Profiler](profiler.md) | Reading the live view of voices, events and game syncs, and its 60 second history |
+| [Workflow tools](workflow.md) | Bulk import, project audit, Used By |
+| [Timeline](timeline.md) | Sound Event and Game State clips on a Resonance Track |
 | [Coming from Wwise](wwise.md) | Wwise concepts and their Resonance equivalents |
 
 ## Requirements

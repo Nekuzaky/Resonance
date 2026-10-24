@@ -46,6 +46,16 @@ can be called from Unity Events.
 Plays sounds from Animation Events: add an event that calls `PlaySound` and drop a Sound Event in its Object field,
 or call `PlaySoundNamed` with a name from the list.
 
+## Reverb Zone
+
+Turns a collider into a reverberant space with a preset (room, corridor, cave...), an intensity and a fade distance.
+See [Distance, occlusion and reverb](space.md).
+
+## Sound Bank Loader
+
+Loads a Sound Bank while the object is enabled and unloads it when it is disabled. See
+[Memory and loading](memory.md).
+
 ## Snapshot Trigger
 
 Applies a mix snapshot while the object is enabled, or when `Apply()` and `Remove()` are called.

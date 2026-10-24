@@ -9,6 +9,7 @@ namespace Nekuzaky.Resonance
         public float Gain;
         public float Pitch;
         public bool Loop;
+        public bool RandomStart;
     }
 
     internal sealed class PlanLayer
@@ -100,6 +101,8 @@ namespace Nekuzaky.Resonance
             if (count == 0)
                 return -1;
 
+            if (node.shuffle)
+                return PickShuffled(node, count);
             var avoid = Mathf.Clamp(node.avoidRepeat, 0, count - 1);
             while (node.History.Count > avoid)
                 node.History.RemoveAt(0);
@@ -114,6 +117,32 @@ namespace Nekuzaky.Resonance
             if (avoid > 0)
                 node.History.Add(pick);
             return pick;
+        }
+
+        private int PickShuffled(RandomNode node, int count)
+        {
+            if (node.History.Count >= count)
+            {
+                var last = node.History[node.History.Count - 1];
+                node.History.Clear();
+                if (count > 1)
+                    node.History.Add(last);
+                var pick = PickFromHistory(node);
+                node.History.Remove(last);
+                node.History.Add(pick);
+                return pick;
+            }
+            var chosen = PickFromHistory(node);
+            node.History.Add(chosen);
+            return chosen;
+        }
+
+        private int PickFromHistory(RandomNode node)
+        {
+            var total = Candidates(node, true);
+            if (total <= 0f)
+                total = Candidates(node, false);
+            return _candidates.Count == 0 ? -1 : PickWeighted(node, total);
         }
 
         #endregion
@@ -167,7 +196,8 @@ namespace Nekuzaky.Resonance
                 Clip = node.clip,
                 Gain = AudioMath.ToLinear(frame.Decibels),
                 Pitch = AudioMath.ToPitch(frame.Semitones),
-                Loop = node.loop
+                Loop = node.loop,
+                RandomStart = node.randomStart
             });
         }
 

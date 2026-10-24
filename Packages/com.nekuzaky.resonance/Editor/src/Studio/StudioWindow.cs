@@ -26,6 +26,7 @@ namespace Nekuzaky.Resonance.Editor
         public const int MixerTab = 1;
         public const int MusicTab = 2;
         public const int ProfilerTab = 3;
+        public const int AuditTab = 4;
 
         [MenuItem("Tools/Resonance/Resonance Studio %&r", priority = 1)]
         [MenuItem("Window/Audio/Resonance Studio", priority = 10)]
@@ -90,6 +91,7 @@ namespace Nekuzaky.Resonance.Editor
         private readonly List<Button> _tabs = new();
         private EventsView _events;
         private MusicView _music;
+        private ProfilerView _profiler;
         private Label _modePill;
 
         #endregion
@@ -111,7 +113,9 @@ namespace Nekuzaky.Resonance.Editor
             _views.Add(_events);
             _views.Add(new MixerView());
             _views.Add(_music);
-            _views.Add(new ProfilerView());
+            _profiler = new ProfilerView();
+            _views.Add(_profiler);
+            _views.Add(new AuditView());
 
             root.Add(BuildHeader());
             var body = Ui.Box("rs-body");
@@ -145,6 +149,7 @@ namespace Nekuzaky.Resonance.Editor
             AddTab(header, Glyphs.Bus, "Mixer", MixerTab);
             AddTab(header, Glyphs.Music, "Music", MusicTab);
             AddTab(header, Glyphs.Profiler, "Profiler", ProfilerTab);
+            AddTab(header, Glyphs.Warning, "Audit", AuditTab);
             header.Add(Ui.Spacer());
             _modePill = Ui.Styled("Preview", "rs-pill");
             _modePill.tooltip = "Which engine the Mixer, Music and Profiler tabs show.";
@@ -180,6 +185,7 @@ namespace Nekuzaky.Resonance.Editor
             var playing = Application.isPlaying;
             _modePill.text = playing ? "Play Mode" : "Preview";
             _modePill.EnableInClassList("rs-pill--live", playing);
+            _profiler.Sample();
             _views[_tab].Refresh();
         }
 

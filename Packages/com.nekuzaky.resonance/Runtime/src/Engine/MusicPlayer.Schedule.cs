@@ -109,8 +109,8 @@ namespace Nekuzaky.Resonance
                     continue;
                 }
                 deck.Source.volume = UnityEngine.Mathf.Clamp01(Gain(deck.Segment.volume) * deck.FadeAt(now));
-                if (deck.Source.isPlaying)
-                    _mixer.CountVoice(Track.bus, deck.Source.volume);
+                if (Metering && deck.Source.isPlaying)
+                    _mixer.CountVoice(Track.bus, ClipEnvelopes.At(deck.Source.clip, deck.Source.timeSamples) * deck.Source.volume);
             }
         }
 

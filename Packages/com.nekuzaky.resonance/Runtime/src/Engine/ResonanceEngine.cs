@@ -25,9 +25,12 @@ namespace Nekuzaky.Resonance
         public ResonanceEngine(Transform host, int seed = 0)
         {
             _host = host;
-            _resolver = new Resolver(seed == 0 ? System.Environment.TickCount : seed);
+            var actualSeed = seed == 0 ? System.Environment.TickCount : seed;
+            _resolver = new Resolver(actualSeed);
+            _random = new System.Random(actualSeed + 1);
             _plan = new Plan(_layerPool);
             Music = new MusicPlayer(host, Syncs, Mixer);
+            Reverb = new ReverbMixer(host);
         }
 
         #endregion
@@ -40,17 +43,21 @@ namespace Nekuzaky.Resonance
         internal readonly SyncStore Syncs = new();
         internal readonly BusMixer Mixer = new();
         internal readonly MusicPlayer Music;
+        internal readonly ReverbMixer Reverb;
+        internal readonly AudioMemory Memory = new();
 
         internal IReadOnlyList<SoundInstance> Instances => _instances;
 
         private readonly Transform _host;
         private readonly Resolver _resolver;
+        private readonly System.Random _random;
+        private readonly RaycastHit[] _hits = new RaycastHit[16];
         private readonly Plan _plan;
         private readonly Stack<PlanLayer> _layerPool = new();
         private readonly Stack<Voice> _free = new();
         private readonly List<Voice> _voices = new();
         private readonly List<SoundInstance> _instances = new();
-        private readonly float[] _samples = new float[256];
+        private readonly Stack<SoundInstance> _instancePool = new();
         private AudioListener _audioListener;
         private float _nextListenerSearch;
         private float _time;
@@ -83,7 +90,7 @@ namespace Nekuzaky.Resonance
 
             var instance = Begin(sound, emitter, position);
             var stolen = room > 0 || admission == PlayResult.Stolen;
-            Stats.Record(new EventLogEntry(_time, sound.name, instance.EmitterName, stolen ? PlayResult.Stolen : PlayResult.Played));
+            Stats.Record(new EventLogEntry(_time, sound, emitter, stolen ? PlayResult.Stolen : PlayResult.Played));
             sound.LastPlayTime = _time;
             return new SoundHandle(instance.Id);
         }
@@ -136,6 +143,7 @@ namespace Nekuzaky.Resonance
                 Release(_instances[i]);
             _instances.Clear();
             Music.Stop(0f);
+            Memory.Clear();
         }
 
         #endregion
@@ -217,7 +225,7 @@ namespace Nekuzaky.Resonance
 
         private SoundHandle Reject(SoundEvent sound, GameObject emitter, PlayResult result)
         {
-            Stats.Record(new EventLogEntry(_time, sound.name, emitter != null ? emitter.name : "(world)", result));
+            Stats.Record(new EventLogEntry(_time, sound, emitter, result));
             return SoundHandle.None;
         }
 

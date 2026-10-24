@@ -45,7 +45,8 @@ namespace Nekuzaky.Resonance.Tests
             var components = new[]
             {
                 typeof(SoundEmitter), typeof(SoundListener), typeof(ParameterDriver), typeof(SwitchSetter),
-                typeof(StateZone), typeof(MusicSource), typeof(AnimationSounds), typeof(SnapshotTrigger)
+                typeof(StateZone), typeof(MusicSource), typeof(AnimationSounds), typeof(SnapshotTrigger),
+                typeof(ReverbZone), typeof(SoundBankLoader)
             };
             foreach (var type in components)
             {

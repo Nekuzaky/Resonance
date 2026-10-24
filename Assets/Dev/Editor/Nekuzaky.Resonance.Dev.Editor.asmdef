@@ -4,7 +4,8 @@
     "references": [
         "Nekuzaky.Resonance",
         "Nekuzaky.Resonance.Editor",
-        "Nekuzaky.Resonance.Demo"
+        "Nekuzaky.Resonance.Demo",
+        "Nekuzaky.Resonance.Dev"
     ],
     "includePlatforms": [
         "Editor"

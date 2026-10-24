@@ -29,7 +29,9 @@ namespace Nekuzaky.Resonance.Editor
             new() { Type = typeof(SwitchGroup), Label = "Switch Groups", Glyph = Glyphs.SwitchGroup, Icon = nameof(SwitchGroup), DefaultName = "New Switch Group" },
             new() { Type = typeof(StateGroup), Label = "State Groups", Glyph = Glyphs.StateGroup, Icon = nameof(StateGroup), DefaultName = "New State Group" },
             new() { Type = typeof(AudioBus), Label = "Buses", Glyph = Glyphs.Bus, Icon = nameof(AudioBus), DefaultName = "New Bus" },
-            new() { Type = typeof(MixSnapshot), Label = "Mix Snapshots", Glyph = Glyphs.Snapshot, Icon = nameof(MixSnapshot), DefaultName = "New Mix Snapshot" }
+            new() { Type = typeof(MixSnapshot), Label = "Mix Snapshots", Glyph = Glyphs.Snapshot, Icon = nameof(MixSnapshot), DefaultName = "New Mix Snapshot" },
+            new() { Type = typeof(AttenuationPreset), Label = "Attenuation Presets", Glyph = Glyphs.Attenuation, Icon = nameof(AttenuationPreset), DefaultName = "New Attenuation" },
+            new() { Type = typeof(SoundBank), Label = "Sound Banks", Glyph = Glyphs.Bank, Icon = nameof(SoundBank), DefaultName = "New Sound Bank" }
         };
 
         public static AssetKind KindOf(UnityEngine.Object asset)

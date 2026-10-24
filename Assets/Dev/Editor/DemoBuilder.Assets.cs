@@ -16,6 +16,7 @@ namespace Nekuzaky.Resonance.Dev
             BuildEvents(assets);
             BuildEngine(assets);
             BuildMusic(assets);
+            BuildSpace(assets);
             foreach (var guid in AssetDatabase.FindAssets("t:ScriptableObject", new[] { AssetFolder }))
                 EditorUtility.SetDirty(AssetDatabase.LoadAssetAtPath<ScriptableObject>(AssetDatabase.GUIDToAssetPath(guid)));
             return assets;
@@ -114,6 +115,24 @@ namespace Nekuzaky.Resonance.Dev
                 target = ModulationTarget.Pitch,
                 curve = AnimationCurve.Linear(0f, -2f, 1f, 4f)
             });
+        }
+
+        private static void BuildSpace(DemoAssets assets)
+        {
+            assets.Foley = Fresh<AttenuationPreset>("Close Foley");
+            assets.Foley.spatial.maxDistance = 25f;
+            assets.Foley.spatial.lowPassAtMax = 3000f;
+            assets.Footsteps.attenuation = assets.Foley;
+            assets.Coin.attenuation = assets.Foley;
+
+            assets.Engine.occlusion.enabled = true;
+            assets.Engine.occlusion.volume = -10f;
+            assets.Engine.occlusion.lowPass = 900f;
+            assets.Engine.spatial.lowPassAtMax = 6000f;
+
+            assets.Bank = Fresh<SoundBank>("Demo Bank");
+            assets.Bank.events.AddRange(new[] { assets.Footsteps, assets.Wind, assets.Engine, assets.Coin, assets.Click, assets.Narrator });
+            assets.Bank.music.Add(assets.Score);
         }
 
         private static void BuildMusic(DemoAssets assets)

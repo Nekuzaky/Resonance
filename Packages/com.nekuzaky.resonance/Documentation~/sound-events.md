@@ -30,7 +30,18 @@ In the Studio tree:
 Every node has **Volume Random** and **Pitch Random**. The value is a range in both directions: a Pitch Random of 1
 plays anywhere between one semitone lower and one semitone higher. Values add up through the tree.
 
+A Random node can **Shuffle**: it plays every child once, in a random order, before any of them plays again, and
+never plays the same child twice across two rounds. A Clip node can use **Random Start**, so several copies of the
+same loop (rain, engines, crowds) never sound in sync.
+
+## Timing
+
+**Delay** waits before the sound starts, and **Delay Random** adds a random part. Stopping a sound during its delay
+cancels it without a click.
+
 ## 3D sound
+
+Attenuation curves, presets, occlusion and reverb are described in [Distance, occlusion and reverb](space.md).
 
 | Setting | Meaning |
 | --- | --- |

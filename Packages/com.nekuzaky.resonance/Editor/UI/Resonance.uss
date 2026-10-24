@@ -356,10 +356,13 @@
 /* ------------------------------------------------------------------ profiler */
 
 .rs-profiler { flex-grow: 1; padding: 12px; }
-.rs-stats { flex-direction: row; flex-wrap: wrap; margin-bottom: 12px; }
+.rs-stats { flex-direction: row; flex-wrap: wrap; margin-bottom: 12px; flex-shrink: 0; }
+.rs-profiler > .rs-preview-row { flex-shrink: 0; }
+.rs-history { flex-shrink: 0; height: 64px; margin-bottom: 10px; border-radius: 4px; border-width: 1px; border-color: var(--rs-border); background-color: rgb(30, 32, 36); }
 
 .rs-stat {
     min-width: 130px;
+    flex-shrink: 0;
     padding: 8px 14px 10px 14px;
     margin: 0 8px 8px 0;
     border-radius: 6px;

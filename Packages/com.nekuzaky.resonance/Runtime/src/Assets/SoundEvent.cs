@@ -42,6 +42,35 @@ namespace Nekuzaky.Resonance
         public AudioRolloffMode rolloff = AudioRolloffMode.Logarithmic;
         [Range(0f, 360f)] public float spread;
         [Range(0f, 5f)] public float doppler = 1f;
+        public AnimationCurve customCurve = AnimationCurve.EaseInOut(0f, 1f, 1f, 0f);
+        [Range(10f, 22000f)] public float lowPassAtMax = AudioMath.OpenLowPass;
+
+        public float Attenuation(float distance)
+        {
+            if (rolloff != AudioRolloffMode.Custom)
+                return AudioMath.Attenuation(rolloff, minDistance, maxDistance, distance);
+            return customCurve == null ? 1f : Mathf.Clamp01(customCurve.Evaluate(distance / Mathf.Max(0.01f, maxDistance)));
+        }
+
+        public float DistanceLowPass(float distance)
+        {
+            if (lowPassAtMax >= AudioMath.OpenLowPass - 1f)
+                return AudioMath.OpenLowPass;
+            var t = Mathf.InverseLerp(minDistance, Mathf.Max(minDistance + 0.01f, maxDistance), distance);
+            return AudioMath.LogLerp(AudioMath.OpenLowPass, lowPassAtMax, t);
+        }
+    }
+
+    [Serializable]
+    public sealed class Occlusion
+    {
+        public bool enabled;
+        public LayerMask layers = ~0;
+        [Range(-48f, 0f)] public float volume = -9f;
+        [Range(10f, 22000f)] public float lowPass = 1500f;
+        [Min(0f)] public float smoothing = 0.15f;
+        [Range(0.02f, 1f)] public float interval = 0.1f;
+        [Range(0f, 4f)] public float width = 0.6f;
     }
 
     [CreateAssetMenu(menuName = "Resonance/Sound Event", fileName = "New Sound Event", order = 0)]
@@ -55,6 +84,11 @@ namespace Nekuzaky.Resonance
         [Range(-24f, 24f)] public float pitch;
         public bool spatialize = true;
         public Spatial spatial = new();
+        public AttenuationPreset attenuation;
+        public Occlusion occlusion = new();
+        [Range(0f, 1.1f)] public float reverbSend = 1f;
+        [Min(0f)] public float delay;
+        [Min(0f)] public float delayRandom;
         [Min(0f)] public float fadeIn;
         [Min(0f)] public float fadeOut = 0.05f;
         [Min(0)] public int maxInstances;
@@ -68,6 +102,8 @@ namespace Nekuzaky.Resonance
         public List<Modulation> modulations = new();
 
         [NonSerialized] internal float LastPlayTime = float.NegativeInfinity;
+
+        public Spatial Spatial => attenuation != null && attenuation.spatial != null ? attenuation.spatial : spatial;
 
         public bool IsLooping
         {

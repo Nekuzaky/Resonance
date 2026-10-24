@@ -6,8 +6,10 @@
   <img alt="Unity 6000.3 or newer" src="https://img.shields.io/badge/Unity-6000.3%2B-1b1d24?logo=unity&logoColor=white">
   <a href="https://github.com/Nekuzaky/Resonance/releases"><img alt="Release" src="https://img.shields.io/github/v/tag/Nekuzaky/Resonance?label=release&color=2fa9b8"></a>
   <img alt="No soundbanks" src="https://img.shields.io/badge/soundbanks-none-3ddc84">
-  <img alt="Engine update: about 0.01 ms" src="https://img.shields.io/badge/engine%20update-~0.01%20ms-3ddc84">
-  <img alt="Tests: 44 EditMode" src="https://img.shields.io/badge/tests-44%20EditMode-38bdf8">
+  <img alt="Engine update in a player: 0.005 ms" src="https://img.shields.io/badge/engine%20update-0.005%20ms-3ddc84">
+  <img alt="GC per play: 0 B" src="https://img.shields.io/badge/GC%20per%20play-0%20B-3ddc84">
+  <img alt="Tests: 72 EditMode" src="https://img.shields.io/badge/tests-72%20EditMode-38bdf8">
+  <img alt="Built-in, URP, HDRP" src="https://img.shields.io/badge/pipelines-Built--in%20%7C%20URP%20%7C%20HDRP-8b92a2">
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-8b92a2"></a>
 </p>
 
@@ -59,12 +61,22 @@ Studio, presses space to hear the result, and adds a component to the scene. Cha
 - **Voice management.** Instance limits per event or per emitter, steal oldest or quietest, priorities against a
   global voice budget, cooldowns, and virtual voices: sounds too far to hear stop using an audio source and resume
   in the right place when you come back.
+- **Space.** Occlusion with three rays (a sound half behind a corner is half muffled), Reverb Zones that blend at the
+  listener, attenuation presets shared by many sounds, custom rolloff curves and a low pass that closes with distance.
+- **Memory.** Sound Banks load and unload audio data with reference counting, the Profiler flags clips that were
+  played before they were loaded, and one command suggests the right load type for every clip.
 - **Interactive music.** Segments, state links, transitions on the next beat, bar or segment end scheduled on the
   audio clock, crossfades, and stingers.
-- **No code needed.** Sound Emitter, Parameter Driver, Switch Setter, State Zone, Music Source, Animation Sounds and
-  Snapshot Trigger components cover the usual hookups, each with its own icon.
-- **Live profiler.** Active sounds, real and virtual voices, the reason every refused play was refused, states and
-  parameters, and the engine's cost per frame.
+- **Playback options.** Shuffle without repeats, random start for loops, delays with a random part.
+- **No code needed.** Sound Emitter, Parameter Driver, Switch Setter, State Zone, Reverb Zone, Music Source, Sound
+  Bank Loader, Animation Sounds and Snapshot Trigger components cover the usual hookups, each with its own icon.
+- **Live profiler with history.** Active sounds, real and virtual voices, occlusion, the reason every refused play was
+  refused, states and parameters, the engine's cost per frame, and the last 60 seconds to scrub through.
+- **Audit and bulk import.** Find broken events, sounds nothing uses and clips with poor import settings; turn a
+  folder of `step_grass_01`, `step_stone_01` clips into a Switch of Randoms in one click; see where an event is used.
+- **Timeline.** A Resonance Track plays Sound Events and sets game states in cutscenes.
+- **Fast and allocation free.** About 0.005 ms per frame in a player build of the demo, and no managed allocation per
+  play once warmed up, checked by a test.
 - **Preview everywhere.** Play any event, move its parameters and switches, solo a bus, apply a snapshot or jump
   between music segments, in Edit Mode or while the game runs.
 - **Small, typed API** for programmers: `Resonance.Play(footsteps, gameObject)`, `Resonance.SetState(game, "Combat")`.
@@ -77,7 +89,10 @@ Studio, presses space to hear the result, and adds a component to the scene. Cha
 <p align="center">
   <img src="docs/images/studio-blend.png" alt="Car engine: a blend container driven by the car's speed" width="49%">
   &nbsp;
-  <img src="docs/images/studio-profiler.png" alt="Profiler: active sounds, voices and the event log" width="49%">
+  <img src="docs/images/studio-profiler.png" alt="Profiler: active sounds, voices, the event log and the history" width="49%">
+</p>
+<p align="center">
+  <img src="docs/images/studio-audit.png" alt="Audit: problems and import settings to improve" width="49%">
 </p>
 
 ## Install
@@ -90,7 +105,7 @@ In Unity: **Window > Package Manager > + > Install package from git URL...** and
 https://github.com/Nekuzaky/Resonance.git?path=Packages/com.nekuzaky.resonance
 ```
 
-Add `#v0.1.0` at the end of the URL to pin a version.
+Add `#v0.2.0` at the end of the URL to pin a version.
 
 ## Quick start
 
@@ -100,8 +115,9 @@ Add `#v0.1.0` at the end of the URL to pin a version.
 3. Add a **Sound Emitter** to a GameObject, drop the event in, choose when it plays. Press Play.
 
 Import the **Resonance Demo** sample (Package Manager > Resonance > Samples) for a scene with surface-dependent
-footsteps, a car engine blended by speed, ambience, a narrator that ducks the music, and a score that switches to
-combat music when the player walks into the red zone. Every sound in it is generated, so it has no third-party audio.
+footsteps, a car engine blended by speed that goes muffled behind a wall, a stone hall with reverb, ambience, a
+narrator that ducks the music, and a score that switches to combat music when the player walks into the red zone.
+Every sound in it is generated, so it has no third-party audio.
 
 ## Components
 
@@ -115,6 +131,8 @@ combat music when the player walks into the red zone. Every sound in it is gener
 | <img src="Packages/com.nekuzaky.resonance/Editor/Icons/MusicSource.png" width="24"> | Music Source | Plays a Music Track |
 | <img src="Packages/com.nekuzaky.resonance/Editor/Icons/AnimationSounds.png" width="24"> | Animation Sounds | Plays sounds from Animation Events |
 | <img src="Packages/com.nekuzaky.resonance/Editor/Icons/SnapshotTrigger.png" width="24"> | Snapshot Trigger | Applies a mix snapshot while enabled |
+| <img src="Packages/com.nekuzaky.resonance/Editor/Icons/ReverbZone.png" width="24"> | Reverb Zone | Gives a room, corridor or cave its reverb, faded at the edges |
+| <img src="Packages/com.nekuzaky.resonance/Editor/Icons/SoundBankLoader.png" width="24"> | Sound Bank Loader | Loads a Sound Bank's audio while the object is enabled |
 
 ## Scripting
 
@@ -141,9 +159,11 @@ See [Scripting](Packages/com.nekuzaky.resonance/Documentation~/scripting.md) for
 | Game Parameters (RTPC), Switches, States | Parameters, Switch Groups, State Groups |
 | Audio Buses, auto-ducking, bus states | Buses, Duck Rules, Mix Snapshots |
 | Playback limits, priority, virtual voices | Max Instances, Priority, Virtualize When Far |
+| Attenuation ShareSets, obstruction and occlusion | Attenuation Presets, Occlusion |
+| Auxiliary reverb busses, Rooms | Reverb Zones, Reverb Send |
 | Interactive Music Hierarchy | Music Track: segments, state links, beat-synced transitions, stingers |
 | AkEvent, AkState, AkSwitch, AkRTPC | Sound Emitter, State Zone, Switch Setter, Parameter Driver |
-| SoundBanks | Nothing: assets are used as they are |
+| SoundBanks | Sound Banks only decide what stays in memory; there is nothing to generate |
 
 The full mapping, and what Resonance does not do yet, is in
 [Coming from Wwise](Packages/com.nekuzaky.resonance/Documentation~/wwise.md).
@@ -154,9 +174,13 @@ The full mapping, and what Resonance does not do yet, is in
 - [Sound Events](Packages/com.nekuzaky.resonance/Documentation~/sound-events.md)
 - [Game syncs](Packages/com.nekuzaky.resonance/Documentation~/game-syncs.md)
 - [Mixing](Packages/com.nekuzaky.resonance/Documentation~/mixing.md)
+- [Distance, occlusion and reverb](Packages/com.nekuzaky.resonance/Documentation~/space.md)
+- [Memory and loading](Packages/com.nekuzaky.resonance/Documentation~/memory.md)
 - [Interactive music](Packages/com.nekuzaky.resonance/Documentation~/music.md)
 - [Components](Packages/com.nekuzaky.resonance/Documentation~/components.md)
 - [Profiler](Packages/com.nekuzaky.resonance/Documentation~/profiler.md)
+- [Workflow tools](Packages/com.nekuzaky.resonance/Documentation~/workflow.md)
+- [Timeline](Packages/com.nekuzaky.resonance/Documentation~/timeline.md)
 
 ## Contributing
 

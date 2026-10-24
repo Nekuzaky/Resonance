@@ -36,7 +36,7 @@ namespace Nekuzaky.Resonance
 
         #region Unity Callbacks
 
-        private void Awake() => Engine = new ResonanceEngine(transform);
+        private void Awake() => Engine = new ResonanceEngine(transform) { Metering = Application.isEditor };
 
         private void LateUpdate() => Engine.Tick(Time.unscaledDeltaTime);
 

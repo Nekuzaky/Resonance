@@ -17,6 +17,7 @@ in the editor.
 | `Tools/Compile.ps1` | Compiles every assembly and lists errors and warnings. |
 | `Tools/Test.ps1` | Runs the EditMode tests. |
 | `Tools/Check-Rules.ps1` | Checks the code rules listed below. |
+| `Tools/Build-Check.ps1` | Builds the demo player, runs a headless smoke test in it; `-Platforms` compiles for Android and WebGL. |
 | `Tools/Build-Demo.ps1` | Regenerates the demo audio, assets and scene. |
 | `Tools/Capture-Media.ps1` | Records the README screenshots from the real editor. |
 | `Tools/Sync-Sample.ps1` | Copies `Assets/Demo` into the package sample. |
@@ -39,5 +40,6 @@ Style: 4 spaces, `_camelCase` private fields, `#region` blocks like the existing
 
 ## Tests
 
-Engine tests run with the engine's simulated playback, so they do not depend on an audio device and give the same
-result on every machine. Add a test with every fix.
+Engine tests use simulated playback, so they do not depend on an audio device and give the same result on every
+machine. `PerformanceTests` checks that playing and updating sounds allocates no managed memory once warmed up. The
+suite also passes in URP and HDRP projects. Add a test with every fix.

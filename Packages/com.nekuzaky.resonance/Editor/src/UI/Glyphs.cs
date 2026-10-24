@@ -62,6 +62,11 @@ namespace Nekuzaky.Resonance.Editor
         public const string Pin = "pin-angle-fill";
         public const string Note = "music-note";
         public const string Magic = "magic";
+        public const string Attenuation = "reception-4";
+        public const string Bank = "box-seam";
+        public const string Reverb = "bricks";
+        public const string Memory = "hdd-stack";
+        public const string Delay = "clock";
 
         public static string Of(NodeKind kind)
         {

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Coin
   m_EditorClassIdentifier: Nekuzaky.Resonance::Nekuzaky.Resonance.SoundEvent
   root:
-    rid: 5255168053662449680
+    rid: 5255168061877780496
   bus: {fileID: 11400000, guid: 6048dbf8d48e78e41a16d531be2eafa1, type: 2}
   volume: 0
   pitch: 0
@@ -25,6 +25,45 @@ MonoBehaviour:
     rolloff: 0
     spread: 0
     doppler: 1
+    customCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    lowPassAtMax: 22000
+  attenuation: {fileID: 11400000, guid: 04738116e50eeaf4ba2956f302bc57de, type: 2}
+  occlusion:
+    enabled: 0
+    layers:
+      serializedVersion: 2
+      m_Bits: 4294967295
+    volume: -9
+    lowPass: 1500
+    smoothing: 0.15
+    interval: 0.1
+    width: 0.6
+  reverbSend: 1
+  delay: 0
+  delayRandom: 0
   fadeIn: 0
   fadeOut: 0.05
   maxInstances: 0
@@ -39,7 +78,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 5255168053662449680
+    - rid: 5255168061877780496
       type: {class: RandomNode, ns: Nekuzaky.Resonance, asm: Nekuzaky.Resonance}
       data:
         name: Coin
@@ -52,9 +91,10 @@ MonoBehaviour:
         blendRange: {x: 0, y: 1}
         blendFade: 0
         children:
-        - rid: 5255168053662449681
+        - rid: 5255168061877780497
         avoidRepeat: 1
-    - rid: 5255168053662449681
+        shuffle: 0
+    - rid: 5255168061877780497
       type: {class: ClipNode, ns: Nekuzaky.Resonance, asm: Nekuzaky.Resonance}
       data:
         name: coin
@@ -68,3 +108,4 @@ MonoBehaviour:
         blendFade: 0
         clip: {fileID: 8300000, guid: 1007f6ab746fcb54ca7028dad3d85dd4, type: 3}
         loop: 0
+        randomStart: 0

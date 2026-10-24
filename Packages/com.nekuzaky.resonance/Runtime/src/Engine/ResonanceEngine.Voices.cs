@@ -35,8 +35,9 @@ namespace Nekuzaky.Resonance
         private bool IsFar(SoundInstance instance)
         {
             var sound = instance.Event;
-            return !Preview && sound.spatialize && sound.virtualizeWhenFar && sound.spatial.blend > 0f &&
-                   instance.Distance > sound.spatial.maxDistance * 1.05f;
+            var spatial = sound.Spatial;
+            return !Preview && sound.spatialize && sound.virtualizeWhenFar && spatial.blend > 0f &&
+                   instance.Distance > spatial.maxDistance * 1.05f;
         }
 
         private static void Virtualize(Voice voice)
@@ -116,16 +117,18 @@ namespace Nekuzaky.Resonance
             if (highPass)
                 voice.HighPass.cutoffFrequency = instance.HighPass;
 
-            voice.Level = Metering && !voice.Virtual && source.isPlaying ? Rms(source) : Mathf.Clamp01(volume);
+            voice.Level = Metering && !voice.Virtual ? MeteredLevel(voice, source.volume) : 0f;
         }
 
-        private float Rms(AudioSource source)
+        private float MeteredLevel(Voice voice, float volume)
         {
-            source.GetOutputData(_samples, 0);
-            var sum = 0f;
-            foreach (var sample in _samples)
-                sum += sample * sample;
-            return Mathf.Sqrt(sum / _samples.Length);
+            var instance = voice.Owner;
+            var sound = instance.Event;
+            var level = ClipEnvelopes.At(voice.Source.clip, voice.Source.timeSamples) * volume;
+            if (!sound.spatialize || Preview)
+                return level;
+            var attenuation = sound.Spatial.Attenuation(instance.Distance);
+            return level * Mathf.Lerp(1f, attenuation, voice.Source.spatialBlend);
         }
 
         private void Release(SoundInstance instance)
@@ -139,6 +142,8 @@ namespace Nekuzaky.Resonance
             }
             instance.Voices.Clear();
             instance.State = InstanceState.Done;
+            instance.Emitter = null;
+            _instancePool.Push(instance);
         }
 
         #endregion

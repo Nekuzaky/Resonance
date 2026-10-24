@@ -48,9 +48,6 @@ namespace Nekuzaky.Resonance.Editor
             if (_engine == null || _host == null)
                 return;
             _engine.Tick(Mathf.Min(delta, 0.25f));
-            var runtime = Application.isPlaying ? Resonance.Engine : null;
-            if (runtime != null)
-                runtime.Metering = true;
         }
 
         private static void Dispose()

@@ -15,7 +15,7 @@ namespace Nekuzaky.Resonance
 
             Syncs.Tick(deltaTime);
             Mixer.BeginFrame();
-            var listener = ListenerPosition();
+            var listener = ListenerTransform();
             foreach (var instance in _instances)
                 TickInstance(instance, deltaTime, listener);
 
@@ -27,6 +27,9 @@ namespace Nekuzaky.Resonance
                 _instances.RemoveAt(i);
             }
 
+            if (!Preview)
+                Reverb.Tick(listener, ReverbZone.Active);
+            Music.Metering = Metering;
             Music.Tick(AudioSettings.dspTime);
             Mixer.Tick(deltaTime);
             Measure(started);
@@ -39,18 +42,19 @@ namespace Nekuzaky.Resonance
 
         private SoundInstance Begin(SoundEvent sound, GameObject emitter, Vector3 position)
         {
-            var instance = new SoundInstance
-            {
-                Id = _nextId++,
-                Event = sound,
-                Emitter = emitter,
-                HadEmitter = emitter != null,
-                Position = emitter != null ? emitter.transform.position : position,
-                State = InstanceState.Playing,
-                Fade = sound.fadeIn > 0f ? 0f : 1f
-            };
+            var instance = _instancePool.Count > 0 ? _instancePool.Pop() : new SoundInstance();
+            instance.Reset();
+            instance.Id = _nextId++;
+            instance.Event = sound;
+            instance.Emitter = emitter;
+            instance.HadEmitter = emitter != null;
+            instance.Position = emitter != null ? emitter.transform.position : position;
+            instance.Fade = sound.fadeIn > 0f ? 0f : 1f;
+            instance.Delay = sound.delay + (float)_random.NextDouble() * sound.delayRandom;
+            var listener = ListenerTransform();
+            instance.Distance = listener != null ? Vector3.Distance(instance.Position, listener.position) : 0f;
+            UpdateOcclusion(instance, 0f, listener, true);
             Modulate(instance);
-            instance.Distance = Vector3.Distance(instance.Position, ListenerPosition());
             var busGain = Mixer.Gain(sound.bus);
 
             foreach (var layer in _plan.Layers)
@@ -58,11 +62,14 @@ namespace Nekuzaky.Resonance
                 var voice = Take();
                 voice.Owner = instance;
                 voice.Layer = layer;
+                if (layer.Clips.Count > 0)
+                    Memory.NoteOnDemand(layer.Clips[0].Clip);
                 Configure(voice, sound, instance.Position);
                 instance.Voices.Add(voice);
                 voice.BlendWeight = BlendOf(voice);
                 voice.Virtual = Simulate || IsFar(instance);
-                StartClip(voice, 0f, busGain);
+                if (instance.Delay <= 0f)
+                    StartFirst(voice, busGain);
             }
             _plan.Layers.Clear();
             _instances.Add(instance);
@@ -81,16 +88,32 @@ namespace Nekuzaky.Resonance
         private void Configure(Voice voice, SoundEvent sound, Vector3 position)
         {
             var source = voice.Source;
-            var spatial = sound.spatial;
+            var spatial = sound.Spatial;
             voice.Transform.position = position;
             source.outputAudioMixerGroup = sound.bus != null ? sound.bus.ResolveOutput() : null;
             source.spatialBlend = sound.spatialize && !Preview ? spatial.blend : 0f;
             source.minDistance = spatial.minDistance;
             source.maxDistance = Mathf.Max(spatial.minDistance + 0.01f, spatial.maxDistance);
-            source.rolloffMode = spatial.rolloff == AudioRolloffMode.Custom ? AudioRolloffMode.Logarithmic : spatial.rolloff;
+            var custom = spatial.rolloff == AudioRolloffMode.Custom && spatial.customCurve != null;
+            source.rolloffMode = custom ? AudioRolloffMode.Custom : spatial.rolloff == AudioRolloffMode.Custom ? AudioRolloffMode.Logarithmic : spatial.rolloff;
+            if (custom)
+                source.SetCustomCurve(AudioSourceCurveType.CustomRolloff, spatial.customCurve);
+            source.reverbZoneMix = Preview ? 0f : sound.reverbSend;
             source.spread = spatial.spread;
             source.dopplerLevel = spatial.doppler;
             source.priority = 255 - Mathf.Clamp(sound.priority, 0, 255);
+        }
+
+        private void StartFirst(Voice voice, float busGain)
+        {
+            if (!voice.HasClip)
+            {
+                voice.Finished = true;
+                return;
+            }
+            var clip = voice.Clip;
+            var offset = clip.RandomStart ? (float)_random.NextDouble() * clip.Clip.length : 0f;
+            StartClip(voice, offset, busGain);
         }
 
         private void StartClip(Voice voice, float time, float busGain)
@@ -111,7 +134,7 @@ namespace Nekuzaky.Resonance
                 voice.Source.Play();
         }
 
-        private void TickInstance(SoundInstance instance, float deltaTime, Vector3 listener)
+        private void TickInstance(SoundInstance instance, float deltaTime, Transform listener)
         {
             var sound = instance.Event;
             instance.Age += deltaTime;
@@ -126,10 +149,13 @@ namespace Nekuzaky.Resonance
             }
 
             Fade(instance, deltaTime);
+            instance.Distance = listener != null ? Vector3.Distance(instance.Position, listener.position) : 0f;
+            UpdateOcclusion(instance, deltaTime, listener, false);
             Modulate(instance);
-            instance.Distance = Vector3.Distance(instance.Position, listener);
 
             var busGain = Mixer.Gain(sound.bus);
+            if (instance.Delay > 0f && !TickDelay(instance, deltaTime, busGain))
+                return;
             var finished = true;
             foreach (var voice in instance.Voices)
             {
@@ -169,6 +195,7 @@ namespace Nekuzaky.Resonance
                     case ModulationTarget.HighPass: highPass = Mathf.Max(highPass, Mathf.Min(22000f, y)); break;
                 }
             }
+            ApplySpace(instance, ref decibels, ref lowPass);
             instance.Gain = AudioMath.ToLinear(decibels);
             instance.Pitch = AudioMath.ToPitch(semitones);
             instance.LowPass = lowPass;
@@ -198,21 +225,22 @@ namespace Nekuzaky.Resonance
             Stats.RealVoices = real;
             Stats.VirtualVoices = virtualVoices;
             Stats.PooledVoices = _voices.Count;
+            Stats.OnDemandLoads = Memory.OnDemandLoads;
         }
 
-        private Vector3 ListenerPosition()
+        internal Transform ListenerTransform()
         {
             if (Listener != null)
-                return Listener.position;
+                return Listener;
             var registered = SoundListener.Current;
             if (registered != null)
-                return registered.transform.position;
+                return registered.transform;
             if (_audioListener == null && _time >= _nextListenerSearch)
             {
                 _audioListener = Object.FindAnyObjectByType<AudioListener>();
                 _nextListenerSearch = _time + 1f;
             }
-            return _audioListener != null ? _audioListener.transform.position : Vector3.zero;
+            return _audioListener != null ? _audioListener.transform : null;
         }
 
         #endregion

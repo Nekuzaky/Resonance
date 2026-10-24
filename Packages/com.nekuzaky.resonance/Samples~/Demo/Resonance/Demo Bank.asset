@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5d5e7caadca03e4e881aa80facdf0d7, type: 3}
+  m_Name: Demo Bank
+  m_EditorClassIdentifier: Nekuzaky.Resonance::Nekuzaky.Resonance.SoundBank
+  events:
+  - {fileID: 11400000, guid: 16e9858686a83924f80144a284573147, type: 2}
+  - {fileID: 11400000, guid: 4479678242e4d9a40b9d409efcb5ec3d, type: 2}
+  - {fileID: 11400000, guid: 4ea142506acfde64c9e3a814c674dcff, type: 2}
+  - {fileID: 11400000, guid: 7600bc34a3f1b09459a1e5372b0a2378, type: 2}
+  - {fileID: 11400000, guid: 51994b2606f1e8146aa96cace4db19c4, type: 2}
+  - {fileID: 11400000, guid: c01c52ef0f41489428120fffcd7b912e, type: 2}
+  music:
+  - {fileID: 11400000, guid: 3b2f739842ff4a741b06f5e9c59e9d11, type: 2}

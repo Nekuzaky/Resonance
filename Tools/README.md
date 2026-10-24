@@ -9,6 +9,7 @@ project to be closed in the editor. Logs and results go to `Tools/Output`, which
 | `Compile.ps1` | Compiles every assembly; fails on any error or warning. `-Full` rebuilds everything. |
 | `Test.ps1` | Runs the EditMode tests. `-Filter` runs a subset. |
 | `Check-Rules.ps1` | Checks function length, recursion, `goto`, `unsafe`, silenced warnings and `-warnaserror+` placement. |
+| `Build-Check.ps1` | Builds the Windows demo player and runs its headless smoke test. `-Platforms` compiles the player scripts for Android and WebGL. |
 | `Build-Demo.ps1` | Regenerates the demo audio, Resonance assets and scene in `Assets/Demo`. |
 | `Capture-Media.ps1` | Records the README screenshots from the real editor. |
 | `Sync-Sample.ps1` | Copies `Assets/Demo` into the package sample, without `csc.rsp`. |

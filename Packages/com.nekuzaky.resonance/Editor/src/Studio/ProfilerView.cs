@@ -20,15 +20,30 @@ namespace Nekuzaky.Resonance.Editor
             _pool = Stat(stats, "Audio sources pooled");
             _cost = Stat(stats, "Update cost (ms)");
             _plays = Stat(stats, "Played / rejected");
+            _clips = Stat(stats, "Clips held by banks");
+            _onDemand = Stat(stats, "Loaded on demand");
+            _reverb = Stat(stats, "Reverb around listener");
             Root.Add(stats);
 
             var toolbar = Ui.Box("rs-preview-row");
             toolbar.Add(Ui.TextButton(Glyphs.Stop, "Stop All", () => Resonance.StopAll()));
             toolbar.Add(Ui.TextButton(Glyphs.Remove, "Clear Log", () => Resonance.Stats?.ClearLog()));
+            _liveButton = Ui.TextButton(Glyphs.Playing, "Live", GoLive);
+            toolbar.Add(_liveButton);
+            toolbar.Add(Ui.TextButton(Glyphs.History, "Clear History", () =>
+            {
+                _history.Clear();
+                GoLive();
+            }));
+            _cursorLabel = Ui.Styled("Live. Click or drag on the history to look back up to 60 seconds.", "rs-node-tag");
+            toolbar.Add(_cursorLabel);
             Root.Add(toolbar);
+            _timeline = new ProfilerTimeline(_history);
+            _timeline.Picked += _ => _paused = true;
+            Root.Add(_timeline);
 
             var columns = Ui.Box("rs-columns");
-            columns.Add(Column("Active Sounds", Header("Event", 160, "Emitter", 120, "Bus", 80, "Voices", 50, "Distance", 60, "Level", 80), out _active));
+            columns.Add(Column("Active Sounds", Header("Event", 150, "Emitter", 110, "Bus", 70, "Voices", 50, "Distance", 60, "Occluded", 60, "Level", 80), out _active));
             columns.Add(Column("Event Log", Header("Time", 60, "Event", 160, "Emitter", 120, "Result", 90), out _log));
             Root.Add(columns);
 
@@ -40,11 +55,27 @@ namespace Nekuzaky.Resonance.Editor
             Root.Add(syncs);
         }
 
+        public void Sample()
+        {
+            var engine = Resonance.Engine;
+            if (engine == null || _paused)
+                return;
+            _history.Record(engine, UnityEditor.EditorApplication.timeSinceStartup);
+            _timeline.MarkDirtyRepaint();
+        }
+
         public void Refresh()
         {
             var engine = Resonance.Engine;
             if (engine == null)
                 return;
+            _liveButton.SetEnabled(_paused);
+            _liveButton.EnableInClassList("rs-button--on", !_paused);
+            if (_paused && _timeline.Cursor >= 0 && _timeline.Cursor < _history.Count)
+            {
+                ShowSample(_history[_timeline.Cursor]);
+                return;
+            }
             var stats = engine.Stats;
             _instances.text = stats.Instances.ToString();
             _real.text = $"{stats.RealVoices} / {engine.MaxVoices}";
@@ -52,7 +83,13 @@ namespace Nekuzaky.Resonance.Editor
             _pool.text = stats.PooledVoices.ToString();
             _cost.text = $"{stats.TickMilliseconds:0.000}";
             _plays.text = $"{stats.TotalPlays} / {stats.TotalRejected}";
-            RefreshActive(engine);
+            _clips.text = engine.Memory.Clips.Count.ToString();
+            _onDemand.text = stats.OnDemandLoads.ToString();
+            _onDemand.EnableInClassList("rs-cell--warn", stats.OnDemandLoads > 0);
+            var zone = engine.Reverb.Dominant;
+            _reverb.text = zone != null ? $"{zone.preset} {engine.Reverb.Wet * 100f:0}%" : "dry";
+            if (_history.Count > 0)
+                RenderSounds(_history[_history.Count - 1]);
             RefreshLog(stats);
             RefreshSyncs(engine);
         }
@@ -72,11 +109,38 @@ namespace Nekuzaky.Resonance.Editor
         private readonly Label _pool;
         private readonly Label _cost;
         private readonly Label _plays;
+        private readonly Label _clips;
+        private readonly Label _onDemand;
+        private readonly Label _reverb;
         private readonly ScrollView _active;
         private readonly ScrollView _log;
         private readonly ScrollView _states;
         private readonly ScrollView _parameters;
         private int _logVersion = -1;
+        private readonly ProfilerHistory _history = new();
+        private readonly ProfilerTimeline _timeline;
+        private readonly Button _liveButton;
+        private readonly Label _cursorLabel;
+        private bool _paused;
+
+        private void GoLive()
+        {
+            _paused = false;
+            _timeline.Cursor = -1;
+            _timeline.MarkDirtyRepaint();
+            _cursorLabel.text = "Live. Click or drag on the history to look back up to 60 seconds.";
+        }
+
+        private void ShowSample(ProfilerSample sample)
+        {
+            var newest = _history[_history.Count - 1];
+            _cursorLabel.text = $"Paused {newest.Time - sample.Time:0.0} s before the last sample. Press Live to follow the game again.";
+            _instances.text = sample.Instances.ToString();
+            _real.text = sample.Real.ToString();
+            _virtual.text = sample.Virtual.ToString();
+            _cost.text = $"{sample.Cost:0.000}";
+            RenderSounds(sample);
+        }
 
         private static Label Stat(VisualElement parent, string label)
         {
@@ -115,22 +179,22 @@ namespace Nekuzaky.Resonance.Editor
             return column;
         }
 
-        private void RefreshActive(ResonanceEngine engine)
+        private void RenderSounds(ProfilerSample sample)
         {
             _active.Clear();
-            foreach (var instance in engine.Instances)
+            foreach (var sound in sample.Sounds)
             {
                 var row = Ui.Box("rs-table-row");
-                var state = instance.State == InstanceState.Stopping ? "rs-cell--dim" : null;
-                row.Add(Cell(instance.Event != null ? instance.Event.name : "?", 160, state));
-                row.Add(Cell(instance.EmitterName, 120, "rs-cell--dim"));
-                row.Add(Cell(instance.Event?.bus != null ? instance.Event.bus.name : "-", 80, "rs-cell--dim"));
-                row.Add(Cell(instance.IsVirtual ? "virtual" : instance.Voices.Count.ToString(), 50, instance.IsVirtual ? "rs-cell--warn" : null));
-                row.Add(Cell(instance.Event != null && instance.Event.spatialize && !engine.Preview ? $"{instance.Distance:0.0} m" : "2D", 60, "rs-cell--dim"));
-                row.Add(Level(instance.Level));
+                row.Add(Cell(sound.Event != null ? sound.Event.name : "(deleted)", 150));
+                row.Add(Cell(sound.Emitter, 110, "rs-cell--dim"));
+                row.Add(Cell(sound.Bus, 70, "rs-cell--dim"));
+                row.Add(Cell(sound.Virtual ? "virtual" : sound.Voices.ToString(), 50, sound.Virtual ? "rs-cell--warn" : null));
+                row.Add(Cell(sound.Spatial ? $"{sound.Distance:0.0} m" : "2D", 60, "rs-cell--dim"));
+                row.Add(Cell(sound.Occlusion > 0.01f ? $"{sound.Occlusion * 100f:0}%" : "-", 60, sound.Occlusion > 0.01f ? "rs-cell--warn" : "rs-cell--dim"));
+                row.Add(Level(sound.Level));
                 _active.Add(row);
             }
-            if (engine.Instances.Count == 0)
+            if (sample.Sounds.Count == 0)
                 _active.Add(Ui.Help("Nothing is playing."));
         }
 

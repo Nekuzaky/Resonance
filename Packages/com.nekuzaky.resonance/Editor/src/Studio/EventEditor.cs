@@ -21,6 +21,7 @@ namespace Nekuzaky.Resonance.Editor
             transport.Add(Ui.TextButton(Glyphs.Stop, "Stop", Stop));
             _status = Ui.Styled(string.Empty, "rs-node-tag");
             transport.Add(_status);
+            transport.Add(Ui.TextButton(Glyphs.Hierarchy, "Used By", ShowUsers, "rs-button--flat"));
             Add(Toolbar.Build(sound, nameof(SoundEvent), transport));
 
             var split = Ui.Box("rs-split");
@@ -65,6 +66,21 @@ namespace Nekuzaky.Resonance.Editor
         }
 
         private void Stop() => PreviewEngine.Engine.StopEvent(_sound, -1f);
+
+        private void ShowUsers()
+        {
+            var users = ReferenceIndex.Build().UsersOf(_sound);
+            var menu = new UnityEditor.GenericMenu();
+            if (users.Count == 0)
+                menu.AddDisabledItem(new GUIContent("Not used by any scene, prefab or asset"));
+            foreach (var path in users)
+            {
+                var target = path;
+                menu.AddItem(new GUIContent(target.Replace('/', '\\')), false, () =>
+                    EditorGUIUtility.PingObject(AssetDatabase.LoadAssetAtPath<Object>(target)));
+            }
+            menu.ShowAsContext();
+        }
 
         private void OnKeyDown(KeyDownEvent evt)
         {

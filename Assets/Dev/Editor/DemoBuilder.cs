@@ -47,6 +47,8 @@ namespace Nekuzaky.Resonance.Dev
             public SoundEvent Click;
             public SoundEvent Narrator;
             public MusicTrack Score;
+            public AttenuationPreset Foley;
+            public SoundBank Bank;
         }
 
         private static void WriteAudio()

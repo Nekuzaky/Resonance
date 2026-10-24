@@ -26,6 +26,10 @@ namespace Nekuzaky.Resonance
         public float LowPass = AudioMath.OpenLowPass;
         public float HighPass = AudioMath.OpenHighPass;
         public float Distance;
+        public float Delay;
+        public float Occlusion;
+        public float OcclusionTarget;
+        public float NextOcclusionCheck;
         public readonly List<Voice> Voices = new();
 
         public bool IsVirtual
@@ -50,6 +54,29 @@ namespace Nekuzaky.Resonance
                     level = Mathf.Max(level, voice.Level);
                 return level;
             }
+        }
+
+        public void Reset()
+        {
+            Id = 0;
+            Event = null;
+            Emitter = null;
+            HadEmitter = false;
+            Position = Vector3.zero;
+            State = InstanceState.Playing;
+            Fade = 1f;
+            FadeOutTime = 0f;
+            Age = 0f;
+            Gain = 1f;
+            Pitch = 1f;
+            LowPass = AudioMath.OpenLowPass;
+            HighPass = AudioMath.OpenHighPass;
+            Distance = 0f;
+            Delay = 0f;
+            Occlusion = 0f;
+            OcclusionTarget = 0f;
+            NextOcclusionCheck = 0f;
+            Voices.Clear();
         }
 
         public string EmitterName => Emitter != null ? Emitter.name : HadEmitter ? "(destroyed)" : "(world)";

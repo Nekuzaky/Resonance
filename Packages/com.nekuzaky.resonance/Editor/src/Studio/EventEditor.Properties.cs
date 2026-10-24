@@ -43,36 +43,77 @@ namespace Nekuzaky.Resonance.Editor
 
         private void EventProperties()
         {
+            OutputProperties();
+            SpatialProperties();
+            SpaceProperties();
+            VoiceProperties();
+            _props.Add(Ui.GroupTitle(Glyphs.Parameter, "Parameter Modulation"));
+            _props.Add(Ui.Help("Each curve reads a parameter (X goes from its minimum to its maximum) and outputs dB for Volume, " +
+                               "semitones for Pitch or Hz for Low Pass and High Pass."));
+            Field("modulations", "Modulations");
+        }
+
+        private void OutputProperties()
+        {
             _props.Add(Ui.GroupTitle(Glyphs.Bus, "Output"));
             Field("bus", "Bus", "Mixer bus this sound plays on.");
             Field("volume", "Volume (dB)");
             Field("pitch", "Pitch (semitones)");
             Field("fadeIn", "Fade In (s)");
             Field("fadeOut", "Fade Out (s)", "Used when the sound is stopped.");
+            Field("delay", "Delay (s)", "Wait before the sound starts.");
+            Field("delayRandom", "Delay Random (s)", "Extra random wait, from 0 to this value.");
+        }
 
+        private void SpatialProperties()
+        {
             _props.Add(Ui.GroupTitle(Glyphs.Emitter, "3D Sound"));
             Field("spatialize", "Spatialize", "Off: the sound is the same everywhere (UI, music). On: it comes from the emitter.");
-            Field("spatial.blend", "3D Amount");
-            Field("spatial.minDistance", "Full Volume Within (m)");
-            Field("spatial.maxDistance", "Silent Beyond (m)");
-            Field("spatial.rolloff", "Rolloff");
-            Field("spatial.spread", "Spread (degrees)");
-            Field("spatial.doppler", "Doppler");
+            Field("attenuation", "Attenuation Preset", "Shared distance settings. When set, it replaces the settings below.");
+            if (_sound.attenuation != null)
+            {
+                _props.Add(Ui.Help($"Distance settings come from '{_sound.attenuation.name}'. Edit the preset to change them for every sound that uses it."));
+            }
+            else
+            {
+                Field("spatial.blend", "3D Amount");
+                Field("spatial.minDistance", "Full Volume Within (m)");
+                Field("spatial.maxDistance", "Silent Beyond (m)");
+                Field("spatial.rolloff", "Rolloff", "Custom uses the curve below: X is the distance divided by Silent Beyond.");
+                Field("spatial.customCurve", "Custom Curve");
+                Field("spatial.lowPassAtMax", "Low Pass At Max (Hz)", "Far sounds lose their highs. 22000 turns it off.");
+                Field("spatial.spread", "Spread (degrees)");
+                Field("spatial.doppler", "Doppler");
+            }
             Field("followEmitter", "Follow Emitter");
             Field("virtualizeWhenFar", "Virtualize When Far", "Out of range voices stop using CPU and resume where they would be.");
             Field("stopWhenEmitterDestroyed", "Stop With Emitter");
+        }
 
+        private void SpaceProperties()
+        {
+            _props.Add(Ui.GroupTitle(Glyphs.Reverb, "Occlusion and Reverb"));
+            Field("occlusion.enabled", "Occlusion", "Walls between the sound and the listener muffle it.");
+            if (_sound.occlusion.enabled)
+            {
+                Field("occlusion.layers", "Blocking Layers");
+                Field("occlusion.volume", "Occluded Volume (dB)");
+                Field("occlusion.lowPass", "Occluded Low Pass (Hz)");
+                Field("occlusion.width", "Ray Spread (m)", "Three rays this far apart: a sound half behind a corner is half occluded.");
+                Field("occlusion.smoothing", "Smoothing (s)");
+                Field("occlusion.interval", "Check Every (s)");
+            }
+            Field("reverbSend", "Reverb Send", "How much of this sound goes into the Reverb Zone around the listener.");
+        }
+
+        private void VoiceProperties()
+        {
             _props.Add(Ui.GroupTitle(Glyphs.Voices, "Voices"));
             Field("maxInstances", "Max Instances", "0 means no limit.");
             Field("limitScope", "Limit Per");
             Field("limitBehavior", "When Full");
             Field("priority", "Priority", "Higher priority sounds steal voices from lower ones when the voice budget is full.");
             Field("cooldown", "Cooldown (s)", "Minimum time between two plays.");
-
-            _props.Add(Ui.GroupTitle(Glyphs.Parameter, "Parameter Modulation"));
-            _props.Add(Ui.Help("Each curve reads a parameter (X goes from its minimum to its maximum) and outputs dB for Volume, " +
-                               "semitones for Pitch or Hz for Low Pass and High Pass."));
-            Field("modulations", "Modulations");
         }
 
         private void NodeProperties(Row row)
@@ -86,7 +127,7 @@ namespace Nekuzaky.Resonance.Editor
             switch (row.Node)
             {
                 case ClipNode clip: ClipProperties(path, clip); break;
-                case RandomNode: Field(path + "avoidRepeat", "Avoid Last", "How many of the last picks are skipped, so the same sound does not play twice in a row."); break;
+                case RandomNode: RandomProperties(path); break;
                 case SequenceNode: SequenceProperties(path); break;
                 case SwitchNode switchNode: SwitchProperties(path, switchNode); break;
                 case BlendNode: Field(path + "parameter", "Parameter"); break;
@@ -117,6 +158,7 @@ namespace Nekuzaky.Resonance.Editor
         {
             Field(path + "clip", "Audio Clip");
             Field(path + "loop", "Loop");
+            Field(path + "randomStart", "Random Start", "Start at a random position, so several copies of a loop never sound in sync.");
             if (clip.clip == null)
                 return;
             var waveform = new WaveformView();
@@ -124,6 +166,12 @@ namespace Nekuzaky.Resonance.Editor
             _props.Add(waveform);
             var info = clip.clip;
             _props.Add(Ui.Help($"{info.length:0.00} s   ·   {info.channels} ch   ·   {info.frequency} Hz   ·   {info.loadType}"));
+        }
+
+        private void RandomProperties(string path)
+        {
+            Field(path + "shuffle", "Shuffle", "Play every child once, in a random order, before playing any of them again.");
+            Field(path + "avoidRepeat", "Avoid Last", "How many of the last picks are skipped, so the same sound does not play twice in a row.");
         }
 
         private void SequenceProperties(string path)

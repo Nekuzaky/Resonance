@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Wind
   m_EditorClassIdentifier: Nekuzaky.Resonance::Nekuzaky.Resonance.SoundEvent
   root:
-    rid: 5255168053662449678
+    rid: 5255168061877780494
   bus: {fileID: 11400000, guid: c494108448b1c0947bb9c9cc1b0650ac, type: 2}
   volume: 0
   pitch: 0
@@ -25,6 +25,45 @@ MonoBehaviour:
     rolloff: 0
     spread: 0
     doppler: 1
+    customCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    lowPassAtMax: 22000
+  attenuation: {fileID: 0}
+  occlusion:
+    enabled: 0
+    layers:
+      serializedVersion: 2
+      m_Bits: 4294967295
+    volume: -9
+    lowPass: 1500
+    smoothing: 0.15
+    interval: 0.1
+    width: 0.6
+  reverbSend: 1
+  delay: 0
+  delayRandom: 0
   fadeIn: 2
   fadeOut: 2
   maxInstances: 0
@@ -39,7 +78,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 5255168053662449678
+    - rid: 5255168061877780494
       type: {class: ClipNode, ns: Nekuzaky.Resonance, asm: Nekuzaky.Resonance}
       data:
         name: Wind Loop
@@ -53,3 +92,4 @@ MonoBehaviour:
         blendFade: 0
         clip: {fileID: 8300000, guid: 8a491d9424685cd4fb92d93f73c43164, type: 3}
         loop: 1
+        randomStart: 0

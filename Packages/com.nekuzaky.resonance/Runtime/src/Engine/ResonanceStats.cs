@@ -1,3 +1,5 @@
+using UnityEngine;
+
 namespace Nekuzaky.Resonance
 {
     public enum PlayResult
@@ -13,17 +15,23 @@ namespace Nekuzaky.Resonance
     public readonly struct EventLogEntry
     {
         public readonly float Time;
-        public readonly string Event;
-        public readonly string Emitter;
+        public readonly SoundEvent Sound;
+        public readonly GameObject EmitterObject;
+        public readonly bool HadEmitter;
         public readonly PlayResult Result;
 
-        public EventLogEntry(float time, string eventName, string emitter, PlayResult result)
+        public EventLogEntry(float time, SoundEvent sound, GameObject emitter, PlayResult result)
         {
             Time = time;
-            Event = eventName;
-            Emitter = emitter;
+            Sound = sound;
+            EmitterObject = emitter;
+            HadEmitter = !ReferenceEquals(emitter, null);
             Result = result;
         }
+
+        public string Event => Sound != null ? Sound.name : "(deleted)";
+
+        public string Emitter => EmitterObject != null ? EmitterObject.name : HadEmitter ? "(destroyed)" : "(world)";
     }
 
     public sealed class ResonanceStats
@@ -40,6 +48,7 @@ namespace Nekuzaky.Resonance
         public double PeakTickMilliseconds { get; internal set; }
         public int TotalPlays { get; internal set; }
         public int TotalRejected { get; internal set; }
+        public int OnDemandLoads { get; internal set; }
         public int LogVersion { get; private set; }
         public int LogCount => _count;
 

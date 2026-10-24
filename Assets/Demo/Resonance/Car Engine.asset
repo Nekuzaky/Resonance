@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Car Engine
   m_EditorClassIdentifier: Nekuzaky.Resonance::Nekuzaky.Resonance.SoundEvent
   root:
-    rid: 5255168053662449686
+    rid: 5255168061877780502
   bus: {fileID: 11400000, guid: 6048dbf8d48e78e41a16d531be2eafa1, type: 2}
   volume: -4
   pitch: 0
@@ -25,6 +25,45 @@ MonoBehaviour:
     rolloff: 0
     spread: 0
     doppler: 1
+    customCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    lowPassAtMax: 6000
+  attenuation: {fileID: 0}
+  occlusion:
+    enabled: 1
+    layers:
+      serializedVersion: 2
+      m_Bits: 4294967295
+    volume: -10
+    lowPass: 900
+    smoothing: 0.15
+    interval: 0.1
+    width: 0.6
+  reverbSend: 1
+  delay: 0
+  delayRandom: 0
   fadeIn: 0.5
   fadeOut: 0.05
   maxInstances: 0
@@ -65,7 +104,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 5255168053662449686
+    - rid: 5255168061877780502
       type: {class: BlendNode, ns: Nekuzaky.Resonance, asm: Nekuzaky.Resonance}
       data:
         name: By Speed
@@ -78,10 +117,10 @@ MonoBehaviour:
         blendRange: {x: 0, y: 1}
         blendFade: 0
         children:
-        - rid: 5255168053662449687
-        - rid: 5255168053662449688
+        - rid: 5255168061877780503
+        - rid: 5255168061877780504
         parameter: {fileID: 11400000, guid: 855e65ca7bebcde44bbf35a23a3edac6, type: 2}
-    - rid: 5255168053662449687
+    - rid: 5255168061877780503
       type: {class: ClipNode, ns: Nekuzaky.Resonance, asm: Nekuzaky.Resonance}
       data:
         name: Idle
@@ -95,7 +134,8 @@ MonoBehaviour:
         blendFade: 8
         clip: {fileID: 8300000, guid: bca7afdbf9045ec49b73dbf1880b680e, type: 3}
         loop: 1
-    - rid: 5255168053662449688
+        randomStart: 0
+    - rid: 5255168061877780504
       type: {class: ClipNode, ns: Nekuzaky.Resonance, asm: Nekuzaky.Resonance}
       data:
         name: Revving
@@ -109,3 +149,4 @@ MonoBehaviour:
         blendFade: 8
         clip: {fileID: 8300000, guid: 6184c12370315464ca07f46c497f9b41, type: 3}
         loop: 1
+        randomStart: 0

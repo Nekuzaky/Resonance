@@ -83,6 +83,7 @@ namespace Nekuzaky.Resonance.Editor
                 ResonanceAssets.CreateDefaultMix();
                 _browser.Rebuild();
             }));
+            buttons.Add(Ui.TextButton(Glyphs.Magic, "Bulk Import", BulkImportWindow.Open));
             buttons.Add(Ui.TextButton(Glyphs.Docs, "Getting Started", () => Application.OpenURL(StudioWindow.DocumentationUrl)));
             empty.Add(buttons);
             return empty;
