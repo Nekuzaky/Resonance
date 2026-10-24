@@ -1,0 +1,63 @@
+name: Bug report
+description: Something in Resonance does not work as expected.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report! If you can, reproduce the problem with the **Resonance Demo** sample
+        (Package Manager > Resonance > Samples) or a tiny scene, and attach the Sound Event involved.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Which part?
+      options:
+        - Sound Events and containers
+        - Parameters, switches and states
+        - Mixer (buses, ducking, snapshots)
+        - Voices (limits, priority, virtualization)
+        - Interactive music
+        - Components
+        - Resonance Studio window
+        - Profiler
+        - Performance or memory
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: unity
+    attributes:
+      label: Unity Editor version
+      placeholder: 6000.3.13f1
+    validations:
+      required: true
+  - type: input
+    id: resonance
+    attributes:
+      label: Resonance version
+      placeholder: 0.1.0
+    validations:
+      required: true
+  - type: input
+    id: pipeline
+    attributes:
+      label: Target platform and Enter Play Mode settings
+      placeholder: Windows standalone, domain reload disabled
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: Windows 11
+  - type: textarea
+    id: log
+    attributes:
+      label: Console output
+      description: Errors from the Unity Console, with their stack traces.
+      render: text

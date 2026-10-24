@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8ab9f49d3cb2da943ba0ed1ca272444c, type: 3}
+  m_Name: Adventure Score
+  m_EditorClassIdentifier: Nekuzaky.Resonance::Nekuzaky.Resonance.MusicTrack
+  bpm: 100
+  beatsPerBar: 4
+  bus: {fileID: 11400000, guid: 10bea5339ae51af45b68da8942d847fb, type: 2}
+  volume: 0
+  segments:
+  - name: Explore
+    clip: {fileID: 8300000, guid: 73c83bfba0844ea4ba1379ffc8af2028, type: 3}
+    bars: 4
+    next: 
+    volume: 0
+  - name: Combat
+    clip: {fileID: 8300000, guid: 4783ce3f42bc3394580dd3de8e0deef9, type: 3}
+    bars: 4
+    next: 
+    volume: 0
+  firstSegment: Explore
+  stateGroup: {fileID: 11400000, guid: 1250fd8fdb449e9499681f900406b7d6, type: 2}
+  links:
+  - state: Explore
+    segment: Explore
+  - state: Combat
+    segment: Combat
+  transitionSync: 2
+  crossfade: 0.15
+  stingers:
+  - name: Alert
+    clip: {fileID: 8300000, guid: 432cf35abc3cf5b48ab9a715b7031b9e, type: 3}
+    sync: 1
+    volume: 0

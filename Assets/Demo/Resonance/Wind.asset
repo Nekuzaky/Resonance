@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 636e101710e9b984096f9e7177868d02, type: 3}
+  m_Name: Wind
+  m_EditorClassIdentifier: Nekuzaky.Resonance::Nekuzaky.Resonance.SoundEvent
+  root:
+    rid: 5255168053662449678
+  bus: {fileID: 11400000, guid: c494108448b1c0947bb9c9cc1b0650ac, type: 2}
+  volume: 0
+  pitch: 0
+  spatialize: 0
+  spatial:
+    blend: 1
+    minDistance: 1
+    maxDistance: 30
+    rolloff: 0
+    spread: 0
+    doppler: 1
+  fadeIn: 2
+  fadeOut: 2
+  maxInstances: 0
+  limitScope: 0
+  limitBehavior: 0
+  priority: 128
+  cooldown: 0
+  virtualizeWhenFar: 1
+  followEmitter: 1
+  stopWhenEmitterDestroyed: 1
+  modulations: []
+  references:
+    version: 2
+    RefIds:
+    - rid: 5255168053662449678
+      type: {class: ClipNode, ns: Nekuzaky.Resonance, asm: Nekuzaky.Resonance}
+      data:
+        name: Wind Loop
+        volume: 0
+        volumeRandom: 0
+        pitch: 0
+        pitchRandom: 0
+        weight: 1
+        switchValue: 
+        blendRange: {x: 0, y: 1}
+        blendFade: 0
+        clip: {fileID: 8300000, guid: 8a491d9424685cd4fb92d93f73c43164, type: 3}
+        loop: 1

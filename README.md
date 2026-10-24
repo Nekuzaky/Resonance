@@ -1,0 +1,168 @@
+<p align="center">
+  <img src="docs/images/banner.png" alt="Resonance, game audio middleware that lives inside Unity" width="100%">
+</p>
+
+<p align="center">
+  <img alt="Unity 6000.3 or newer" src="https://img.shields.io/badge/Unity-6000.3%2B-1b1d24?logo=unity&logoColor=white">
+  <a href="https://github.com/Nekuzaky/Resonance/releases"><img alt="Release" src="https://img.shields.io/github/v/tag/Nekuzaky/Resonance?label=release&color=2fa9b8"></a>
+  <img alt="No soundbanks" src="https://img.shields.io/badge/soundbanks-none-3ddc84">
+  <img alt="Engine update: about 0.01 ms" src="https://img.shields.io/badge/engine%20update-~0.01%20ms-3ddc84">
+  <img alt="Tests: 44 EditMode" src="https://img.shields.io/badge/tests-44%20EditMode-38bdf8">
+  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-8b92a2"></a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/sponsors/Nekuzaky"><img alt="Sponsor on GitHub" src="https://img.shields.io/badge/Sponsor-GitHub-ea4aaa?logo=githubsponsors&logoColor=white"></a>
+  <a href="https://www.patreon.com/Nekuzaky"><img alt="Patreon" src="https://img.shields.io/badge/Patreon-Nekuzaky-f96854?logo=patreon&logoColor=white"></a>
+  <a href="https://buymeacoffee.com/nekuzaky"><img alt="Buy me a coffee" src="https://img.shields.io/badge/Buy%20me%20a%20coffee-Nekuzaky-ffdd00?logo=buymeacoffee&logoColor=black"></a>
+</p>
+
+**Resonance** is game audio middleware that lives inside Unity. Build sound events from random, sequence, switch,
+blend and layer containers, drive them with parameters, states and switches, mix them on buses with ducking and
+snapshots, play interactive music that changes on the beat, and watch every voice in a live profiler.
+
+Everything happens in the **Resonance Studio** window and in components you drop on GameObjects. There is no
+external authoring tool, no soundbank to build, and no code to write unless you want to.
+
+**Wwise-style sound design, without leaving Unity.**
+
+<p align="center">
+  <img src="docs/images/studio-events.png" alt="Resonance Studio: a footstep event that picks a random variation by surface" width="100%">
+</p>
+
+## Why
+
+Wwise and FMOD are powerful, but they are a second application next to Unity: a separate project to keep in sync,
+banks to rebuild after every change, a license to check once your budget grows, and an integration layer between
+the two. Sound designers often need a programmer to hook every sound up.
+
+Resonance keeps the ideas that make those tools great (containers, game syncs, buses, adaptive music, voice
+management, profiling) and puts them where the rest of the game already is. A sound designer drags clips into the
+Studio, presses space to hear the result, and adds a component to the scene. Changes are live in Play Mode.
+
+## Features
+
+- **Sound Events built from containers.** Random (weights, no repeats), Sequence (step or continuous, looping),
+  Switch (by surface, weapon, character), Blend (crossfade by a parameter), Layer (play together), nested freely.
+  Volume and pitch randomization at every level.
+- **Game syncs.** Parameters (global or per emitter, with smoothing), switch groups and state groups. Curves map
+  parameters to volume, pitch, low pass and high pass.
+- **Mixing.** A bus hierarchy with faders, mute and solo, ducking rules (the voice bus lowers the music while someone
+  speaks), mix snapshots with fades, and optional output to a Unity Audio Mixer group for effects.
+- **Voice management.** Instance limits per event or per emitter, steal oldest or quietest, priorities against a
+  global voice budget, cooldowns, and virtual voices: sounds too far to hear stop using an audio source and resume
+  in the right place when you come back.
+- **Interactive music.** Segments, state links, transitions on the next beat, bar or segment end scheduled on the
+  audio clock, crossfades, and stingers.
+- **No code needed.** Sound Emitter, Parameter Driver, Switch Setter, State Zone, Music Source, Animation Sounds and
+  Snapshot Trigger components cover the usual hookups, each with its own icon.
+- **Live profiler.** Active sounds, real and virtual voices, the reason every refused play was refused, states and
+  parameters, and the engine's cost per frame.
+- **Preview everywhere.** Play any event, move its parameters and switches, solo a bus, apply a snapshot or jump
+  between music segments, in Edit Mode or while the game runs.
+- **Small, typed API** for programmers: `Resonance.Play(footsteps, gameObject)`, `Resonance.SetState(game, "Combat")`.
+
+<p align="center">
+  <img src="docs/images/studio-mixer.png" alt="Mixer: the voice bus ducks music and ambience" width="49%">
+  &nbsp;
+  <img src="docs/images/studio-music.png" alt="Interactive music: the track moved to Combat on the next bar" width="49%">
+</p>
+<p align="center">
+  <img src="docs/images/studio-blend.png" alt="Car engine: a blend container driven by the car's speed" width="49%">
+  &nbsp;
+  <img src="docs/images/studio-profiler.png" alt="Profiler: active sounds, voices and the event log" width="49%">
+</p>
+
+## Install
+
+Requires **Unity 6000.3** or newer. Works with every render pipeline.
+
+In Unity: **Window > Package Manager > + > Install package from git URL...** and paste:
+
+```
+https://github.com/Nekuzaky/Resonance.git?path=Packages/com.nekuzaky.resonance
+```
+
+Add `#v0.1.0` at the end of the URL to pin a version.
+
+## Quick start
+
+1. Open **Tools > Resonance > Resonance Studio** (`Ctrl+Alt+R`) and click **Create Default Mix**.
+2. Drag a few audio clips from the Project window onto the Studio's asset list. You get a Sound Event that plays one
+   of them at random. Press **space** to hear it.
+3. Add a **Sound Emitter** to a GameObject, drop the event in, choose when it plays. Press Play.
+
+Import the **Resonance Demo** sample (Package Manager > Resonance > Samples) for a scene with surface-dependent
+footsteps, a car engine blended by speed, ambience, a narrator that ducks the music, and a score that switches to
+combat music when the player walks into the red zone. Every sound in it is generated, so it has no third-party audio.
+
+## Components
+
+| | Component | What it does |
+|---|---|---|
+| <img src="Packages/com.nekuzaky.resonance/Editor/Icons/SoundEmitter.png" width="24"> | Sound Emitter | Plays a Sound Event on start, enable, trigger, collision, click or destroy |
+| <img src="Packages/com.nekuzaky.resonance/Editor/Icons/SoundListener.png" width="24"> | Sound Listener | Marks where the player hears from |
+| <img src="Packages/com.nekuzaky.resonance/Editor/Icons/ParameterDriver.png" width="24"> | Parameter Driver | Feeds a parameter from speed, height, distance or an Animator value |
+| <img src="Packages/com.nekuzaky.resonance/Editor/Icons/SwitchSetter.png" width="24"> | Switch Setter | Sets a switch on this object (surface, material, character) |
+| <img src="Packages/com.nekuzaky.resonance/Editor/Icons/StateZone.png" width="24"> | State Zone | Sets a game state and a mix snapshot while the player is inside |
+| <img src="Packages/com.nekuzaky.resonance/Editor/Icons/MusicSource.png" width="24"> | Music Source | Plays a Music Track |
+| <img src="Packages/com.nekuzaky.resonance/Editor/Icons/AnimationSounds.png" width="24"> | Animation Sounds | Plays sounds from Animation Events |
+| <img src="Packages/com.nekuzaky.resonance/Editor/Icons/SnapshotTrigger.png" width="24"> | Snapshot Trigger | Applies a mix snapshot while enabled |
+
+## Scripting
+
+```csharp
+using Nekuzaky.Resonance;
+
+Resonance.Play(footsteps, gameObject);
+Resonance.SetSwitch(surface, "Stone", gameObject);
+Resonance.SetParameter(speed, body.linearVelocity.magnitude, gameObject);
+Resonance.SetState(game, "Combat");
+Resonance.ApplySnapshot(pauseMenu);
+
+var engine = Resonance.Play(engineLoop, car);
+engine.Stop(fade: 0.5f);
+```
+
+See [Scripting](Packages/com.nekuzaky.resonance/Documentation~/scripting.md) for the whole API.
+
+## Coming from Wwise
+
+| Wwise | Resonance |
+|---|---|
+| Random, Sequence, Switch, Blend Containers | Random, Sequence, Switch, Blend, Layer nodes |
+| Game Parameters (RTPC), Switches, States | Parameters, Switch Groups, State Groups |
+| Audio Buses, auto-ducking, bus states | Buses, Duck Rules, Mix Snapshots |
+| Playback limits, priority, virtual voices | Max Instances, Priority, Virtualize When Far |
+| Interactive Music Hierarchy | Music Track: segments, state links, beat-synced transitions, stingers |
+| AkEvent, AkState, AkSwitch, AkRTPC | Sound Emitter, State Zone, Switch Setter, Parameter Driver |
+| SoundBanks | Nothing: assets are used as they are |
+
+The full mapping, and what Resonance does not do yet, is in
+[Coming from Wwise](Packages/com.nekuzaky.resonance/Documentation~/wwise.md).
+
+## Documentation
+
+- [Getting started](Packages/com.nekuzaky.resonance/Documentation~/getting-started.md)
+- [Sound Events](Packages/com.nekuzaky.resonance/Documentation~/sound-events.md)
+- [Game syncs](Packages/com.nekuzaky.resonance/Documentation~/game-syncs.md)
+- [Mixing](Packages/com.nekuzaky.resonance/Documentation~/mixing.md)
+- [Interactive music](Packages/com.nekuzaky.resonance/Documentation~/music.md)
+- [Components](Packages/com.nekuzaky.resonance/Documentation~/components.md)
+- [Profiler](Packages/com.nekuzaky.resonance/Documentation~/profiler.md)
+
+## Contributing
+
+Bug reports, ideas and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for the project layout, the
+scripts in `Tools/` and the code rules.
+
+## Support
+
+Resonance is free and MIT licensed. If it saves you a Wwise license or a few evenings, you can support its development
+on [GitHub Sponsors](https://github.com/sponsors/Nekuzaky), [Patreon](https://www.patreon.com/Nekuzaky) or
+[Buy Me a Coffee](https://buymeacoffee.com/nekuzaky).
+
+## License
+
+[MIT](LICENSE). Icons from [Bootstrap Icons](https://icons.getbootstrap.com/) (MIT), see
+[Third Party Notices](Packages/com.nekuzaky.resonance/Third%20Party%20Notices.md).

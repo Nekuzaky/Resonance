@@ -1,0 +1,41 @@
+{
+  "name": "com.nekuzaky.resonance",
+  "version": "0.1.0",
+  "displayName": "Resonance",
+  "description": "Game audio middleware that lives inside Unity. Build sound events from random, sequence, switch, blend and layer containers, drive them with parameters, states and switches, mix them on buses with ducking and snapshots, play interactive music that changes on the beat, and watch every voice in a live profiler. No soundbanks, no external tool, no code required.",
+  "unity": "6000.3",
+  "documentationUrl": "https://github.com/Nekuzaky/Resonance/blob/main/Packages/com.nekuzaky.resonance/Documentation~/index.md",
+  "changelogUrl": "https://github.com/Nekuzaky/Resonance/blob/main/Packages/com.nekuzaky.resonance/CHANGELOG.md",
+  "licensesUrl": "https://github.com/Nekuzaky/Resonance/blob/main/Packages/com.nekuzaky.resonance/LICENSE.md",
+  "keywords": [
+    "audio",
+    "sound",
+    "music",
+    "middleware",
+    "wwise",
+    "fmod",
+    "mixer",
+    "adaptive-music",
+    "sound-design",
+    "tools"
+  ],
+  "author": {
+    "name": "Nekuzaky",
+    "url": "https://github.com/Nekuzaky"
+  },
+  "dependencies": {
+    "com.unity.modules.audio": "1.0.0",
+    "com.unity.modules.physics": "1.0.0",
+    "com.unity.modules.physics2d": "1.0.0",
+    "com.unity.modules.animation": "1.0.0",
+    "com.unity.modules.uielements": "1.0.0",
+    "com.unity.modules.vectorgraphics": "1.0.0"
+  },
+  "samples": [
+    {
+      "displayName": "Resonance Demo",
+      "description": "A small scene with surface-dependent footsteps, a car engine blended by speed, ambience, a narrator that ducks the music and a score that switches to combat music in the red zone. All audio is generated, no third-party sounds.",
+      "path": "Samples~/Demo"
+    }
+  ]
+}

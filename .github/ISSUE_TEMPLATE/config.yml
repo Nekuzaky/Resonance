@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation
+    url: https://github.com/Nekuzaky/Resonance/blob/main/Packages/com.nekuzaky.resonance/Documentation~/index.md
+    about: Guides for every feature, components, scripting and the Wwise comparison.
+  - name: Security report
+    url: https://github.com/Nekuzaky/Resonance/security/advisories/new
+    about: Report security problems privately.

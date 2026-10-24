@@ -1,0 +1,51 @@
+# Components
+
+Every component is under **Add Component > Resonance**.
+
+## Sound Emitter
+
+Plays a Sound Event from its GameObject.
+
+| Field | Meaning |
+| --- | --- |
+| Sound | The Sound Event |
+| Play On | Start, Enable, Disable, Destroy, Trigger Enter or Exit, Collision Enter or Exit, Mouse Down (several at once) |
+| Stop On | Same list. Disable is the default, so looping sounds stop with their object |
+| Stop Fade | Fade out time when stopping; -1 uses the event's own Fade Out |
+| Trigger Tag | Only react to triggers and collisions with this tag (empty reacts to everything) |
+| Impact Parameter | Receives the collision speed, so harder hits can sound louder |
+
+`Play()`, `Stop()` and `PlayEvent(SoundEvent)` can be called from UI buttons and Unity Events.
+
+## Sound Listener
+
+Marks where the player hears from. Put it on the camera or the player. Without it, Resonance uses the Audio Listener.
+
+## Parameter Driver
+
+Sets a parameter every frame from this GameObject: speed, vertical speed, distance to the listener, height, an
+Animator float, or a constant. Multiplier and Offset scale the value.
+
+## Switch Setter
+
+Sets a switch on this GameObject (or globally) when the scene starts. `SetValue(string)` changes it later, for
+example from a trigger.
+
+## State Zone
+
+A trigger collider that sets a state while the player is inside (and restores the previous one on exit), and can
+apply a mix snapshot at the same time.
+
+## Music Source
+
+Plays a Music Track when the scene starts and stops it when the object is disabled. `PlaySegment` and `PlayStinger`
+can be called from Unity Events.
+
+## Animation Sounds
+
+Plays sounds from Animation Events: add an event that calls `PlaySound` and drop a Sound Event in its Object field,
+or call `PlaySoundNamed` with a name from the list.
+
+## Snapshot Trigger
+
+Applies a mix snapshot while the object is enabled, or when `Apply()` and `Remove()` are called.

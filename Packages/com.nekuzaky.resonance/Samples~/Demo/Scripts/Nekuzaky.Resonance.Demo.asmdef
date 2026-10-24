@@ -1,0 +1,16 @@
+{
+    "name": "Nekuzaky.Resonance.Demo",
+    "rootNamespace": "Nekuzaky.Resonance.Demo",
+    "references": [
+        "Nekuzaky.Resonance"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

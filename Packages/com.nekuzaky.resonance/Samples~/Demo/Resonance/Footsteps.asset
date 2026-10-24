@@ -1,0 +1,206 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 636e101710e9b984096f9e7177868d02, type: 3}
+  m_Name: Footsteps
+  m_EditorClassIdentifier: Nekuzaky.Resonance::Nekuzaky.Resonance.SoundEvent
+  root:
+    rid: 5255168053662449666
+  bus: {fileID: 11400000, guid: 6048dbf8d48e78e41a16d531be2eafa1, type: 2}
+  volume: 0
+  pitch: 0
+  spatialize: 1
+  spatial:
+    blend: 1
+    minDistance: 1
+    maxDistance: 25
+    rolloff: 0
+    spread: 0
+    doppler: 1
+  fadeIn: 0
+  fadeOut: 0.05
+  maxInstances: 0
+  limitScope: 0
+  limitBehavior: 0
+  priority: 128
+  cooldown: 0
+  virtualizeWhenFar: 1
+  followEmitter: 1
+  stopWhenEmitterDestroyed: 1
+  modulations: []
+  references:
+    version: 2
+    RefIds:
+    - rid: 5255168053662449666
+      type: {class: SwitchNode, ns: Nekuzaky.Resonance, asm: Nekuzaky.Resonance}
+      data:
+        name: By Surface
+        volume: 0
+        volumeRandom: 2
+        pitch: 0
+        pitchRandom: 1
+        weight: 1
+        switchValue: 
+        blendRange: {x: 0, y: 1}
+        blendFade: 0
+        children:
+        - rid: 5255168053662449667
+        - rid: 5255168053662449668
+        group: {fileID: 11400000, guid: ae163f02cae395242b2c7078ca09a522, type: 2}
+        fallback: 0
+    - rid: 5255168053662449667
+      type: {class: RandomNode, ns: Nekuzaky.Resonance, asm: Nekuzaky.Resonance}
+      data:
+        name: Grass
+        volume: 0
+        volumeRandom: 0
+        pitch: 0
+        pitchRandom: 0
+        weight: 1
+        switchValue: Grass
+        blendRange: {x: 0, y: 1}
+        blendFade: 0
+        children:
+        - rid: 5255168053662449669
+        - rid: 5255168053662449670
+        - rid: 5255168053662449671
+        - rid: 5255168053662449672
+        avoidRepeat: 1
+    - rid: 5255168053662449668
+      type: {class: RandomNode, ns: Nekuzaky.Resonance, asm: Nekuzaky.Resonance}
+      data:
+        name: Stone
+        volume: 0
+        volumeRandom: 0
+        pitch: 0
+        pitchRandom: 0
+        weight: 1
+        switchValue: Stone
+        blendRange: {x: 0, y: 1}
+        blendFade: 0
+        children:
+        - rid: 5255168053662449673
+        - rid: 5255168053662449674
+        - rid: 5255168053662449675
+        - rid: 5255168053662449676
+        avoidRepeat: 1
+    - rid: 5255168053662449669
+      type: {class: ClipNode, ns: Nekuzaky.Resonance, asm: Nekuzaky.Resonance}
+      data:
+        name: footstep_grass_1
+        volume: 0
+        volumeRandom: 0
+        pitch: 0
+        pitchRandom: 0
+        weight: 1
+        switchValue: 
+        blendRange: {x: 0, y: 1}
+        blendFade: 0
+        clip: {fileID: 8300000, guid: 5aa1b4a54c9c60147a552a5e9d7bc019, type: 3}
+        loop: 0
+    - rid: 5255168053662449670
+      type: {class: ClipNode, ns: Nekuzaky.Resonance, asm: Nekuzaky.Resonance}
+      data:
+        name: footstep_grass_2
+        volume: 0
+        volumeRandom: 0
+        pitch: 0
+        pitchRandom: 0
+        weight: 1
+        switchValue: 
+        blendRange: {x: 0, y: 1}
+        blendFade: 0
+        clip: {fileID: 8300000, guid: 70c1f676714848547b4b7cffa40c7e1c, type: 3}
+        loop: 0
+    - rid: 5255168053662449671
+      type: {class: ClipNode, ns: Nekuzaky.Resonance, asm: Nekuzaky.Resonance}
+      data:
+        name: footstep_grass_3
+        volume: 0
+        volumeRandom: 0
+        pitch: 0
+        pitchRandom: 0
+        weight: 1
+        switchValue: 
+        blendRange: {x: 0, y: 1}
+        blendFade: 0
+        clip: {fileID: 8300000, guid: db692ceed22ceed4daea3ccf6bd3c346, type: 3}
+        loop: 0
+    - rid: 5255168053662449672
+      type: {class: ClipNode, ns: Nekuzaky.Resonance, asm: Nekuzaky.Resonance}
+      data:
+        name: footstep_grass_4
+        volume: 0
+        volumeRandom: 0
+        pitch: 0
+        pitchRandom: 0
+        weight: 1
+        switchValue: 
+        blendRange: {x: 0, y: 1}
+        blendFade: 0
+        clip: {fileID: 8300000, guid: b8cf6d217e9d5d04281216ac5a35b343, type: 3}
+        loop: 0
+    - rid: 5255168053662449673
+      type: {class: ClipNode, ns: Nekuzaky.Resonance, asm: Nekuzaky.Resonance}
+      data:
+        name: footstep_stone_1
+        volume: 0
+        volumeRandom: 0
+        pitch: 0
+        pitchRandom: 0
+        weight: 1
+        switchValue: 
+        blendRange: {x: 0, y: 1}
+        blendFade: 0
+        clip: {fileID: 8300000, guid: cede288737233724bb3d9cd1c7870e70, type: 3}
+        loop: 0
+    - rid: 5255168053662449674
+      type: {class: ClipNode, ns: Nekuzaky.Resonance, asm: Nekuzaky.Resonance}
+      data:
+        name: footstep_stone_2
+        volume: 0
+        volumeRandom: 0
+        pitch: 0
+        pitchRandom: 0
+        weight: 1
+        switchValue: 
+        blendRange: {x: 0, y: 1}
+        blendFade: 0
+        clip: {fileID: 8300000, guid: a6098862cd9956047bf2ce8f8fccfeb8, type: 3}
+        loop: 0
+    - rid: 5255168053662449675
+      type: {class: ClipNode, ns: Nekuzaky.Resonance, asm: Nekuzaky.Resonance}
+      data:
+        name: footstep_stone_3
+        volume: 0
+        volumeRandom: 0
+        pitch: 0
+        pitchRandom: 0
+        weight: 1
+        switchValue: 
+        blendRange: {x: 0, y: 1}
+        blendFade: 0
+        clip: {fileID: 8300000, guid: d16ffc264a638644fb94a2c4878b04e3, type: 3}
+        loop: 0
+    - rid: 5255168053662449676
+      type: {class: ClipNode, ns: Nekuzaky.Resonance, asm: Nekuzaky.Resonance}
+      data:
+        name: footstep_stone_4
+        volume: 0
+        volumeRandom: 0
+        pitch: 0
+        pitchRandom: 0
+        weight: 1
+        switchValue: 
+        blendRange: {x: 0, y: 1}
+        blendFade: 0
+        clip: {fileID: 8300000, guid: 6eed6b4e6dd5cfc41b1fe92958678d9b, type: 3}
+        loop: 0

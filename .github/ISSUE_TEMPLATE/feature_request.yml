@@ -1,0 +1,21 @@
+name: Feature request
+description: Suggest an idea for Resonance.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What sound were you trying to make?
+      description: Describe the situation where Resonance did not help you enough, or the Wwise or FMOD feature you miss.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Your idea
+      description: What would have helped? Mock-ups welcome.
+  - type: textarea
+    id: cost
+    attributes:
+      label: Cost
+      description: Resonance aims to stay below a few hundredths of a millisecond per frame. Would your idea run every frame, for every voice?
