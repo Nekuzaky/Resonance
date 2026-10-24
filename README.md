@@ -8,7 +8,7 @@
   <img alt="No soundbanks" src="https://img.shields.io/badge/soundbanks-none-3ddc84">
   <img alt="Engine update in a player: 0.005 ms" src="https://img.shields.io/badge/engine%20update-0.005%20ms-3ddc84">
   <img alt="GC per play: 0 B" src="https://img.shields.io/badge/GC%20per%20play-0%20B-3ddc84">
-  <img alt="Tests: 80 EditMode" src="https://img.shields.io/badge/tests-80%20EditMode-38bdf8">
+  <img alt="Tests: 84 EditMode" src="https://img.shields.io/badge/tests-84%20EditMode-38bdf8">
   <img alt="Built-in, URP, HDRP" src="https://img.shields.io/badge/pipelines-Built--in%20%7C%20URP%20%7C%20HDRP-8b92a2">
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-8b92a2"></a>
 </p>
@@ -71,7 +71,9 @@ Studio, presses space to hear the result, and adds a component to the scene. Cha
   scheduled on the audio clock, crossfades, and stingers.
 - **Playback options.** Shuffle without repeats, random start for loops, delays with a random part.
 - **No code needed.** Sound Emitter, Parameter Driver, Switch Setter, State Zone, Reverb Zone, Music Source, Sound
-  Bank Loader, Animation Sounds and Snapshot Trigger components cover the usual hookups, each with its own icon.
+  Bank Loader, Subtitle Relay, Animation Sounds and Snapshot Trigger components cover the usual hookups, each with
+  its own icon. Their inspectors use menus instead of typed names, explain problems in plain words and fix them in one
+  click.
 - **Live profiler with history.** Active sounds, real and virtual voices, occlusion, the reason every refused play was
   refused, states and parameters, the engine's cost per frame, and the last 60 seconds to scrub through, in the
   editor or from a development build running on another machine or a phone.
@@ -108,7 +110,7 @@ In Unity: **Window > Package Manager > + > Install package from git URL...** and
 https://github.com/Nekuzaky/Resonance.git?path=Packages/com.nekuzaky.resonance
 ```
 
-Add `#v0.3.0` at the end of the URL to pin a version.
+Add `#v0.4.0` at the end of the URL to pin a version.
 
 ## Quick start
 
@@ -138,6 +140,10 @@ Every sound in it is generated, so it has no third-party audio.
 | <img src="Packages/com.nekuzaky.resonance/Editor/Icons/ReverbZone.png" width="24"> | Reverb Zone | Gives a room, corridor or cave its reverb, faded at the edges |
 | <img src="Packages/com.nekuzaky.resonance/Editor/Icons/SoundBankLoader.png" width="24"> | Sound Bank Loader | Loads a Sound Bank's audio while the object is enabled |
 | <img src="Packages/com.nekuzaky.resonance/Editor/Icons/SubtitleRelay.png" width="24"> | Subtitle Relay | Sends dialogue subtitles to a text field through Unity Events |
+
+<p align="center">
+  <img src="docs/images/inspector-components.png" alt="Component inspectors with menus for tags, states and speakers" width="420">
+</p>
 
 ## Scripting
 

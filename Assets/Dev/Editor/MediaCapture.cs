@@ -36,6 +36,7 @@ namespace Nekuzaky.Resonance.Dev
             OpenStudio,
             CaptureEvents,
             CaptureBlend,
+            CaptureComponents,
             EnterPlay,
             CaptureMixer,
             CaptureMusic,
@@ -81,6 +82,7 @@ namespace Nekuzaky.Resonance.Dev
                 case Stage.OpenStudio: OpenStudio(); break;
                 case Stage.CaptureEvents: CaptureEvents(); break;
                 case Stage.CaptureBlend: CaptureBlend(); break;
+                case Stage.CaptureComponents: CaptureComponents(); break;
                 case Stage.EnterPlay: EnterPlay(); break;
                 case Stage.CaptureMixer: CaptureTab(StudioWindow.MixerTab, "studio-mixer", Stage.CaptureMusic); break;
                 case Stage.CaptureMusic: CaptureTab(StudioWindow.MusicTab, "studio-music", Stage.CaptureProfiler); break;
@@ -116,6 +118,23 @@ namespace Nekuzaky.Resonance.Dev
         private static void CaptureBlend()
         {
             Save(Studio(), "studio-blend");
+            _components = ComponentPreviewWindow.Show(new Rect(60f, 60f, 520f, 1000f),
+                GameObject.Find("Car").GetComponent<SoundEmitter>(),
+                GameObject.Find("Combat Zone").GetComponent<StateZone>(),
+                GameObject.Find("Stone Hall").GetComponent<ReverbZone>(),
+                GameObject.Find("Narrator").GetComponent<SubtitleRelay>());
+            Advance(Stage.CaptureComponents, 2.0);
+        }
+
+        private static ComponentPreviewWindow _components;
+
+        private static void CaptureComponents()
+        {
+            if (_components != null)
+            {
+                Save(_components, "inspector-components");
+                _components.Close();
+            }
             Advance(Stage.EnterPlay, 0.5);
         }
 

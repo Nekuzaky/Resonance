@@ -400,3 +400,5 @@
 .rs-columns { flex-direction: row; flex-grow: 1; }
 .rs-column { flex-grow: 1; flex-basis: 0px; margin-right: 12px; }
 .rs-column-title { -unity-font-style: bold; margin: 6px 0; color: var(--rs-text-2); }
+
+.rs-choice--missing .unity-base-popup-field__text { color: rgb(226, 96, 96); }

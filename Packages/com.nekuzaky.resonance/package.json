@@ -1,6 +1,6 @@
 {
   "name": "com.nekuzaky.resonance",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "displayName": "Resonance",
   "description": "Game audio middleware that lives inside Unity. Build sound events from random, sequence, switch, blend and layer containers, drive them with parameters, states and switches, mix them on buses with ducking and snapshots, play interactive music that changes on the beat, and watch every voice in a live profiler. No soundbanks, no external tool, no code required.",
   "unity": "6000.3",

@@ -2,6 +2,19 @@
 
 Every component is under **Add Component > Resonance**.
 
+Every component has an inspector made for people who do not code:
+
+- **Menus instead of typing.** Switch values, game states, tags, Animator parameters and speakers are picked from a
+  list filled from your project. A value that no longer exists shows in red with "(not found)".
+- **Warnings that explain and fix.** A trigger without a collider, a solid collider where a trigger is needed, an
+  empty field or a state that is not in its group: the inspector says what is wrong in plain words, and a button fixes
+  it when it can ("Add a trigger collider", "Make it a trigger", "Use the Animator on this object").
+- **Test buttons.** Play and Stop on emitters and music sources, Apply on switches and snapshots, and a live line in
+  Play Mode that shows what the component is doing.
+
+Music Tracks get the same treatment: state links, bridges, "then play" and "start with" are menus of the track's own
+segments and states.
+
 ## Sound Emitter
 
 Plays a Sound Event from its GameObject.

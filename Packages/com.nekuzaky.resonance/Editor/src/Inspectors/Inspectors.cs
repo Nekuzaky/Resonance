@@ -74,43 +74,6 @@ namespace Nekuzaky.Resonance.Editor
         }
     }
 
-    [CustomEditor(typeof(SoundEmitter))]
-    [CanEditMultipleObjects]
-    internal sealed class SoundEmitterInspector : UnityEditor.Editor
-    {
-        public override VisualElement CreateInspectorGUI()
-        {
-            var emitter = (SoundEmitter)target;
-            var root = new VisualElement();
-            root.Add(InspectorHeader.Build(nameof(SoundEmitter), "Plays a Sound Event from this GameObject.",
-                InspectorHeader.Button("Play", () => Preview(emitter)),
-                InspectorHeader.Button("Stop", () => Stop(emitter)),
-                InspectorHeader.Button("Edit Sound", () =>
-                {
-                    if (emitter.sound != null)
-                        StudioWindow.Open(emitter.sound);
-                })));
-            InspectorElement.FillDefaultInspector(root, serializedObject, this);
-            return root;
-        }
-
-        private static void Preview(SoundEmitter emitter)
-        {
-            if (Application.isPlaying)
-                emitter.Play();
-            else if (emitter.sound != null)
-                PreviewEngine.Engine.Play(emitter.sound, null, Vector3.zero);
-        }
-
-        private static void Stop(SoundEmitter emitter)
-        {
-            if (Application.isPlaying)
-                emitter.Stop();
-            else if (emitter.sound != null)
-                PreviewEngine.Engine.StopEvent(emitter.sound, -1f);
-        }
-    }
-
     [CustomEditor(typeof(MusicTrack))]
     internal sealed class MusicTrackInspector : UnityEditor.Editor
     {
@@ -122,7 +85,19 @@ namespace Nekuzaky.Resonance.Editor
                 InspectorHeader.Button("Play", () => Resonance.PlayMusic(track)),
                 InspectorHeader.Button("Stop", () => Resonance.StopMusic(track.crossfade)),
                 InspectorHeader.Button("Open in Studio", () => StudioWindow.Open(track))));
-            InspectorElement.FillDefaultInspector(root, serializedObject, this);
+            root.Add(new PropertyField(serializedObject.FindProperty("bpm"), "BPM"));
+            root.Add(new PropertyField(serializedObject.FindProperty("beatsPerBar"), "Beats Per Bar"));
+            root.Add(new PropertyField(serializedObject.FindProperty("bus"), "Bus"));
+            root.Add(new PropertyField(serializedObject.FindProperty("volume"), "Volume (dB)"));
+            root.Add(new PropertyField(serializedObject.FindProperty("segments"), "Segments"));
+            var first = InspectorKit.Choice(serializedObject, "firstSegment", "Start With", () => MusicChoices.Segments(serializedObject.FindProperty("firstSegment")), "(first in the list)");
+            root.Add(first);
+            root.Add(new PropertyField(serializedObject.FindProperty("stateGroup"), "State Group") { tooltip = "The game state that picks the segment." });
+            root.Add(new PropertyField(serializedObject.FindProperty("links"), "State Links"));
+            root.Add(new PropertyField(serializedObject.FindProperty("transitionSync"), "Change On"));
+            root.Add(new PropertyField(serializedObject.FindProperty("crossfade"), "Crossfade (s)"));
+            root.Add(new PropertyField(serializedObject.FindProperty("stingers"), "Stingers"));
+            root.TrackSerializedObjectValue(serializedObject, _ => first.Refresh());
             return root;
         }
     }

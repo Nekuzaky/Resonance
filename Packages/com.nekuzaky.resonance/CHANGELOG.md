@@ -3,6 +3,20 @@
 All notable changes to this package are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [0.4.0] - 2026-10-24
+
+### Added
+
+- An inspector for every component, made for people who do not code: menus for switch values, states, tags, Animator
+  floats and speakers; warnings in plain words with buttons that fix the problem (add a trigger collider, make a
+  collider a trigger, use the object's Animator); test buttons and a live status line in Play Mode.
+- Music Track inspector: state links, bridges, "then play" and "start with" are menus of the track's segments and
+  states.
+
+### Fixed
+
+- The Reverb Zone inspector no longer throws on objects without a Mesh Collider.
+
 ## [0.3.0] - 2026-10-24
 
 ### Added
