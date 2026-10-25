@@ -9,6 +9,7 @@ namespace Nekuzaky.Resonance
         public readonly EffectDsp Dsp;
         public readonly AudioEchoFilter Echo;
         public readonly AudioReverbFilter Reverb;
+        public readonly TailFader Fader;
 
         public float Tail { get; private set; }
 
@@ -21,18 +22,42 @@ namespace Nekuzaky.Resonance
             Reverb = Add<AudioReverbFilter>(host);
             if (Reverb != null)
                 SetupReverb(Reverb);
+            Fader = Add<TailFader>(host);
         }
 
-        public void Apply(EffectChain chain)
+        public void Apply(EffectChain chain, float applied = 1f)
         {
             if (!chain.Any && !Active)
                 return;
             Active = chain.Any;
             Tail = chain.Tail;
             if (Dsp != null)
-                Dsp.Configure(chain);
+                Dsp.Configure(chain, applied);
             ApplyEcho(chain);
             ApplyReverb(chain);
+            Toggle(Fader, Active, ref _fader);
+        }
+
+        public void Follow(float gain)
+        {
+            if (Fader != null)
+                Fader.Set(gain);
+        }
+
+        public void Clear()
+        {
+            if (Dsp != null)
+            {
+                Dsp.ResetState();
+                Dsp.enabled = false;
+            }
+            if (Fader != null)
+                Fader.Snap(1f);
+            Toggle(Fader, false, ref _fader);
+            Toggle(Echo, false, ref _echo);
+            Toggle(Reverb, false, ref _reverb);
+            Active = false;
+            Tail = 0f;
         }
 
         internal static float Millibels(float linear) => linear <= 0.00001f ? -10000f : Mathf.Max(-10000f, 2000f * Mathf.Log10(linear));
@@ -48,6 +73,7 @@ namespace Nekuzaky.Resonance
         private float _wet = -1f;
         private float _dry = -1f;
         private bool _reverb;
+        private bool _fader;
         private float _dryLevel = 1f;
         private float _room = 1f;
         private float _decay = -1f;

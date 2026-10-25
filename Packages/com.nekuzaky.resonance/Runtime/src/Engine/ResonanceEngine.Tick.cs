@@ -28,7 +28,7 @@ namespace Nekuzaky.Resonance
                 _instances.RemoveAt(i);
             }
             Memory.Tick();
-            TickRinging();
+            TickRinging(deltaTime);
 
             if (!Preview)
                 Reverb.Tick(listener, ReverbZone.Active);

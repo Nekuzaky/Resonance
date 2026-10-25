@@ -149,6 +149,7 @@ namespace Nekuzaky.Resonance
                 if (ReferenceEquals(emitter, null) || ReferenceEquals(instance.Emitter, emitter))
                     BeginStop(instance, fade < 0f ? instance.Event.fadeOut : fade);
             }
+            StopTails(emitter, fade < 0f ? StealFade : fade);
         }
 
         internal void StopEvent(SoundEvent sound, float fade)

@@ -38,6 +38,12 @@ namespace Nekuzaky.Resonance
             var tail = voice.Effects.Tail;
             if (voice.Virtual || tail <= 0f || source == null || source.clip == null || _ringing.Count >= MaxRingingVoices)
                 return false;
+            var owner = voice.Owner;
+            voice.RingBus = owner != null ? owner.Event.bus : null;
+            voice.RingEmitter = owner != null ? owner.Emitter : null;
+            voice.RingGain = Mixer.Gain(voice.RingBus);
+            voice.RingFade = 1f;
+            voice.RingFadeTime = -1f;
             voice.Owner = null;
             voice.Layer = null;
             voice.Finished = true;
@@ -46,20 +52,52 @@ namespace Nekuzaky.Resonance
             source.loop = true;
             source.priority = 256;
             source.Play();
+            voice.Effects.Follow(1f);
             voice.RingUntil = _time + tail;
             _ringing.Add(voice);
             return true;
         }
 
-        private void TickRinging()
+        private void TickRinging(float deltaTime)
         {
             for (var i = _ringing.Count - 1; i >= 0; i--)
             {
                 var voice = _ringing[i];
-                if (voice.Source != null && _time < voice.RingUntil)
+                if (voice.RingFadeTime >= 0f)
+                    voice.RingFade = AudioMath.Approach(voice.RingFade, 0f, voice.RingFadeTime, 1f, deltaTime);
+                if (voice.Source != null && _time < voice.RingUntil && voice.RingFade > 0f)
+                {
+                    voice.Effects.Follow(TailGain(voice) * voice.RingFade);
                     continue;
+                }
                 _ringing.RemoveAt(i);
-                voice.Reset();
+                Recycle(voice);
+                _free.Push(voice);
+            }
+        }
+
+        private float TailGain(Voice voice)
+        {
+            var gain = Mixer.Gain(voice.RingBus);
+            if (voice.RingGain > 0.000001f)
+                return gain / voice.RingGain;
+            return gain > 0f ? 1f : 0f;
+        }
+
+        private void StopTails(GameObject emitter, float fade)
+        {
+            for (var i = _ringing.Count - 1; i >= 0; i--)
+            {
+                var voice = _ringing[i];
+                if (!ReferenceEquals(emitter, null) && !ReferenceEquals(voice.RingEmitter, emitter))
+                    continue;
+                if (fade > 0f)
+                {
+                    voice.RingFadeTime = voice.RingFadeTime < 0f ? fade : Mathf.Min(voice.RingFadeTime, fade);
+                    continue;
+                }
+                _ringing.RemoveAt(i);
+                Recycle(voice);
                 _free.Push(voice);
             }
         }
@@ -70,15 +108,21 @@ namespace Nekuzaky.Resonance
                 return null;
             var voice = _ringing[0];
             _ringing.RemoveAt(0);
-            voice.Reset();
+            Recycle(voice);
             return voice;
+        }
+
+        private static void Recycle(Voice voice)
+        {
+            voice.Reset();
+            voice.Effects.Clear();
         }
 
         private void CutTails()
         {
             for (var i = _ringing.Count - 1; i >= 0; i--)
             {
-                _ringing[i].Reset();
+                Recycle(_ringing[i]);
                 _free.Push(_ringing[i]);
             }
             _ringing.Clear();

@@ -1,3 +1,4 @@
+using System.Threading;
 using UnityEngine;
 
 namespace Nekuzaky.Resonance
@@ -15,41 +16,50 @@ namespace Nekuzaky.Resonance
 
         public StageKind Kind(int stage) => _kinds[stage];
 
-        public float Value(int stage, int slot) => slot == 0 ? _a[stage] : slot == 1 ? _b[stage] : _c[stage];
+        public float Value(int stage, int slot) => slot == 0 ? _a[stage] : slot == 1 ? _b[stage] : slot == 2 ? _c[stage] : _d[stage];
 
         public int SampleRate => _sampleRate;
 
-        public void Configure(EffectChain chain)
+        internal bool HasState
+        {
+            get
+            {
+                foreach (var value in _state)
+                {
+                    if (value != 0f)
+                        return true;
+                }
+                return false;
+            }
+        }
+
+        public void Configure(EffectChain chain, float applied = 1f)
         {
             var count = Mathf.Min(chain.Stages, EffectChain.MaxStages);
-            var changed = count != _count;
-            for (var i = 0; i < count; i++)
-            {
-                changed |= _kinds[i] != chain.Kinds[i] || _a[i] != chain.A[i] || _b[i] != chain.B[i] || _c[i] != chain.C[i] || _d[i] != chain.D[i];
-                _kinds[i] = chain.Kinds[i];
-                _a[i] = chain.A[i];
-                _b[i] = chain.B[i];
-                _c[i] = chain.C[i];
-                _d[i] = chain.D[i];
-            }
-            if (changed)
-                _sampleRate = Mathf.Max(8000, AudioSettings.outputSampleRate);
-            _count = count;
+            var scale = applied > 0f && applied < 1f ? applied : 1f;
+            if (Differs(chain, count, scale))
+                Publish(chain, count, scale);
             var on = count > 0;
             if (enabled != on)
                 enabled = on;
         }
 
+        public void ResetState() => Interlocked.Exchange(ref _resetRequested, 1);
+
         public void Process(float[] data, int channels)
         {
-            var count = _count;
             if (data == null || channels <= 0)
                 return;
+            Acquire();
+            if (Interlocked.Exchange(ref _resetRequested, 0) != 0)
+                System.Array.Clear(_state, 0, _state.Length);
+            var set = _live * EffectChain.MaxStages;
+            var count = _liveCount[_live];
             var rate = _sampleRate;
             for (var stage = 0; stage < count && stage < EffectChain.MaxStages; stage++)
             {
-                var kind = _kinds[stage];
-                Prepare(stage, kind, rate);
+                var kind = _liveKinds[set + stage];
+                Prepare(stage, set + stage, rate);
                 if (kind == StageKind.Distortion)
                     Distort(data, stage);
                 else if (kind != StageKind.None)
@@ -69,28 +79,108 @@ namespace Nekuzaky.Resonance
 
         #region Private and Protected
 
+        private const int Sets = 2;
+
         private readonly StageKind[] _kinds = new StageKind[EffectChain.MaxStages];
         private readonly float[] _a = new float[EffectChain.MaxStages];
         private readonly float[] _b = new float[EffectChain.MaxStages];
         private readonly float[] _c = new float[EffectChain.MaxStages];
         private readonly float[] _d = new float[EffectChain.MaxStages];
-        private readonly float[] _preparedD = new float[EffectChain.MaxStages];
+        private readonly StageKind[] _liveKinds = new StageKind[EffectChain.MaxStages * Sets];
+        private readonly float[] _liveA = new float[EffectChain.MaxStages * Sets];
+        private readonly float[] _liveB = new float[EffectChain.MaxStages * Sets];
+        private readonly float[] _liveC = new float[EffectChain.MaxStages * Sets];
+        private readonly float[] _liveD = new float[EffectChain.MaxStages * Sets];
+        private readonly int[] _liveCount = new int[Sets];
         private readonly StageKind[] _preparedKinds = new StageKind[EffectChain.MaxStages];
         private readonly float[] _preparedA = new float[EffectChain.MaxStages];
         private readonly float[] _preparedB = new float[EffectChain.MaxStages];
         private readonly float[] _preparedC = new float[EffectChain.MaxStages];
+        private readonly float[] _preparedD = new float[EffectChain.MaxStages];
         private readonly int[] _preparedRates = new int[EffectChain.MaxStages];
         private readonly float[] _coefficients = new float[EffectChain.MaxStages * 5];
         private readonly float[] _state = new float[EffectChain.MaxStages * MaxChannels * 2];
-        private volatile int _count;
+        private int _count;
+        private int _sequence;
+        private int _acquired;
+        private int _live;
+        private int _resetRequested;
         private int _sampleRate = 48000;
 
-        private void Prepare(int stage, StageKind kind, int rate)
+        internal void BeginPublish() => Interlocked.Increment(ref _sequence);
+
+        internal void EndPublish() => Interlocked.Increment(ref _sequence);
+
+        internal void WriteStage(int stage, StageKind kind, float a)
         {
-            var a = _a[stage];
-            var b = _b[stage];
-            var c = _c[stage];
-            var d = _d[stage];
+            _kinds[stage] = kind;
+            _a[stage] = a;
+        }
+
+        internal StageKind PreparedKind(int stage) => _preparedKinds[stage];
+
+        internal float PreparedValue(int stage) => _preparedA[stage];
+
+        private bool Differs(EffectChain chain, int count, float scale)
+        {
+            if (count != _count)
+                return true;
+            for (var i = 0; i < count; i++)
+            {
+                if (_kinds[i] != chain.Kinds[i] || _a[i] != chain.A[i] || _b[i] != chain.B[i] || _c[i] != chain.C[i] ||
+                    _d[i] != chain.D[i] * scale)
+                    return true;
+            }
+            return false;
+        }
+
+        private void Publish(EffectChain chain, int count, float scale)
+        {
+            BeginPublish();
+            for (var i = 0; i < count; i++)
+            {
+                _kinds[i] = chain.Kinds[i];
+                _a[i] = chain.A[i];
+                _b[i] = chain.B[i];
+                _c[i] = chain.C[i];
+                _d[i] = chain.D[i] * scale;
+            }
+            _count = count;
+            _sampleRate = Mathf.Max(8000, AudioSettings.outputSampleRate);
+            EndPublish();
+        }
+
+        private void Acquire()
+        {
+            var sequence = Volatile.Read(ref _sequence);
+            if ((sequence & 1) != 0 || sequence == _acquired)
+                return;
+            var next = 1 - _live;
+            var set = next * EffectChain.MaxStages;
+            var count = Mathf.Clamp(_count, 0, EffectChain.MaxStages);
+            for (var i = 0; i < count; i++)
+            {
+                _liveKinds[set + i] = _kinds[i];
+                _liveA[set + i] = _a[i];
+                _liveB[set + i] = _b[i];
+                _liveC[set + i] = _c[i];
+                _liveD[set + i] = _d[i];
+            }
+            Interlocked.MemoryBarrier();
+            if (Volatile.Read(ref _sequence) != sequence)
+                return;
+            _liveCount[next] = count;
+            _live = next;
+            _acquired = sequence;
+        }
+
+        private void Prepare(int stage, int live, int rate)
+        {
+            var kind = _liveKinds[live];
+            var a = _liveA[live];
+            var b = _liveB[live];
+            var c = _liveC[live];
+            var d = _liveD[live];
             if (_preparedKinds[stage] == kind && _preparedA[stage] == a && _preparedB[stage] == b && _preparedC[stage] == c &&
                 _preparedD[stage] == d && _preparedRates[stage] == rate)
                 return;
@@ -150,6 +240,11 @@ namespace Nekuzaky.Resonance
                     z1 = b1 * x - a1 * y + z2;
                     z2 = b2 * x - a2 * y;
                     data[i] = y;
+                }
+                if (!float.IsFinite(z1) || !float.IsFinite(z2))
+                {
+                    z1 = 0f;
+                    z2 = 0f;
                 }
                 _state[index] = Mathf.Abs(z1) < 1e-20f ? 0f : z1;
                 _state[index + 1] = Mathf.Abs(z2) < 1e-20f ? 0f : z2;

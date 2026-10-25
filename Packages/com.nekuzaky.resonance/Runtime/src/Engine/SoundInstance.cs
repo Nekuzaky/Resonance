@@ -93,6 +93,11 @@ namespace Nekuzaky.Resonance
         public readonly EffectRack Effects;
         public SoundInstance Owner;
         public float RingUntil;
+        public AudioBus RingBus;
+        public GameObject RingEmitter;
+        public float RingGain;
+        public float RingFade = 1f;
+        public float RingFadeTime = -1f;
         public PlanLayer Layer;
         public int ClipIndex;
         public bool Virtual;
@@ -185,6 +190,11 @@ namespace Nekuzaky.Resonance
             }
             Owner = null;
             RingUntil = 0f;
+            RingBus = null;
+            RingEmitter = null;
+            RingGain = 0f;
+            RingFade = 1f;
+            RingFadeTime = -1f;
             Layer = null;
             ClipIndex = 0;
             Virtual = false;

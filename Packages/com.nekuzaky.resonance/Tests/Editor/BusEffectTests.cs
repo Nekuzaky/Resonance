@@ -1,3 +1,4 @@
+using System.Threading;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools.Constraints;
@@ -117,6 +118,72 @@ namespace Nekuzaky.Resonance.Tests
             var clean = Sine(1000f, 0.5f, 4800, 1);
             dry.Process(clean, 1);
             Assert.AreEqual(0.5f, Peak(clean), 0.001f);
+        }
+
+        [Test]
+        public void Dsp_KeepsThePreviousStagesWhileAnUpdateIsBeingWritten()
+        {
+            var dsp = Dsp(StageKind.LowPass, 1200f, 1f, 1f);
+            dsp.Process(new float[8], 1);
+
+            dsp.BeginPublish();
+            dsp.WriteStage(0, StageKind.Distortion, 1200f);
+            dsp.Process(new float[8], 1);
+            Assert.AreEqual(StageKind.LowPass, dsp.PreparedKind(0));
+            Assert.AreEqual(1200f, dsp.PreparedValue(0));
+
+            dsp.WriteStage(0, StageKind.Distortion, 0.5f);
+            dsp.EndPublish();
+            dsp.Process(new float[8], 1);
+            Assert.AreEqual(StageKind.Distortion, dsp.PreparedKind(0));
+            Assert.AreEqual(0.5f, dsp.PreparedValue(0));
+        }
+
+        [Test]
+        public void Dsp_NeverPairsAStageKindWithTheParametersOfAnother()
+        {
+            var dsp = Dsp(StageKind.LowPass, 1200f, 1f, 1f);
+            var low = Chain(StageKind.LowPass, 1200f, 1f, 1f);
+            var crunch = Chain(StageKind.Distortion, 0.5f, 0f, 1f);
+            dsp.Process(new float[2], 1);
+            var stop = 0;
+            var torn = 0;
+            var processed = 0;
+            var audio = new Thread(() =>
+            {
+                var data = new float[2];
+                for (var i = 0; i < 50000000 && Volatile.Read(ref stop) == 0; i++)
+                {
+                    dsp.Process(data, 1);
+                    var kind = dsp.PreparedKind(0);
+                    var value = dsp.PreparedValue(0);
+                    if (!(kind == StageKind.LowPass && value == 1200f) && !(kind == StageKind.Distortion && value == 0.5f))
+                        torn++;
+                    processed++;
+                }
+            });
+            audio.Start();
+            for (var i = 0; i < 200000; i++)
+                dsp.Configure(i % 2 == 0 ? crunch : low);
+            Volatile.Write(ref stop, 1);
+            audio.Join();
+
+            Assert.Greater(processed, 0);
+            Assert.AreEqual(0, torn);
+        }
+
+        [Test]
+        public void Dsp_RecoversFromANonFiniteFilterState()
+        {
+            var dsp = Dsp(StageKind.LowPass, 500f, 1f, 1f);
+            dsp.Process(new[] { float.NaN, 0f, 0f, 0f }, 1);
+            Assert.IsFalse(dsp.HasState);
+
+            var data = Sine(100f, 0.5f, 4800, 1);
+            dsp.Process(data, 1);
+
+            Assert.IsTrue(float.IsFinite(Rms(data, 0)));
+            Assert.Greater(Rms(data, 0, 2400), 0.3f);
         }
 
         [Test]
@@ -328,6 +395,118 @@ namespace Nekuzaky.Resonance.Tests
         }
 
         [Test]
+        public void Distortion_CompensatesTheGainTheSourceReallyApplies()
+        {
+            var bus = Asset<AudioBus>("Boosted");
+            bus.volume = 12f;
+            Crunch(bus);
+
+            var peak = DistortedPeak(PlayOn(bus));
+
+            Assert.AreEqual(1f, peak, 0.01f, "The source volume saturates at 1, so the drive must not be divided by the full bus gain");
+        }
+
+        [Test]
+        public void Distortion_CompensatesCompressorMakeupAboveUnity()
+        {
+            var bus = Asset<AudioBus>("Makeup");
+            var compressor = bus.AddEffect(BusEffectType.Compressor);
+            compressor.SetValue(BusEffects.CompressorThreshold, 0f);
+            compressor.SetValue(BusEffects.CompressorMakeup, 12f);
+            Crunch(bus);
+            var rack = PlayOn(bus);
+            Engine.Tick(0.02f);
+
+            Assert.AreEqual(AudioMath.ToLinear(12f), Engine.Mixer.Gain(bus), 0.01f);
+            Assert.AreEqual(1f, DistortedPeak(rack), 0.01f);
+        }
+
+        [Test]
+        public void StopAll_CutsTheTailsOfEndedSounds()
+        {
+            var rack = Ringing(Asset<AudioBus>("SFX"));
+
+            Engine.StopAll(null, 0f);
+            Engine.Tick(0.02f);
+
+            Assert.AreEqual(0, Engine.RingingVoices);
+            Assert.IsFalse(rack.Echo.enabled);
+        }
+
+        [Test]
+        public void StopAll_FadesTailsOverTheFadeTime()
+        {
+            var rack = Ringing(Asset<AudioBus>("SFX"));
+
+            Engine.StopAll(null, 0.2f);
+            Run(0.1f);
+            Assert.AreEqual(1, Engine.RingingVoices);
+            Assert.AreEqual(0.5f, rack.Fader.Gain, 0.15f);
+            Run(0.15f);
+
+            Assert.AreEqual(0, Engine.RingingVoices);
+        }
+
+        [Test]
+        public void Tail_FollowsTheBusVolumeAndMute()
+        {
+            var bus = Asset<AudioBus>("SFX");
+            var rack = Ringing(bus);
+            Assert.IsTrue(rack.Fader.enabled);
+            Assert.AreEqual(1f, rack.Fader.Gain, 0.0001f);
+
+            bus.volume = -6f;
+            Engine.Tick(0.02f);
+            Assert.AreEqual(AudioMath.ToLinear(-6f), rack.Fader.Gain, 0.001f);
+
+            bus.mute = true;
+            Engine.Tick(0.02f);
+            Assert.AreEqual(0f, rack.Fader.Gain);
+
+            bus.mute = false;
+            Engine.Mixer.State(bus).UserVolume = AudioMath.SilenceDb;
+            Engine.Tick(0.02f);
+            Assert.Less(rack.Fader.Gain, 0.001f);
+        }
+
+        [Test]
+        public void Tail_FollowsSnapshotsAppliedAfterTheRelease()
+        {
+            var bus = Asset<AudioBus>("SFX");
+            var rack = Ringing(bus);
+            var quiet = Asset<MixSnapshot>("Quiet");
+            quiet.fadeIn = 0f;
+            quiet.offsets.Add(new BusOffset { bus = bus, volume = -12f });
+
+            Engine.Mixer.Apply(quiet);
+            Engine.Tick(0.02f);
+
+            Assert.AreEqual(AudioMath.ToLinear(-12f), rack.Fader.Gain, 0.001f);
+        }
+
+        [Test]
+        public void ReusedTailVoice_StartsWithCleanEffects()
+        {
+            Engine.MaxVoices = 1;
+            var bus = Asset<AudioBus>("SFX");
+            bus.AddEffect(BusEffectType.LowPass).SetValue(BusEffects.FilterCutoff, 500f);
+            var rack = Ringing(bus);
+            var noise = Sine(5000f, 1f, 256, 1);
+            rack.Dsp.Process(noise, 1);
+            Assert.IsTrue(rack.Dsp.HasState);
+
+            var sound = Event(ClipNode("next", 1f));
+            sound.bus = bus;
+            Engine.Play(sound, null, Vector3.zero);
+
+            Assert.AreEqual(0, Engine.RingingVoices);
+            Assert.AreSame(rack, Engine.Instances[0].Voices[0].Effects);
+            Assert.AreEqual(1f, rack.Fader.Gain);
+            rack.Dsp.Process(new float[4], 1);
+            Assert.IsFalse(rack.Dsp.HasState, "The filter must not keep the old tail");
+        }
+
+        [Test]
         public void OldBusAsset_LoadsWithAnEmptyChain()
         {
             var bus = Asset<AudioBus>("Old");
@@ -384,17 +563,54 @@ namespace Nekuzaky.Resonance.Tests
             return Engine.Instances[0].Voices[0].Effects;
         }
 
+        private EffectRack Ringing(AudioBus bus)
+        {
+            Engine.Simulate = false;
+            bus.AddEffect(BusEffectType.Delay).SetValue(BusEffects.DelayFeedback, 0.5f);
+            var sound = Event(ClipNode("hit", 0.1f));
+            sound.bus = bus;
+            var handle = Engine.Play(sound, null, Vector3.zero);
+            Engine.Tick(0.02f);
+            var rack = Engine.Instances[0].Voices[0].Effects;
+            Engine.Stop(handle.Id, 0f);
+            Engine.Tick(0.02f);
+            Engine.Tick(0.02f);
+            Assert.AreEqual(1, Engine.RingingVoices);
+            return rack;
+        }
+
+        private static void Crunch(AudioBus bus)
+        {
+            var distortion = bus.AddEffect(BusEffectType.Distortion);
+            distortion.SetValue(BusEffects.DistortionDrive, 12f / EffectDsp.MaxDriveDb);
+            distortion.SetValue(BusEffects.DistortionOutput, 0f);
+            distortion.SetValue(BusEffects.DistortionMix, 1f);
+        }
+
+        private static float DistortedPeak(EffectRack rack)
+        {
+            var data = Sine(1000f, 1f, 4800, 1);
+            rack.Dsp.Process(data, 1);
+            return Peak(data);
+        }
+
         private EffectDsp Dsp(StageKind kind, float a, float b, float c)
         {
             var host = Track(new GameObject("Dsp") { hideFlags = HideFlags.HideAndDontSave });
             var dsp = host.AddComponent<EffectDsp>();
+            dsp.Configure(Chain(kind, a, b, c));
+            return dsp;
+        }
+
+        private static EffectChain Chain(StageKind kind, float a, float b, float c)
+        {
             var chain = new EffectChain { Stages = 1 };
             chain.Kinds[0] = kind;
             chain.A[0] = a;
             chain.B[0] = b;
             chain.C[0] = c;
-            dsp.Configure(chain);
-            return dsp;
+            chain.D[0] = 1f;
+            return chain;
         }
 
         private float Gain(StageKind kind, float cutoff, float frequency)

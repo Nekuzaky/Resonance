@@ -37,6 +37,9 @@ namespace Nekuzaky.Resonance.Dev
         {
             public string Name;
             public System.Action Play;
+            public System.Action Then;
+            public float ThenAt;
+            public bool ThenDone;
             public int Start;
         }
 
@@ -76,7 +79,30 @@ namespace Nekuzaky.Resonance.Dev
             distortion.SetValue(BusEffects.DistortionDrive, 12f / EffectDsp.MaxDriveDb);
             distortion.SetValue(BusEffects.DistortionOutput, 0f);
             Add("distortion", engine, Sound("Crunch", sine, crunch));
+            var boosted = Bus("Boosted Distortion");
+            boosted.volume = 12f;
+            var boost = boosted.AddEffect(BusEffectType.Distortion);
+            boost.SetValue(BusEffects.DistortionDrive, 12f / EffectDsp.MaxDriveDb);
+            boost.SetValue(BusEffects.DistortionOutput, 0f);
+            Add("boosted distortion", engine, Sound("Boost", sine, boosted));
+            AddMutedTail(engine, burst);
             AddMusic(engine, sine);
+        }
+
+        private static void AddMutedTail(ResonanceEngine engine, AudioClip burst)
+        {
+            var room = Bus("Muted Reverb");
+            var reverb = room.AddEffect(BusEffectType.Reverb);
+            reverb.SetValue(BusEffects.ReverbMix, 1f);
+            reverb.SetValue(BusEffects.ReverbDecay, 2f);
+            var sound = Sound("Muted Room", burst, room);
+            _steps.Add(new Step
+            {
+                Name = "muted tail",
+                Play = () => engine.Play(sound, null, Vector3.zero),
+                Then = () => room.mute = true,
+                ThenAt = 0.25f
+            });
         }
 
         private static void AddMusic(ResonanceEngine engine, AudioClip sine)
@@ -130,6 +156,7 @@ namespace Nekuzaky.Resonance.Dev
         {
             var channels = Mathf.Max(1, _tap.Channels);
             var count = _tap.Count;
+            RunPending(count, channels);
             if (EditorApplication.timeSinceStartup - _started > Seconds + 10)
                 Finish("timed out waiting for audio");
             else if (_next < _steps.Count && count >= _nextAt)
@@ -142,6 +169,17 @@ namespace Nekuzaky.Resonance.Dev
             }
             else if (_next >= _steps.Count && count >= _nextAt)
                 Finish(null);
+        }
+
+        private static void RunPending(int count, int channels)
+        {
+            foreach (var step in _steps)
+            {
+                if (step.Then == null || step.ThenDone || step.Start <= 0 || count < step.Start + (int)(step.ThenAt * _rate) * channels)
+                    continue;
+                step.ThenDone = true;
+                step.Then();
+            }
         }
 
         private static void Finish(string error)
@@ -204,6 +242,14 @@ namespace Nekuzaky.Resonance.Dev
                 case "reverb":
                     var tail = Rms(onset, 0.4f, 0.8f, channels);
                     Expect(report, Db(tail) > -60f, $"tail 0.3-0.7 s after the clip ended {Db(tail):0.0} dB;");
+                    break;
+                case "boosted distortion":
+                    var boostedPeak = Peak(onset, 0.05f, 0.25f, channels);
+                    Expect(report, boostedPeak > 0.85f && boostedPeak < 1.05f, $"peak {boostedPeak:0.000} with the bus at +12 dB (0.91 when the drive follows the volume the source really plays at, 1.7 when it divides by the full bus gain);");
+                    break;
+                case "muted tail":
+                    var muted = Rms(onset, 0.4f, 0.8f, channels);
+                    Expect(report, Db(muted) < -80f, $"tail after the bus was muted {Db(muted):0.0} dB;");
                     break;
                 case "distortion":
                     var peak = Peak(onset, 0.05f, 0.25f, channels);

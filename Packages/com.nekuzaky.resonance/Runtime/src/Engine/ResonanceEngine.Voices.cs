@@ -158,9 +158,10 @@ namespace Nekuzaky.Resonance
         {
             var instance = voice.Owner;
             var clip = voice.Clip;
-            var volume = Mathf.Clamp01(DryVolume(voice) * busGain);
+            var wanted = DryVolume(voice) * busGain;
+            var volume = Mathf.Clamp01(wanted);
             voice.Apply(volume, PitchOf(clip, instance), instance.LowPass, instance.HighPass);
-            voice.Effects.Apply(Mixer.Chain(instance.Event.bus));
+            voice.Effects.Apply(Mixer.Chain(instance.Event.bus), wanted > 1f ? volume / wanted : 1f);
             voice.Level = voice.Virtual ? 0f : LevelOf(voice, volume, Metering);
         }
 
@@ -190,6 +191,8 @@ namespace Nekuzaky.Resonance
                     _layerPool.Push(voice.Layer);
                 if (!Ring(voice))
                 {
+                    if (voice.Effects.Tail > 0f)
+                        voice.Effects.Clear();
                     voice.Reset();
                     _free.Push(voice);
                 }
