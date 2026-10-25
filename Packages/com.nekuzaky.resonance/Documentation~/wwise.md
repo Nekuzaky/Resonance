@@ -13,6 +13,8 @@
 | Switch Group | Switch Group |
 | State Group | State Group |
 | Audio Bus, Master Audio Bus | Bus with parent, optional Unity Audio Mixer output |
+| Effects on busses (filters, RoomVerb, Delay, Guitar Distortion, Compressor) | Bus effects: Low Pass, High Pass, Reverb (send or insert), Delay, Distortion, Compressor |
+| RTPC and States on effect properties | Effect settings driven by Parameters, faded by Mix Snapshots |
 | Auto-ducking | Duck Rules on the bus |
 | States on buses | Mix Snapshots |
 | Playback limit, priority, virtual voices | Max Instances, Priority, Virtualize When Far, voice budget |
@@ -37,6 +39,6 @@
 | Integrity report, references | Audit tab, Used By |
 | Wwise Timeline track | Resonance Track with Sound Event and Game State clips |
 
-What Resonance does not do in this version: its own DSP and plug-ins (use a bus Output to a Unity Audio Mixer for
-effects), sound propagation through portals and diffraction, dialogue trees and voice-over recording workflows,
+What Resonance does not do in this version: effect plug-ins beyond its six bus effects, effects on WebGL, a
+sample-accurate limiter and sidechain compression (use a bus Output to a Unity Audio Mixer for those), sound propagation through portals and diffraction, dialogue trees and voice-over recording workflows,
 and memory budgets per bank.

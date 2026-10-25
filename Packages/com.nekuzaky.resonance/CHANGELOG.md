@@ -3,6 +3,30 @@
 All notable changes to this package are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- Bus effects: an ordered chain on every bus with Low Pass, High Pass, Reverb (send or insert), Delay, Distortion and a
+  Compressor, edited in the Mixer tab (and in the bus inspector) with bypass, reordering and live values.
+- Effect settings driven by Parameters through curves, and faded by Mix Snapshots (new Effects list on the snapshot).
+- Delay and reverb tails ring out after a sound ends or is stopped instead of being cut.
+- `AudioBus.AddEffect`, `BusEffect.SetValue` and `BusEffects` for building chains from scripts.
+
+### Changed
+
+- Music layers play on their own child objects, so bus effects reach every layer.
+- Bus strips in the Mixer tab are wider, with an effects button and the effect names under the fader.
+
+### Verified
+
+- Allocation free once warmed up, with every effect, a parameter curve, an active snapshot, compressor detection and
+  ringing tails (new `PerformanceTests`).
+- The real output recorded at the Audio Listener in Edit Mode: the low pass cuts a tone by 28 dB, a 300 ms echo and a
+  reverb tail are heard after the sound ended, the distortion drive ignores the bus fader and music layers are
+  filtered.
+- Existing buses and snapshots load unchanged, with an empty chain.
+
 ## [0.5.1] - 2026-10-24
 
 ### Changed
