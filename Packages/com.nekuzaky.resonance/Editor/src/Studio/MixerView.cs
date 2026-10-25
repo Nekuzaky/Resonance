@@ -157,13 +157,23 @@ namespace Nekuzaky.Resonance.Editor
             if (_fader.focusController?.focusedElement != _fader)
                 _fader.SetValueWithoutNotify(_bus.volume);
             var state = engine != null && engine.Mixer.Buses.TryGetValue(_bus, out var found) ? found : null;
-            _level = state?.Meter ?? 0f;
-            _peak = state?.Peak ?? 0f;
-            var duck = state?.Duck ?? 0f;
-            _db.text = duck < -0.1f ? $"{Ui.Decibels(_bus.volume)}  ({duck:0.0})" : Ui.Decibels(_bus.volume);
+            var level = state?.Meter ?? 0f;
+            var peak = state?.Peak ?? 0f;
+            if (!level.Equals(_level) || !peak.Equals(_peak))
+            {
+                _level = level;
+                _peak = peak;
+                _meter.MarkDirtyRepaint();
+            }
+            var duck = Mathf.Round((state?.Duck ?? 0f) * 10f) / 10f;
+            if (!duck.Equals(_shownDuck) || !_bus.volume.Equals(_shownVolume))
+            {
+                _shownDuck = duck;
+                _shownVolume = _bus.volume;
+                _db.text = duck < -0.1f ? $"{Ui.Decibels(_bus.volume)}  ({duck:0.0})" : Ui.Decibels(_bus.volume);
+            }
             _mute.EnableInClassList("rs-button--mute-on", _bus.mute || (state?.Muted ?? false));
             _solo.EnableInClassList("rs-button--solo-on", state?.Soloed ?? false);
-            _meter.MarkDirtyRepaint();
         }
 
         #endregion
@@ -178,8 +188,10 @@ namespace Nekuzaky.Resonance.Editor
         private readonly Label _info;
         private readonly Button _mute;
         private readonly Button _solo;
-        private float _level;
-        private float _peak;
+        private float _level = -1f;
+        private float _peak = -1f;
+        private float _shownDuck = float.NaN;
+        private float _shownVolume = float.NaN;
 
         private void Toggle(bool mute)
         {

@@ -29,6 +29,9 @@ All notable changes to this package are documented here. The format follows
   once per frame, and skips occlusion rays for sounds out of range (they are virtual, so they cannot be heard). In
   the demo player, 400 sounds cost 0.15 ms per frame instead of 0.17 ms; 250 occluded sounds on a two-level bus
   hierarchy with a snapshot, half of them out of range, went from about 0.48 ms to 0.24 ms in the editor tests.
+- The Studio Profiler reuses its table rows instead of rebuilding them ten times a second, and its history records
+  without allocating: one refresh with 100 sounds went from about 5 ms to 0.07 ms. Mixer meters repaint only when
+  their level changes.
 
 ## [0.5.1] - 2026-10-24
 
