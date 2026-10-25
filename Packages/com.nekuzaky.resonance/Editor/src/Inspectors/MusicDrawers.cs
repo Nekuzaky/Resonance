@@ -9,17 +9,19 @@ namespace Nekuzaky.Resonance.Editor
     {
         public static IEnumerable<string> Segments(SerializedProperty property)
         {
+            var names = new List<string>();
             if (property.serializedObject.targetObject is not MusicTrack track)
-                yield break;
+                return names;
             foreach (var segment in track.segments)
             {
                 if (segment != null && !string.IsNullOrEmpty(segment.name))
-                    yield return segment.name;
+                    names.Add(segment.name);
             }
+            return names;
         }
 
         public static IEnumerable<string> States(SerializedProperty property) =>
-            property.serializedObject.targetObject is MusicTrack track ? InspectorKit.States(track.stateGroup) : new string[0];
+            property.serializedObject.targetObject is MusicTrack track ? InspectorKit.States(track.stateGroup) : System.Array.Empty<string>();
 
         public static void RefreshOnChange(VisualElement root, SerializedProperty property, params ChoiceField[] fields)
         {

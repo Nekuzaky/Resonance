@@ -13,8 +13,6 @@ namespace Nekuzaky.Resonance
 
         public int OnDemandLoads { get; private set; }
 
-        public int PendingUnloads => _deferred.Count;
-
         internal System.Action<AudioClip> UnloadData = clip => clip.UnloadAudioData();
 
         internal System.Func<AudioClip, bool> InUse;
