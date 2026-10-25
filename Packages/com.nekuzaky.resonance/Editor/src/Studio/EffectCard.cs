@@ -77,20 +77,28 @@ namespace Nekuzaky.Resonance.Editor
             _on = new Toggle("On") { value = !Effect.bypass, tooltip = "Turn the effect off without losing its settings." };
             _on.RegisterValueChangedCallback(evt => EffectEditing.Change(_bus, "Bypass bus effect", () => Effect.bypass = !evt.newValue));
             header.Add(_on);
-            header.Add(Ui.IconButton(Glyphs.Up, "Move up (earlier in the chain)", () => Move(-1), "rs-button--flat"));
-            header.Add(Ui.IconButton(Glyphs.Down, "Move down (later in the chain)", () => Move(1), "rs-button--flat"));
-            header.Add(Ui.IconButton(Glyphs.Remove, "Remove the effect", Remove, "rs-button--flat"));
+            var up = Ui.IconButton(Glyphs.Up, "Move up (earlier in the chain)", () => Move(-1), "rs-button--flat", "rs-effect-up");
+            up.SetEnabled(_index > 0);
+            header.Add(up);
+            var down = Ui.IconButton(Glyphs.Down, "Move down (later in the chain)", () => Move(1), "rs-button--flat", "rs-effect-down");
+            down.SetEnabled(_index < Mathf.Min(_bus.effects.Count, BusEffects.MaxEffects) - 1);
+            header.Add(down);
+            header.Add(Ui.IconButton(Glyphs.Remove, "Remove the effect", Remove, "rs-button--flat", "rs-effect-remove"));
             return header;
         }
 
         private VisualElement Routing()
         {
-            var field = new EnumField("Routing", Effect.routing)
+            var row = Ui.Box("rs-effect-row", "rs-effect-routing");
+            row.Add(Ui.Styled("Routing", "rs-effect-label"));
+            var field = new EnumField(Effect.routing)
             {
                 tooltip = "Send keeps the dry sound at full level and adds the reverb. Insert crossfades from dry to wet with Mix."
             };
+            field.AddToClassList("rs-effect-slider");
             field.RegisterValueChangedCallback(evt => EffectEditing.Change(_bus, "Change reverb routing", () => Effect.routing = (ReverbRouting)evt.newValue));
-            return field;
+            row.Add(field);
+            return row;
         }
 
         private VisualElement Modulations()
@@ -105,22 +113,25 @@ namespace Nekuzaky.Resonance.Editor
             return field;
         }
 
-        private void Move(int direction)
+        internal void Move(int direction)
         {
-            var target = _index + direction;
-            if (target < 0 || target >= _bus.effects.Count)
+            var index = _bus.effects.IndexOf(Effect);
+            var target = index + direction;
+            if (index < 0 || target < 0 || target >= _bus.effects.Count)
                 return;
             EffectEditing.Change(_bus, "Move bus effect", () =>
             {
-                _bus.effects[_index] = _bus.effects[target];
+                _bus.effects[index] = _bus.effects[target];
                 _bus.effects[target] = Effect;
             });
             _rebuild();
         }
 
-        private void Remove()
+        internal void Remove()
         {
-            EffectEditing.Change(_bus, "Remove bus effect", () => _bus.effects.RemoveAt(_index));
+            var index = _bus.effects.IndexOf(Effect);
+            if (index >= 0)
+                EffectEditing.Change(_bus, "Remove bus effect", () => _bus.effects.RemoveAt(index));
             _rebuild();
         }
 

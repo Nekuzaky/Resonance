@@ -309,6 +309,7 @@
 .rs-strip-effects { color: var(--rs-accent); font-size: 10px; margin-top: 6px; white-space: normal; -unity-text-align: middle-center; }
 
 .rs-effects { padding: 0 12px 12px 12px; max-width: 720px; }
+.rs-effects--inspector { padding: 0; margin-top: 8px; }
 .rs-effects-header { flex-direction: row; align-items: center; margin-bottom: 2px; }
 .rs-effect {
     padding: 6px 8px;

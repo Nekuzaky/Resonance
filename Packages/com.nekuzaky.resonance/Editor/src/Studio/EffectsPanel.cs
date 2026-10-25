@@ -14,6 +14,8 @@ namespace Nekuzaky.Resonance.Editor
 
         public AudioBus Bus { get; private set; }
 
+        internal IReadOnlyList<EffectCard> Cards => _cards;
+
         public EffectsPanel()
         {
             Element = Ui.Box("rs-effects");
@@ -45,17 +47,22 @@ namespace Nekuzaky.Resonance.Editor
         #region Private and Protected
 
         private readonly List<EffectCard> _cards = new();
+        private int _shownCount = -1;
 
         private bool Changed()
         {
-            if (Bus.effects.Count != _cards.Count)
-                return true;
-            for (var i = 0; i < _cards.Count; i++)
+            var shown = 0;
+            var count = Mathf.Min(Bus.effects.Count, BusEffects.MaxEffects);
+            for (var i = 0; i < count; i++)
             {
-                if (!ReferenceEquals(Bus.effects[i], _cards[i].Effect))
+                var effect = Bus.effects[i];
+                if (effect == null)
+                    continue;
+                if (shown >= _cards.Count || !ReferenceEquals(effect, _cards[shown].Effect))
                     return true;
+                shown++;
             }
-            return false;
+            return shown != _cards.Count || _shownCount != Bus.effects.Count;
         }
 
         private void Rebuild()
@@ -77,6 +84,7 @@ namespace Nekuzaky.Resonance.Editor
                 Element.Add(Ui.Help("Click the effects button of a bus to edit its effect chain: filters, reverb, delay, distortion and a compressor."));
                 return;
             }
+            _shownCount = Bus.effects.Count;
             Element.Add(Ui.Help(Help(Bus)));
             for (var i = 0; i < Bus.effects.Count && i < BusEffects.MaxEffects; i++)
             {

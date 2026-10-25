@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Nekuzaky.Resonance.Editor;
 using NUnit.Framework;
 using UnityEditor;
@@ -24,7 +25,7 @@ namespace Nekuzaky.Resonance.Tests
             var rows = 0;
             foreach (BusEffectType type in Enum.GetValues(typeof(BusEffectType)))
                 rows += BusEffects.Parameters(type).Count;
-            Assert.AreEqual(rows, panel.Element.Query(className: "rs-effect-row").ToList().Count);
+            Assert.AreEqual(rows + 1, panel.Element.Query(className: "rs-effect-row").ToList().Count, "One row per parameter, plus the reverb routing");
         }
 
         [Test]
@@ -90,6 +91,144 @@ namespace Nekuzaky.Resonance.Tests
             var choices = target.Query<DropdownField>().ToList();
             Assert.AreEqual("3. Reverb", choices[0].value);
             Assert.AreEqual("Decay (s)", choices[1].value);
+        }
+
+        [Test]
+        public void BusInspector_HidesTheRawListAndShowsTheEffectsPanel()
+        {
+            var bus = BusWithEveryEffect();
+            var editor = (AudioBusInspector)UnityEditor.Editor.CreateEditor(bus);
+            try
+            {
+                var gui = editor.CreateInspectorGUI();
+
+                foreach (var field in gui.Query<PropertyField>().ToList())
+                    Assert.AreNotEqual("effects", field.bindingPath);
+                Assert.IsNotNull(gui.Q<PropertyField>());
+                Assert.AreEqual(bus.effects.Count, gui.Query(className: "rs-effect").ToList().Count);
+                Assert.AreSame(bus, editor.Effects.Bus);
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(editor);
+            }
+        }
+
+        [Test]
+        public void EffectCard_MoveShowsTheNewOrder()
+        {
+            var bus = Chain(BusEffectType.LowPass, BusEffectType.Delay, BusEffectType.Reverb);
+            var editor = (AudioBusInspector)UnityEditor.Editor.CreateEditor(bus);
+            try
+            {
+                var gui = editor.CreateInspectorGUI();
+
+                Card(editor.Effects, 1).Move(-1);
+
+                Assert.AreEqual(BusEffectType.Delay, bus.effects[0].type);
+                CollectionAssert.AreEqual(new[] { "Delay", "Low Pass", "Reverb" }, Names(editor.Effects));
+                Assert.AreEqual(3, gui.Query(className: "rs-effect").ToList().Count);
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(editor);
+            }
+        }
+
+        [Test]
+        public void EffectCard_RemovesItsOwnEffectAfterTheChainMoved()
+        {
+            var bus = Chain(BusEffectType.LowPass, BusEffectType.Delay, BusEffectType.Reverb);
+            var reverb = bus.effects[2];
+            var card = new EffectCard(bus, 2, () => { });
+            (bus.effects[0], bus.effects[2]) = (bus.effects[2], bus.effects[0]);
+
+            card.Remove();
+
+            Assert.AreEqual(2, bus.effects.Count);
+            Assert.IsFalse(bus.effects.Contains(reverb));
+            Assert.AreEqual(BusEffectType.Delay, bus.effects[0].type);
+            Assert.AreEqual(BusEffectType.LowPass, bus.effects[1].type);
+        }
+
+        [Test]
+        public void EffectCard_RemoveCanBeUndone()
+        {
+            var bus = Chain(BusEffectType.LowPass, BusEffectType.Delay);
+            var panel = new EffectsPanel();
+            panel.Show(bus);
+            Undo.IncrementCurrentGroup();
+
+            Card(panel, 0).Remove();
+            Assert.AreEqual(1, bus.effects.Count);
+            Undo.PerformUndo();
+            panel.Refresh(Engine);
+
+            Assert.AreEqual(2, bus.effects.Count);
+            CollectionAssert.AreEqual(new[] { "Low Pass", "Delay" }, Names(panel));
+        }
+
+        [Test]
+        public void EffectCard_DisablesUpOnTheFirstAndDownOnTheLast()
+        {
+            var bus = Chain(BusEffectType.LowPass, BusEffectType.Delay, BusEffectType.Reverb);
+            var panel = new EffectsPanel();
+            panel.Show(bus);
+            var cards = panel.Element.Query(className: "rs-effect").ToList();
+
+            Assert.IsFalse(cards[0].Q(className: "rs-effect-up").enabledSelf);
+            Assert.IsTrue(cards[0].Q(className: "rs-effect-down").enabledSelf);
+            Assert.IsTrue(cards[1].Q(className: "rs-effect-up").enabledSelf);
+            Assert.IsTrue(cards[1].Q(className: "rs-effect-down").enabledSelf);
+            Assert.IsTrue(cards[2].Q(className: "rs-effect-up").enabledSelf);
+            Assert.IsFalse(cards[2].Q(className: "rs-effect-down").enabledSelf);
+        }
+
+        [Test]
+        public void ReverbCard_LaysOutRoutingLikeTheSliderRows()
+        {
+            var bus = Chain(BusEffectType.Reverb);
+            var card = new EffectCard(bus, 0, () => { });
+
+            var routing = card.Element.Q(className: "rs-effect-routing");
+
+            Assert.IsTrue(routing.ClassListContains("rs-effect-row"));
+            Assert.AreEqual("Routing", routing.Q<Label>(className: "rs-effect-label").text);
+            Assert.IsNotNull(routing.Q<EnumField>(className: "rs-effect-slider"));
+        }
+
+        [Test]
+        public void EffectsPanel_DoesNotRebuildForAnEmptyEntry()
+        {
+            var bus = Chain(BusEffectType.LowPass, BusEffectType.Delay);
+            bus.effects.Insert(1, null);
+            var panel = new EffectsPanel();
+            panel.Show(bus);
+            panel.Refresh(Engine);
+            var first = panel.Element.Q(className: "rs-effect");
+
+            panel.Refresh(Engine);
+            panel.Refresh(Engine);
+
+            Assert.AreSame(first, panel.Element.Q(className: "rs-effect"));
+        }
+
+        private AudioBus Chain(params BusEffectType[] types)
+        {
+            var bus = Asset<AudioBus>("Chain");
+            foreach (var type in types)
+                bus.AddEffect(type);
+            return bus;
+        }
+
+        private static EffectCard Card(EffectsPanel panel, int index) => panel.Cards[index];
+
+        private static List<string> Names(EffectsPanel panel)
+        {
+            var names = new List<string>();
+            foreach (var label in panel.Element.Query<Label>(className: "rs-effect-name").ToList())
+                names.Add(label.text);
+            return names;
         }
 
         private AudioBus BusWithEveryEffect()
