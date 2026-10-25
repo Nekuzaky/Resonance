@@ -46,6 +46,7 @@ namespace Nekuzaky.Resonance
         }
 
         private static readonly Dictionary<AudioClip, Envelope> Cache = new();
+        private static bool Readable => Application.platform != RuntimePlatform.WebGLPlayer;
 
         private static Envelope Entry(AudioClip clip)
         {
@@ -55,7 +56,7 @@ namespace Nekuzaky.Resonance
                 return cached.Failed ? null : cached;
             var entry = new Envelope();
             Cache[clip] = entry;
-            if (clip.loadType == AudioClipLoadType.Streaming || clip.samples <= 0 ||
+            if (!Readable || clip.loadType == AudioClipLoadType.Streaming || clip.samples <= 0 ||
                 (clip.loadState != AudioDataLoadState.Loaded && !clip.LoadAudioData()))
             {
                 entry.Failed = true;

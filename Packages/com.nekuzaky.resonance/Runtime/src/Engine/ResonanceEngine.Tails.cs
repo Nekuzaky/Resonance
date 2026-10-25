@@ -18,6 +18,7 @@ namespace Nekuzaky.Resonance
 
         private readonly List<Voice> _ringing = new();
         private static AudioClip _silence;
+        private static bool TailsAudible => Application.platform != RuntimePlatform.WebGLPlayer;
 
         private static AudioClip Silence
         {
@@ -36,7 +37,7 @@ namespace Nekuzaky.Resonance
         {
             var source = voice.Source;
             var tail = voice.Effects.Tail;
-            if (voice.Virtual || tail <= 0f || source == null || source.clip == null || _ringing.Count >= MaxRingingVoices)
+            if (!TailsAudible || voice.Virtual || tail <= 0f || source == null || source.clip == null || _ringing.Count >= MaxRingingVoices)
                 return false;
             var owner = voice.Owner;
             voice.RingBus = owner != null ? owner.Event.bus : null;

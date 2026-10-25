@@ -67,8 +67,8 @@ the bus down above the threshold. It works on the mix of the bus (not sound by s
 level comes from each clip's envelope (RMS over 1024 samples) and the gain changes once per frame. It is a leveler,
 good for dialogue, music under gameplay or keeping a busy SFX bus in check. It cannot catch single-sample peaks, so it
 is not a brickwall limiter; for that, add a limiter to an Audio Mixer group. Clips whose samples Unity cannot read
-(Streaming, or Compressed In Memory) are measured as a steady -12 dBFS. The Mixer tab shows the gain reduction under
-the bus fader.
+(Streaming, Compressed In Memory, and every clip on WebGL) are measured as a steady -12 dBFS. The Mixer tab shows the
+gain reduction under the bus fader.
 
 ### Cost and platforms
 
@@ -77,8 +77,10 @@ filters and its own reverb, so 30 sounds on a reverb bus run 30 reverbs; for one
 Zones. Everything is allocation free once warmed up and works the same in the Edit Mode preview and in Play Mode.
 
 On WebGL, Unity's web audio has no audio filters and no `OnAudioFilterRead`: Low Pass, High Pass, Distortion, Delay and
-Reverb do nothing there (the filters of Sound Events and occlusion do nothing either). The compressor still works,
-because it only changes volumes. Android, iOS and desktop players run every effect.
+Reverb do nothing there (the filters of Sound Events and occlusion do nothing either), and voices go back to the pool
+as soon as their sound ends instead of waiting for a tail nobody can hear. The compressor still changes the bus volume,
+but WebGL cannot read clip samples, so it reacts to the fixed -12 dBFS estimate of every playing clip, not to its real
+level. Android, iOS and desktop players run every effect.
 
 ## Ducking
 
