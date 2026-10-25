@@ -92,7 +92,7 @@ namespace Nekuzaky.Resonance
         {
             var source = voice.Source;
             var spatial = sound.Spatial;
-            voice.Transform.position = position;
+            voice.Place(position);
             source.outputAudioMixerGroup = sound.bus != null ? sound.bus.ResolveOutput() : null;
             source.spatialBlend = sound.spatialize && !Preview ? spatial.blend : 0f;
             source.minDistance = spatial.minDistance;

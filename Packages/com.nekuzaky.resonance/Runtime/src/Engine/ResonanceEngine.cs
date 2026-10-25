@@ -72,7 +72,7 @@ namespace Nekuzaky.Resonance
         internal readonly ReverbMixer Reverb;
         internal readonly AudioMemory Memory = new();
 
-        internal IReadOnlyList<SoundInstance> Instances => _instances;
+        internal List<SoundInstance> Instances => _instances;
 
         private readonly Transform _host;
         private readonly Resolver _resolver;

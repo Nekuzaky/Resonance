@@ -12,7 +12,7 @@ namespace Nekuzaky.Resonance
                 return;
 
             var instance = voice.Owner;
-            voice.Transform.position = instance.Position;
+            voice.Place(instance.Position);
             voice.BlendWeight = BlendOf(voice);
 
             var far = Simulate || IsFar(instance);
@@ -154,21 +154,9 @@ namespace Nekuzaky.Resonance
         {
             var instance = voice.Owner;
             var clip = voice.Clip;
-            var volume = clip.Gain * instance.Gain * instance.Fade * voice.BlendWeight * busGain;
-            var source = voice.Source;
-            source.volume = Mathf.Clamp01(volume);
-            source.pitch = PitchOf(clip, instance);
-
-            var lowPass = instance.LowPass < AudioMath.OpenLowPass - 1f;
-            voice.LowPass.enabled = lowPass;
-            if (lowPass)
-                voice.LowPass.cutoffFrequency = instance.LowPass;
-            var highPass = instance.HighPass > AudioMath.OpenHighPass + 1f;
-            voice.HighPass.enabled = highPass;
-            if (highPass)
-                voice.HighPass.cutoffFrequency = instance.HighPass;
-
-            voice.Level = voice.Virtual ? 0f : LevelOf(voice, source.volume);
+            var volume = Mathf.Clamp01(clip.Gain * instance.Gain * instance.Fade * voice.BlendWeight * busGain);
+            voice.Apply(volume, PitchOf(clip, instance), instance.LowPass, instance.HighPass);
+            voice.Level = voice.Virtual ? 0f : LevelOf(voice, volume);
         }
 
         private float LevelOf(Voice voice, float volume)

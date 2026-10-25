@@ -23,6 +23,13 @@ All notable changes to this package are documented here. The format follows
 - A Snapshot Trigger removes its snapshot when its scene is unloaded; before, the snapshot stayed applied for the
   rest of the game.
 
+### Changed
+
+- The engine update only writes audio source, filter and transform properties that changed, computes each bus gain
+  once per frame, and skips occlusion rays for sounds out of range (they are virtual, so they cannot be heard). In
+  the demo player, 400 sounds cost 0.15 ms per frame instead of 0.17 ms; 250 occluded sounds on a two-level bus
+  hierarchy with a snapshot, half of them out of range, went from about 0.48 ms to 0.24 ms in the editor tests.
+
 ## [0.5.1] - 2026-10-24
 
 ### Changed

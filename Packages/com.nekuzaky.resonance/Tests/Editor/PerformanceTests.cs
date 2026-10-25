@@ -62,6 +62,41 @@ namespace Nekuzaky.Resonance.Tests
         }
 
         [Test]
+        public void Tick_StaysFastInAMixedScene()
+        {
+            Engine.Preview = false;
+            Engine.MaxVoices = 512;
+            var listener = Track(new GameObject("Listener"));
+            Engine.Listener = listener.transform;
+            var wall = Track(GameObject.CreatePrimitive(PrimitiveType.Cube));
+            wall.transform.position = new Vector3(0f, 0f, 20f);
+            wall.transform.localScale = new Vector3(200f, 10f, 0.5f);
+            Physics.SyncTransforms();
+            var master = Asset<AudioBus>("Master");
+            var sfx = Asset<AudioBus>("SFX");
+            sfx.parent = master;
+            var snapshot = Asset<MixSnapshot>("Pause");
+            snapshot.offsets.Add(new BusOffset { bus = sfx, volume = -6f });
+            Engine.Mixer.Apply(snapshot);
+            var sound = Event(ClipNode("loop", 4f, true));
+            sound.bus = sfx;
+            sound.occlusion.enabled = true;
+            sound.occlusion.interval = 0.02f;
+            for (var i = 0; i < 250; i++)
+            {
+                var emitter = Track(new GameObject("Emitter"));
+                emitter.transform.position = new Vector3(i % 25 * 4f - 50f, 0f, i < 125 ? 25f : 400f + i);
+                Engine.Play(sound, emitter, Vector3.zero);
+            }
+
+            var milliseconds = AverageTick(120);
+
+            Assert.AreEqual(250, Engine.Stats.Instances);
+            Debug.Log($"[Scale] 250 sounds, two buses, a snapshot, occlusion, half out of range: {milliseconds:0.000} ms per tick");
+            Assert.Less(milliseconds, 2f);
+        }
+
+        [Test]
         public void Tick_StaysFastWhileStealingEveryFrame()
         {
             var listener = Track(new GameObject("Listener"));
