@@ -102,7 +102,7 @@ namespace Nekuzaky.Resonance
             if (sound == null)
                 return SoundHandle.None;
 
-            var admission = Admit(sound, emitter);
+            var admission = Admit(sound, emitter, out var victim);
             if (admission != PlayResult.Played && admission != PlayResult.Stolen)
                 return Reject(sound, emitter, admission);
 
@@ -111,12 +111,14 @@ namespace Nekuzaky.Resonance
             if (_plan.Layers.Count == 0)
                 return Reject(sound, emitter, PlayResult.Empty);
 
-            var room = MakeRoom(sound, _plan.Layers.Count);
+            var room = MakeRoom(sound, _plan.Layers.Count, victim);
             if (room < 0)
             {
                 _plan.Release();
                 return Reject(sound, emitter, PlayResult.RejectedVoices);
             }
+            if (victim != null && victim.State == InstanceState.Playing)
+                BeginStop(victim, StealFade);
 
             var instance = Begin(sound, emitter, position);
             var stolen = room > 0 || admission == PlayResult.Stolen;
@@ -186,8 +188,9 @@ namespace Nekuzaky.Resonance
 
         #region Private and Protected
 
-        private PlayResult Admit(SoundEvent sound, GameObject emitter)
+        private PlayResult Admit(SoundEvent sound, GameObject emitter, out SoundInstance victim)
         {
+            victim = null;
             if (sound.cooldown > 0f && _lastPlay.TryGetValue(sound, out var last) && _time - last < sound.cooldown)
                 return PlayResult.Cooldown;
             if (sound.maxInstances <= 0)
@@ -199,11 +202,8 @@ namespace Nekuzaky.Resonance
             if (sound.limitBehavior == LimitBehavior.RejectNew)
                 return PlayResult.RejectedLimit;
 
-            var victim = PickVictim(sound, scope);
-            if (victim == null)
-                return PlayResult.RejectedLimit;
-            BeginStop(victim, StealFade);
-            return PlayResult.Stolen;
+            victim = PickVictim(sound, scope);
+            return victim == null ? PlayResult.RejectedLimit : PlayResult.Stolen;
         }
 
         private SoundInstance PickVictim(SoundEvent sound, GameObject scope)
@@ -222,32 +222,40 @@ namespace Nekuzaky.Resonance
             return victim;
         }
 
-        private int MakeRoom(SoundEvent sound, int needed)
+        private int MakeRoom(SoundEvent sound, int needed, SoundInstance victim)
         {
             var excess = ActiveVoices() + needed - MaxVoices;
             if (excess <= 0)
                 return 0;
-            if (needed > MaxVoices || StealableVoices(sound.priority) < excess)
+            if (needed > MaxVoices || StealableVoices(sound.priority, victim) < excess)
                 return -1;
+            if (victim != null)
+                excess -= Evict(victim);
             for (var guard = 0; guard < MaxVoices + 1 && excess > 0; guard++)
             {
-                var victim = LowestPriority(sound.priority);
-                if (victim == null)
+                var lowest = LowestPriority(sound.priority);
+                if (lowest == null)
                     return -1;
-                excess -= victim.Voices.Count;
-                QueueEnded(victim);
-                Release(victim);
-                _instances.Remove(victim);
+                excess -= Evict(lowest);
             }
             return 1;
         }
 
-        private int StealableVoices(int priority)
+        private int Evict(SoundInstance instance)
+        {
+            var voices = instance.Voices.Count;
+            QueueEnded(instance);
+            Release(instance);
+            _instances.Remove(instance);
+            return voices;
+        }
+
+        private int StealableVoices(int priority, SoundInstance victim)
         {
             var count = 0;
             foreach (var instance in _instances)
             {
-                if (instance.State != InstanceState.Done && instance.Event.priority <= priority)
+                if (instance.State != InstanceState.Done && (instance.Event.priority <= priority || instance == victim))
                     count += instance.Voices.Count;
             }
             return count;

@@ -56,6 +56,64 @@ namespace Nekuzaky.Resonance.Tests
             Assert.IsTrue(Engine.IsPlaying(ambience.Id), "The voice of the stolen shot must be reclaimed before stealing another sound");
             Assert.AreEqual(2, Engine.CountPlaying(shot, null));
         }
+
+        [Test]
+        public void InstanceLimitSteal_KeepsTheVictimWhenTheVoiceBudgetRejectsThePlay()
+        {
+            Engine.MaxVoices = 4;
+            var layers = Container<LayerNode>(ClipNode("a", 10f));
+            var shot = Event(layers, "Shot");
+            shot.priority = 100;
+            shot.maxInstances = 1;
+            shot.limitBehavior = LimitBehavior.StealOldest;
+            var chord = Event(Container<LayerNode>(ClipNode("x", 10f), ClipNode("y", 10f), ClipNode("z", 10f)), "Chord");
+            chord.priority = 200;
+
+            var first = Engine.Play(shot, null, Vector3.zero);
+            Engine.Play(chord, null, Vector3.zero);
+            layers.children.Add(ClipNode("b", 10f));
+            var rejected = Engine.Play(shot, null, Vector3.zero);
+            Engine.Tick(0.1f);
+
+            Assert.IsFalse(rejected.IsValid);
+            Assert.AreEqual(PlayResult.RejectedVoices, Engine.Stats.LogAt(0).Result);
+            Assert.AreEqual(1, Engine.CountPlaying(shot, null), "A refused play must not stop the instance it would have stolen");
+            Assert.IsTrue(Engine.IsPlaying(first.Id));
+        }
+
+        [Test]
+        public void InstanceLimitSteal_KeepsTheVictimWhenThePlayIsEmpty()
+        {
+            var node = ClipNode("a", 10f);
+            var shot = Event(node, "Shot");
+            shot.maxInstances = 1;
+
+            var first = Engine.Play(shot, null, Vector3.zero);
+            node.clip = null;
+            var empty = Engine.Play(shot, null, Vector3.zero);
+            Engine.Tick(0.1f);
+
+            Assert.IsFalse(empty.IsValid);
+            Assert.AreEqual(PlayResult.Empty, Engine.Stats.LogAt(0).Result);
+            Assert.AreEqual(1, Engine.CountPlaying(shot, null));
+            Assert.IsTrue(Engine.IsPlaying(first.Id));
+        }
+
+        [Test]
+        public void InstanceLimitSteal_StopsTheVictimWhenThePlaySucceeds()
+        {
+            var shot = Event(ClipNode("a", 10f), "Shot");
+            shot.maxInstances = 1;
+
+            var first = Engine.Play(shot, null, Vector3.zero);
+            var second = Engine.Play(shot, null, Vector3.zero);
+            Engine.Tick(0.1f);
+
+            Assert.IsTrue(second.IsValid);
+            Assert.AreEqual(PlayResult.Stolen, Engine.Stats.LogAt(0).Result);
+            Assert.IsFalse(Engine.IsPlaying(first.Id));
+            Assert.AreEqual(1, Engine.CountPlaying(shot, null));
+        }
     }
 
     public sealed class VirtualVoiceTests : Fixture
