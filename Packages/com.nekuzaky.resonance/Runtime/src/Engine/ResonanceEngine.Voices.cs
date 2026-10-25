@@ -33,8 +33,12 @@ namespace Nekuzaky.Resonance
             }
             CheckMarkers(voice);
             Mix(voice, busGain);
-            if (!voice.Virtual)
-                Mixer.CountVoice(instance.Event.bus, voice.Level);
+            if (voice.Virtual)
+                return;
+            var bus = instance.Event.bus;
+            Mixer.CountVoice(bus, voice.Level);
+            if (Mixer.Chain(bus).Compressed)
+                Mixer.Detect(bus, LevelOf(voice, DryVolume(voice), true));
         }
 
         private bool IsFar(SoundInstance instance)
@@ -151,7 +155,7 @@ namespace Nekuzaky.Resonance
         {
             var instance = voice.Owner;
             var clip = voice.Clip;
-            var volume = clip.Gain * instance.Gain * instance.Fade * voice.BlendWeight * busGain;
+            var volume = DryVolume(voice) * busGain;
             var source = voice.Source;
             source.volume = Mathf.Clamp01(volume);
             source.pitch = Mathf.Clamp(clip.Pitch * instance.Pitch, 0.01f, 4f);
@@ -164,15 +168,22 @@ namespace Nekuzaky.Resonance
             voice.HighPass.enabled = highPass;
             if (highPass)
                 voice.HighPass.cutoffFrequency = instance.HighPass;
+            voice.Effects.Apply(Mixer.Chain(instance.Event.bus));
 
-            voice.Level = voice.Virtual ? 0f : LevelOf(voice, source.volume);
+            voice.Level = voice.Virtual ? 0f : LevelOf(voice, source.volume, Metering);
         }
 
-        private float LevelOf(Voice voice, float volume)
+        private static float DryVolume(Voice voice)
+        {
+            var instance = voice.Owner;
+            return voice.Clip.Gain * instance.Gain * instance.Fade * voice.BlendWeight;
+        }
+
+        private float LevelOf(Voice voice, float volume, bool envelope)
         {
             var instance = voice.Owner;
             var sound = instance.Event;
-            var level = Metering ? ClipEnvelopes.At(voice.Source.clip, voice.Source.timeSamples) * volume : volume;
+            var level = envelope ? ClipEnvelopes.At(voice.Source.clip, voice.Source.timeSamples) * volume : volume;
             if (!sound.spatialize || Preview)
                 return level;
             var attenuation = sound.Spatial.Attenuation(instance.Distance);
@@ -186,8 +197,11 @@ namespace Nekuzaky.Resonance
                 EndSubtitle(voice);
                 if (voice.Layer != null)
                     _layerPool.Push(voice.Layer);
-                voice.Reset();
-                _free.Push(voice);
+                if (!Ring(voice))
+                {
+                    voice.Reset();
+                    _free.Push(voice);
+                }
             }
             instance.Voices.Clear();
             instance.State = InstanceState.Done;

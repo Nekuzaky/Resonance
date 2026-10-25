@@ -94,6 +94,7 @@ namespace Nekuzaky.Resonance
 
         private void ApplyVolumes(double now)
         {
+            var chain = _mixer.Chain(Track.bus);
             for (var i = 0; i < _decks.Length; i++)
             {
                 var deck = _decks[i];
@@ -107,10 +108,11 @@ namespace Nekuzaky.Resonance
                 }
                 var fade = deck.FadeAt(now);
                 deck.Source.volume = UnityEngine.Mathf.Clamp01(Gain(deck.Segment.volume) * fade);
-                Meter(deck.Source);
-                LayerVolumes(deck, fade);
+                deck.ApplyEffects(chain);
+                Meter(deck.Source, chain);
+                LayerVolumes(deck, fade, chain);
             }
-            StingerVolumes(now);
+            StingerVolumes(now, chain);
         }
 
         private void Promote(double now)
@@ -138,7 +140,7 @@ namespace Nekuzaky.Resonance
             _afterBridge = null;
         }
 
-        private void StingerVolumes(double now)
+        private void StingerVolumes(double now, EffectChain chain)
         {
             foreach (var stinger in _stingers)
             {
@@ -150,6 +152,7 @@ namespace Nekuzaky.Resonance
                     continue;
                 }
                 stinger.Source.volume = UnityEngine.Mathf.Clamp01(Gain(stinger.Volume));
+                stinger.Effects.Apply(chain);
             }
         }
 
@@ -167,7 +170,7 @@ namespace Nekuzaky.Resonance
             }
         }
 
-        private void LayerVolumes(MusicDeck deck, float fade)
+        private void LayerVolumes(MusicDeck deck, float fade, EffectChain chain)
         {
             var layers = deck.Segment.layers;
             for (var i = 0; i < layers.Count && i < deck.Layers.Count; i++)
@@ -177,16 +180,21 @@ namespace Nekuzaky.Resonance
                     continue;
                 var weight = layer.parameter == null ? 1f : AudioMath.BlendWeight(_syncs.GetParameter(layer.parameter, null), layer.range, layer.fade);
                 deck.Layers[i].volume = UnityEngine.Mathf.Clamp01(Gain(deck.Segment.volume + layer.volume) * fade * weight);
-                Meter(deck.Layers[i]);
+                Meter(deck.Layers[i], chain);
             }
         }
 
-        private void Meter(UnityEngine.AudioSource source)
+        private void Meter(UnityEngine.AudioSource source, EffectChain chain)
         {
             if (!source.isPlaying)
                 return;
-            var level = Metering ? ClipEnvelopes.At(source.clip, source.timeSamples) * source.volume : source.volume;
-            _mixer.CountVoice(Track.bus, level);
+            var envelope = Metering || chain.Compressed ? ClipEnvelopes.At(source.clip, source.timeSamples) : 1f;
+            _mixer.CountVoice(Track.bus, (Metering ? envelope : 1f) * source.volume);
+            if (!chain.Compressed)
+                return;
+            var busGain = _mixer.Gain(Track.bus);
+            if (busGain > 0.0001f)
+                _mixer.Detect(Track.bus, envelope * source.volume / busGain);
         }
 
         private void Announce()

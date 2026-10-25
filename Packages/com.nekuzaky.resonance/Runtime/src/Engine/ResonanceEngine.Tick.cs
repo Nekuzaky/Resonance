@@ -27,6 +27,7 @@ namespace Nekuzaky.Resonance
                 Release(_instances[i]);
                 _instances.RemoveAt(i);
             }
+            TickRinging();
 
             if (!Preview)
                 Reverb.Tick(listener, ReverbZone.Active);
@@ -82,6 +83,9 @@ namespace Nekuzaky.Resonance
         {
             if (_free.Count > 0)
                 return _free.Pop();
+            var ringing = TakeRinging();
+            if (ringing != null)
+                return ringing;
             var voice = new Voice(_host, _voices.Count);
             _voices.Add(voice);
             return voice;

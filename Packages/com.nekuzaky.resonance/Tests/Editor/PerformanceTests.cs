@@ -37,6 +37,32 @@ namespace Nekuzaky.Resonance.Tests
         }
 
         [Test]
+        public void BusEffects_AllocateNothingOnceWarmedUp()
+        {
+            var parameter = Asset<SoundParameter>("Depth");
+            var sound = EffectSound(parameter, out var snapshot);
+            Engine.Mixer.Apply(snapshot);
+
+            Cycle(sound, null, parameter, 50);
+
+            Assert.That(() => Cycle(sound, null, parameter, 500), Is.Not.AllocatingGCMemory());
+        }
+
+        [Test]
+        public void BusEffectTailsAndCompressor_AllocateNothingOnceWarmedUp()
+        {
+            Engine.Simulate = false;
+            var parameter = Asset<SoundParameter>("Depth");
+            var sound = EffectSound(parameter, out var snapshot);
+            Engine.Mixer.Apply(snapshot);
+
+            StopCycle(sound, parameter, 80);
+
+            Assert.That(() => StopCycle(sound, parameter, 400), Is.Not.AllocatingGCMemory());
+            Assert.Greater(Engine.RingingVoices, 0);
+        }
+
+        [Test]
         public void Tick_StaysFastWithFiveHundredVoices()
         {
             var listener = Track(new GameObject("Listener"));
@@ -92,6 +118,38 @@ namespace Nekuzaky.Resonance.Tests
             for (var i = 0; i < frames; i++)
                 Engine.Tick(1f / 60f);
             return (System.Diagnostics.Stopwatch.GetTimestamp() - started) * 1000.0 / System.Diagnostics.Stopwatch.Frequency / frames;
+        }
+
+        private SoundEvent EffectSound(SoundParameter parameter, out MixSnapshot snapshot)
+        {
+            var master = Asset<AudioBus>("Master");
+            var sfx = Asset<AudioBus>("SFX");
+            sfx.parent = master;
+            var lowPass = sfx.AddEffect(BusEffectType.LowPass);
+            lowPass.modulations.Add(new EffectModulation { parameter = parameter, curve = AnimationCurve.Linear(0f, 20000f, 1f, 800f) });
+            sfx.AddEffect(BusEffectType.HighPass);
+            sfx.AddEffect(BusEffectType.Distortion);
+            var echo = sfx.AddEffect(BusEffectType.Delay);
+            master.AddEffect(BusEffectType.Reverb);
+            master.AddEffect(BusEffectType.Compressor);
+            snapshot = Asset<MixSnapshot>("Underwater");
+            snapshot.fadeIn = 2f;
+            snapshot.effects.Add(new EffectOffset { bus = sfx, effect = echo.id, parameter = BusEffects.DelayWet, value = 1f });
+            var sound = Event(Container<RandomNode>(ClipNode("a", 0.05f), ClipNode("b", 0.05f)));
+            sound.bus = sfx;
+            return sound;
+        }
+
+        private void StopCycle(SoundEvent sound, SoundParameter parameter, int plays)
+        {
+            for (var i = 0; i < plays; i++)
+            {
+                Engine.Syncs.SetParameter(parameter, i % 10 / 10f, null, true);
+                var handle = Engine.Play(sound, null, Vector3.zero);
+                Engine.Tick(0.03f);
+                Engine.Stop(handle.Id, 0f);
+                Engine.Tick(0.03f);
+            }
         }
 
         private void Cycle(SoundEvent sound, GameObject emitter, SoundParameter parameter, int plays)
