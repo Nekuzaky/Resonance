@@ -8,6 +8,14 @@ namespace Nekuzaky.Resonance.Tests
     public sealed class PerformanceTests : Fixture
     {
         private static object _keep;
+        private static int _started;
+        private static SoundStartInfo _lastStart;
+
+        private static void OnSoundStarted(SoundStartInfo info)
+        {
+            _started++;
+            _lastStart = info;
+        }
 
         [Test]
         public void AllocationCheck_SeesSmallAllocations()
@@ -18,22 +26,25 @@ namespace Nekuzaky.Resonance.Tests
         [Test]
         public void PlayAndTick_AllocateNothingOnceWarmedUp()
         {
-            var listener = Track(new GameObject("Listener"));
-            Engine.Listener = listener.transform;
-            var emitter = Track(new GameObject("Emitter"));
-            var parameter = Asset<SoundParameter>("Speed");
-            var surface = Asset<SwitchGroup>("Surface");
-            var grass = Container<RandomNode>(ClipNode("a", 0.05f), ClipNode("b", 0.05f));
-            grass.switchValue = "Default";
-            var sound = Event(Container<SwitchNode>(grass));
-            ((SwitchNode)sound.root).group = surface;
-            sound.bus = Asset<AudioBus>("SFX");
-            sound.spatial.binaural = true;
-            sound.modulations.Add(new Modulation { parameter = parameter, curve = AnimationCurve.Linear(0f, 0f, 1f, -6f) });
+            var sound = FootstepSound(out var emitter, out var parameter);
 
             Cycle(sound, emitter, parameter, 50);
 
             Assert.That(() => Cycle(sound, emitter, parameter, 500), Is.Not.AllocatingGCMemory());
+        }
+
+        [Test]
+        public void SoundStarted_AllocatesNothingWithASubscriber()
+        {
+            var sound = FootstepSound(out var emitter, out var parameter);
+            Engine.SoundStarted += OnSoundStarted;
+            _started = 0;
+
+            Cycle(sound, emitter, parameter, 50);
+
+            Assert.That(() => Cycle(sound, emitter, parameter, 500), Is.Not.AllocatingGCMemory());
+            Assert.AreEqual(550, _started);
+            Assert.AreEqual(sound, _lastStart.Event);
         }
 
         [Test]
@@ -172,6 +183,23 @@ namespace Nekuzaky.Resonance.Tests
             snapshot.effects.Add(new EffectOffset { bus = sfx, effect = echo.id, parameter = BusEffects.DelayWet, value = 1f });
             var sound = Event(Container<RandomNode>(ClipNode("a", 0.05f), ClipNode("b", 0.05f)));
             sound.bus = sfx;
+            return sound;
+        }
+
+        private SoundEvent FootstepSound(out GameObject emitter, out SoundParameter parameter)
+        {
+            var listener = Track(new GameObject("Listener"));
+            Engine.Listener = listener.transform;
+            emitter = Track(new GameObject("Emitter"));
+            parameter = Asset<SoundParameter>("Speed");
+            var surface = Asset<SwitchGroup>("Surface");
+            var grass = Container<RandomNode>(ClipNode("a", 0.05f), ClipNode("b", 0.05f));
+            grass.switchValue = "Default";
+            var sound = Event(Container<SwitchNode>(grass));
+            ((SwitchNode)sound.root).group = surface;
+            sound.bus = Asset<AudioBus>("SFX");
+            sound.spatial.binaural = true;
+            sound.modulations.Add(new Modulation { parameter = parameter, curve = AnimationCurve.Linear(0f, 0f, 1f, -6f) });
             return sound;
         }
 

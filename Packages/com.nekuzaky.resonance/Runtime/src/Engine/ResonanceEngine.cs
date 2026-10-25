@@ -53,6 +53,8 @@ namespace Nekuzaky.Resonance
 
         public event System.Action<SoundMarker> MarkerReached;
 
+        public event System.Action<SoundStartInfo> SoundStarted;
+
         public event System.Action<SoundHandle, GameObject> SoundEnded;
 
         public event System.Action<int, int> MusicBeat
@@ -125,6 +127,7 @@ namespace Nekuzaky.Resonance
             Stats.Record(new EventLogEntry(_time, sound, emitter, stolen ? PlayResult.Stolen : PlayResult.Played));
             _lastPlay[sound] = _time;
             var handle = new SoundHandle(instance.Id);
+            QueueStarted(instance);
             Dispatch();
             return handle;
         }

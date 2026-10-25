@@ -38,8 +38,8 @@ same loop (rain, engines, crowds) never sound in sync.
 
 A Clip node can carry **Markers**: named points in the clip ("hit", "unlatch", "breath"). They appear as amber lines on
 the waveform. When playback passes a marker, the engine raises `MarkerReached` (and again on every loop), and a
-**Sound Callbacks** component on the emitter turns it into a Unity Event. The engine also raises `SoundEnded` when a
-sound finishes.
+**Sound Callbacks** component on the emitter turns it into a Unity Event. The engine also raises `SoundStarted` when a
+play is admitted and `SoundEnded` when a sound finishes (see [Scripting](scripting.md#reacting-to-sounds)).
 
 ## Timing
 

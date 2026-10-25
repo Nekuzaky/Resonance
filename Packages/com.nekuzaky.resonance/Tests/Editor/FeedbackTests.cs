@@ -54,6 +54,81 @@ namespace Nekuzaky.Resonance.Tests
         }
     }
 
+    public sealed class SoundStartedTests : Fixture
+    {
+        [Test]
+        public void SoundStarted_IsRaisedOnceWithTheEmitterAndItsRange()
+        {
+            var started = new List<SoundStartInfo>();
+            var playingInside = false;
+            Engine.SoundStarted += info =>
+            {
+                started.Add(info);
+                playingInside = Engine.IsPlaying(info.Handle.Id);
+            };
+            var door = Track(new GameObject("Door"));
+            door.transform.position = new Vector3(3f, 0f, 4f);
+            var sound = Event(ClipNode("creak", 0.2f));
+            sound.volume = -6f;
+            sound.spatial.maxDistance = 40f;
+
+            var played = Engine.Play(sound, door, Vector3.zero);
+            Run(0.3f);
+
+            Assert.AreEqual(1, started.Count);
+            Assert.IsTrue(playingInside);
+            var info = started[0];
+            Assert.AreEqual(played, info.Handle);
+            Assert.AreEqual(sound, info.Event);
+            Assert.AreEqual(door, info.Emitter);
+            Assert.AreEqual(new Vector3(3f, 0f, 4f), info.Position);
+            Assert.AreEqual(AudioMath.ToLinear(-6f), info.Volume, 0.0001f);
+            Assert.AreEqual(40f, info.MaxDistance, 0.0001f);
+        }
+
+        [Test]
+        public void SoundStarted_ReportsThePlayPositionAndNoRangeForTwoDimensionalSounds()
+        {
+            var started = new List<SoundStartInfo>();
+            Engine.SoundStarted += started.Add;
+            var listener = Track(new GameObject("Listener"));
+            listener.transform.position = new Vector3(10f, 0f, 0f);
+            Engine.Listener = listener.transform;
+            var sound = Event(ClipNode("ui", 0.2f));
+            sound.spatialize = false;
+            var position = new Vector3(-2f, 1f, 5f);
+
+            var played = Engine.Play(sound, null, position);
+
+            Assert.AreEqual(1, started.Count);
+            Assert.AreEqual(played, started[0].Handle);
+            Assert.IsNull(started[0].Emitter);
+            Assert.AreEqual(position, started[0].Position);
+            Assert.AreEqual(1f, started[0].Volume, 0.0001f);
+            Assert.AreEqual(0f, started[0].MaxDistance);
+        }
+
+        [Test]
+        public void SoundStarted_IsNotRaisedForRefusedPlays()
+        {
+            var started = 0;
+            Engine.SoundStarted += _ => started++;
+            var cooled = Event(ClipNode("shot", 0.5f), "Cooled");
+            cooled.cooldown = 1f;
+            var limited = Event(ClipNode("step", 0.5f), "Limited");
+            limited.maxInstances = 1;
+            limited.limitBehavior = LimitBehavior.RejectNew;
+
+            Assert.IsTrue(Engine.Play(cooled, null, Vector3.zero).IsValid);
+            Assert.IsFalse(Engine.Play(cooled, null, Vector3.zero).IsValid);
+            Assert.IsTrue(Engine.Play(limited, null, Vector3.zero).IsValid);
+            Assert.IsFalse(Engine.Play(limited, null, Vector3.zero).IsValid);
+            Assert.IsFalse(Engine.Play(null, null, Vector3.zero).IsValid);
+
+            Assert.AreEqual(2, started);
+        }
+    }
+
     public sealed class MusicLayerTests : Fixture
     {
         [Test]

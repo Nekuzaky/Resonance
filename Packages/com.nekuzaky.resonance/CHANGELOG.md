@@ -13,6 +13,9 @@ All notable changes to this package are documented here. The format follows
 - Delay and reverb tails ring out after a sound ends or is stopped instead of being cut.
 - `AudioBus.AddEffect`, `BusEffect.SetValue` and `BusEffects` for building chains from scripts.
 - A bus inspector that embeds the effects panel of the Mixer tab instead of the raw effects list.
+- `ResonanceEngine.SoundStarted`, raised once for every play the engine admits (never for refused plays), in Play
+  Mode and in the Studio preview. Its `SoundStartInfo` carries the handle, event, emitter, position, linear start volume
+  and attenuation range, so other systems can react to what is heard. Raising it allocates nothing.
 
 ### Changed
 

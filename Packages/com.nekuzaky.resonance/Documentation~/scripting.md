@@ -38,6 +38,48 @@ public sealed class Weapon : MonoBehaviour
 `Play` returns `SoundHandle.None` when the play was refused (instance limit, cooldown, no free voice). The reason is in
 the Profiler's event log.
 
+## Reacting to sounds
+
+`Resonance.Engine.SoundStarted` is raised once for every play the engine admits, right after the sound exists, so its
+handle is already valid. It is not raised when `Play` returns `SoundHandle.None`. It is raised in Play Mode and in the
+Studio preview, like the engine's other events, and `Resonance.Engine.SoundEnded` is its counterpart.
+
+```csharp
+private ResonanceEngine _engine;
+
+private void OnEnable()
+{
+    _engine = Resonance.Engine;
+    if (_engine != null)
+        _engine.SoundStarted += OnSoundStarted;
+}
+
+private void OnDisable()
+{
+    if (_engine != null)
+        _engine.SoundStarted -= OnSoundStarted;
+    _engine = null;
+}
+
+private void OnSoundStarted(SoundStartInfo sound)
+{
+    if (sound.MaxDistance > 0f && Vector3.Distance(sound.Position, transform.position) < sound.MaxDistance)
+        Debug.Log($"{sound.Event.name} is within range");
+}
+```
+
+| Field | Value |
+| --- | --- |
+| `Handle` | The play, valid for `IsPlaying` and `Stop` |
+| `Event` | The Sound Event that was played |
+| `Emitter` | The GameObject passed to `Play`, or null for `PlayAt` |
+| `Position` | The emitter's position when the play started, or the position given to `PlayAt`. 2D sounds report the same position, never the listener's |
+| `Volume` | Linear start volume: the event Volume with its parameter modulations, times the loudest starting clip (node volume and blend weight). Buses, snapshots, fades and distance are not included |
+| `MaxDistance` | The event's attenuation Max Distance (from its Attenuation preset when set), or 0 when Spatialize is off or the Spatial Blend is 0 |
+
+`SoundStartInfo` is a struct, so raising the event allocates nothing, with or without subscribers. The engine is the
+same object for the whole Play Mode session, so subscribe once (as above) rather than every frame.
+
 ## Game syncs
 
 ```csharp
