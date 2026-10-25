@@ -12,18 +12,18 @@ All notable changes to this package are documented here. The format follows
 - Effect settings driven by Parameters through curves, and faded by Mix Snapshots (new Effects list on the snapshot).
 - Delay and reverb tails ring out after a sound ends or is stopped instead of being cut.
 - `AudioBus.AddEffect`, `BusEffect.SetValue` and `BusEffects` for building chains from scripts.
-
+- A bus inspector that embeds the effects panel of the Mixer tab instead of the raw effects list.
 
 ### Changed
 
 - Music layers play on their own child objects, so bus effects reach every layer.
-- Bus strips in the Mixer tab are wider, with an effects button and the effect names under the fader.
-
-
-- The engine update only writes audio source, filter and transform properties that changed, computes each bus gain
-  once per frame, and skips occlusion rays for sounds out of range (they are virtual, so they cannot be heard). In
-  the demo player, 400 sounds cost 0.15 ms per frame instead of 0.17 ms; 250 occluded sounds on a two-level bus
-  hierarchy with a snapshot, half of them out of range, went from about 0.48 ms to 0.24 ms in the editor tests.
+- Bus strips in the Mixer tab are wider, with an effects button and the effect names under the fader. Their effect
+  text is only rebuilt when the chain, a bypass or the gain reduction changes, not at every refresh.
+- The engine update only writes audio source, filter and transform properties that changed, computes each bus gain once
+  per frame, and skips occlusion rays for sounds out of range (they are virtual, so they cannot be heard). In the demo
+  player, 400 sounds cost 0.18 ms per frame on average (0.22 ms at worst, measured by `Tools/Build-Check.ps1`); 250
+  occluded sounds on a two-level bus hierarchy with a snapshot, half of them out of range, went from about 0.48 ms to
+  0.24 ms in the editor tests.
 - The Studio Profiler reuses its table rows instead of rebuilding them ten times a second, and its history records
   without allocating: one refresh with 100 sounds went from about 5 ms to 0.07 ms. Mixer meters repaint only when
   their level changes.
@@ -45,7 +45,21 @@ All notable changes to this package are documented here. The format follows
   cut it before its end.
 - A Snapshot Trigger removes its snapshot when its scene is unloaded; before, the snapshot stayed applied for the
   rest of the game.
-
+- A play refused by the voice budget, or that resolves to nothing, no longer stops the instance its instance limit
+  would have stolen: the victim is chosen first, counts as stealable, and is only stopped once the play succeeds.
+- Bus effect stages are published to the audio thread atomically (a sequence counter and a double-buffered set), so
+  the DSP can no longer pair a new stage kind with the parameters of another (a low pass cutoff read as a distortion
+  drive). A filter whose state becomes NaN or infinite resets itself.
+- The distortion drive follows the volume the audio source really plays at: a boosted bus or compressor makeup that
+  pushes a sound above full scale no longer over-drives it.
+- Delay and reverb tails follow their bus while they ring (mute, volume, snapshots), `Resonance.StopAll` cuts or
+  fades them, and a voice taken from a ringing tail starts with clean filters instead of the old echo and reverb.
+- The bus inspector's "+" no longer duplicates the last effect with its modulations, Move shows the new order, Remove
+  deletes the effect of its own card, and the list no longer sits in a second scroller. Up is disabled on the first
+  card and Down on the last, the reverb Routing field lines up with the slider rows, and the effects panel no longer
+  rebuilds at every refresh when the chain has an empty entry.
+- On WebGL the compressor is documented as reacting to the fixed -12 dBFS estimate (clip samples cannot be read
+  there), the envelope cache no longer tries to read them, and voices no longer wait for tails nobody can hear.
 
 ### Verified
 
@@ -55,7 +69,8 @@ All notable changes to this package are documented here. The format follows
   reverb tail are heard after the sound ended, the distortion drive ignores the bus fader and music layers are
   filtered.
 - Existing buses and snapshots load unchanged, with an empty chain.
-
+- The Edit Mode recording also checks a boosted distortion bus and a reverb tail muted while it rings; a threaded
+  test checks that the DSP never reads a torn stage set. 176 EditMode tests pass.
 
 ## [0.5.1] - 2026-10-24
 

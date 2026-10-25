@@ -17,7 +17,7 @@ first.
 
 Every bus has an ordered effect chain. In the **Mixer** tab, click the funnel button of a bus (or the effect names
 under its fader), then **Add Effect**. Each effect has an **On** switch (bypass without losing the settings), up and
-down arrows to reorder it, and a remove button. The chain is also editable in the bus inspector.
+down arrows to reorder it, and a remove button. The bus inspector shows the same effects panel, with undo.
 
 | Effect | Settings | Notes |
 | --- | --- | --- |
@@ -37,12 +37,16 @@ sound gets one delay and one reverb, so when several buses on its path have one,
 Filters, delays and reverbs are linear, so their relative order does not change the result; only a distortion placed
 after a delay or reverb is not reproduced (it is applied before them).
 
-**Tails.** When a sound ends or is stopped, its audio source keeps running on silence until the delay repeats and the
-reverb have died out (up to 10 seconds), so tails are never cut. Up to 32 voices ring at once; when the voice budget
-is full, the oldest tail is cut first.
+**Tails.** When a sound ends or is stopped, its audio source keeps running on silence until the delay repeats and
+the reverb have died out (up to 10 seconds), so tails are never cut. A ringing tail still follows its bus: volume,
+mute, solo, ducking and snapshots reach it every frame, and `Resonance.StopAll` cuts tails (or fades them over its
+fade time). Up to 32 voices ring at once; when the voice budget is full, the oldest tail is cut first, and the voice
+starts its next sound with clean filters.
 
 **Distortion level.** The drive is measured against the level of the sound when it reaches the bus: bus faders,
-ducking and snapshots do not change how hard a sound distorts, but the sound's own volume and fades do.
+ducking and snapshots do not change how hard a sound distorts, but the sound's own volume and fades do. An audio
+source cannot play louder than full scale, so when the buses raise a sound above it (a boosted fader or compressor
+makeup), the drive follows the volume the source really plays at.
 
 ### Driving effects with parameters
 

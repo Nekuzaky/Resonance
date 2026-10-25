@@ -40,5 +40,5 @@
 | Wwise Timeline track | Resonance Track with Sound Event and Game State clips |
 
 What Resonance does not do in this version: effect plug-ins beyond its six bus effects, effects on WebGL, a
-sample-accurate limiter and sidechain compression (use a bus Output to a Unity Audio Mixer for those), sound propagation through portals and diffraction, dialogue trees and voice-over recording workflows,
-and memory budgets per bank.
+sample-accurate limiter and sidechain compression (use a bus Output to a Unity Audio Mixer for those), sound propagation
+through portals and diffraction, dialogue trees and voice-over recording workflows, and memory budgets per bank.

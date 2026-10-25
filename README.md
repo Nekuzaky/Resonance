@@ -9,7 +9,7 @@
   <img alt="No soundbanks" src="https://img.shields.io/badge/soundbanks-none-3ddc84">
   <img alt="Engine update in a player: 0.005 ms" src="https://img.shields.io/badge/engine%20update-0.005%20ms-3ddc84">
   <img alt="GC per play: 0 B" src="https://img.shields.io/badge/GC%20per%20play-0%20B-3ddc84">
-  <img alt="Tests: 112 EditMode" src="https://img.shields.io/badge/tests-112%20EditMode-38bdf8">
+  <img alt="Tests: 176 EditMode" src="https://img.shields.io/badge/tests-176%20EditMode-38bdf8">
   <img alt="Built-in, URP, HDRP" src="https://img.shields.io/badge/pipelines-Built--in%20%7C%20URP%20%7C%20HDRP-8b92a2">
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-8b92a2"></a>
 </p>
