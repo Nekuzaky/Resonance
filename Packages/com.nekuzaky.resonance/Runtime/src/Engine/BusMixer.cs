@@ -16,6 +16,8 @@ namespace Nekuzaky.Resonance
         public float Peak;
         public bool Muted;
         public bool Soloed;
+        public float FrameGain;
+        public int GainFrame = -1;
     }
 
     internal sealed class ActiveSnapshot
@@ -43,6 +45,8 @@ namespace Nekuzaky.Resonance
         private readonly Dictionary<AudioBus, BusState> _buses = new();
         private readonly List<ActiveSnapshot> _snapshots = new();
         private readonly List<AudioBus> _sources = new();
+        private int _frame;
+        private bool _frameOpen;
 
         #endregion
 
@@ -68,6 +72,8 @@ namespace Nekuzaky.Resonance
                 solo |= state.Soloed;
             }
             AnySolo = solo;
+            _frame++;
+            _frameOpen = true;
         }
 
         public void CountVoice(AudioBus bus, float level)
@@ -83,6 +89,7 @@ namespace Nekuzaky.Resonance
 
         public void Tick(float deltaTime)
         {
+            _frameOpen = false;
             TickSnapshots(deltaTime);
             foreach (var state in _buses.Values)
             {
@@ -103,7 +110,18 @@ namespace Nekuzaky.Resonance
         {
             if (bus == null)
                 return AnySolo ? 0f : 1f;
+            if (!_frameOpen || !_buses.TryGetValue(bus, out var cached))
+                return ComputeGain(bus);
+            if (cached.GainFrame != _frame)
+            {
+                cached.FrameGain = ComputeGain(bus);
+                cached.GainFrame = _frame;
+            }
+            return cached.FrameGain;
+        }
 
+        private float ComputeGain(AudioBus bus)
+        {
             var decibels = 0f;
             var soloed = false;
             for (var depth = 0; depth < AudioBus.MaxDepth && bus != null; depth++)
@@ -170,6 +188,7 @@ namespace Nekuzaky.Resonance
 
         public void Clear()
         {
+            _frameOpen = false;
             _buses.Clear();
             _snapshots.Clear();
             AnySolo = false;

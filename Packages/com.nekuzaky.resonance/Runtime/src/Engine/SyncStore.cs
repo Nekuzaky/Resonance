@@ -29,8 +29,6 @@ namespace Nekuzaky.Resonance
 
         public IReadOnlyDictionary<StateGroup, string> States => _states;
 
-        public int EmitterCount => _emitters.Count;
-
         #endregion
 
 

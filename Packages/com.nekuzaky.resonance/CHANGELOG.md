@@ -3,6 +3,36 @@
 All notable changes to this package are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+
+- A play refused for lack of voices no longer steals lower priority sounds first: voices are only stolen when enough
+  of them can be freed, and a sound already stopped by its instance limit gives its voice back before any other sound
+  is stolen.
+- Virtual voices keep their exact position across the clips of a continuous sequence, and advance at the pitch the
+  audio source really plays (clamped to 4x), so they resume in the right place.
+- Unloading a Sound Bank while one of its clips plays (a sound, a music segment, a layer or a stinger) no longer cuts
+  it: the clip's audio data is released when nothing plays it any more, unless the bank is loaded again first.
+- A Sound Bank releases exactly the clips it loaded, even if its events were edited while it was loaded.
+- The Profiler ignores a truncated or corrupted frame from a remote player instead of throwing in the editor and
+  showing half of a frame.
+- When the game stalls past the end of a music segment (a long frame, a breakpoint, the editor paused), the next
+  segment starts a moment later on a new beat grid instead of being scheduled in the past, which played it late and
+  cut it before its end.
+- A Snapshot Trigger removes its snapshot when its scene is unloaded; before, the snapshot stayed applied for the
+  rest of the game.
+
+### Changed
+
+- The engine update only writes audio source, filter and transform properties that changed, computes each bus gain
+  once per frame, and skips occlusion rays for sounds out of range (they are virtual, so they cannot be heard). In
+  the demo player, 400 sounds cost 0.15 ms per frame instead of 0.17 ms; 250 occluded sounds on a two-level bus
+  hierarchy with a snapshot, half of them out of range, went from about 0.48 ms to 0.24 ms in the editor tests.
+- The Studio Profiler reuses its table rows instead of rebuilding them ten times a second, and its history records
+  without allocating: one refresh with 100 sounds went from about 5 ms to 0.07 ms. Mixer meters repaint only when
+  their level changes.
+
 ## [0.5.1] - 2026-10-24
 
 ### Changed

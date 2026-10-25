@@ -4,19 +4,6 @@ using UnityEngine.UIElements;
 
 namespace Nekuzaky.Resonance.Editor
 {
-    internal struct SoundSnapshot
-    {
-        public string EventName;
-        public string Emitter;
-        public string Bus;
-        public int Voices;
-        public bool Virtual;
-        public bool Spatial;
-        public float Distance;
-        public float Level;
-        public float Occlusion;
-    }
-
     internal sealed class ProfilerSample
     {
         public double Time;
@@ -24,7 +11,7 @@ namespace Nekuzaky.Resonance.Editor
         public int Real;
         public int Virtual;
         public double Cost;
-        public readonly List<SoundSnapshot> Sounds = new();
+        public readonly List<RemoteSound> Sounds = new();
     }
 
     internal sealed class ProfilerHistory
@@ -39,52 +26,25 @@ namespace Nekuzaky.Resonance.Editor
 
         public void Record(ResonanceEngine engine, double time)
         {
-            var sample = _samples[_head] ??= new ProfilerSample();
-            _head = (_head + 1) % Capacity;
-            _count = Mathf.Min(_count + 1, Capacity);
             var stats = engine.Stats;
-            sample.Time = time;
-            sample.Instances = stats.Instances;
-            sample.Real = stats.RealVoices;
-            sample.Virtual = stats.VirtualVoices;
-            sample.Cost = stats.TickMilliseconds;
-            sample.Sounds.Clear();
+            var sample = Next(time, stats.Instances, stats.RealVoices, stats.VirtualVoices, stats.TickMilliseconds);
+            if (++_recorded % Capacity == 0)
+                _names.Clear();
             foreach (var instance in engine.Instances)
                 sample.Sounds.Add(Snapshot(instance, engine.Preview));
         }
 
         public void RecordRemote(RemoteFrame frame, double time)
         {
-            var sample = _samples[_head] ??= new ProfilerSample();
-            _head = (_head + 1) % Capacity;
-            _count = Mathf.Min(_count + 1, Capacity);
-            sample.Time = time;
-            sample.Instances = frame.Instances;
-            sample.Real = frame.Real;
-            sample.Virtual = frame.Virtual;
-            sample.Cost = frame.Cost;
-            sample.Sounds.Clear();
-            foreach (var sound in frame.Sounds)
-            {
-                sample.Sounds.Add(new SoundSnapshot
-                {
-                    EventName = sound.Event,
-                    Emitter = sound.Emitter,
-                    Bus = sound.Bus,
-                    Voices = sound.Voices,
-                    Virtual = sound.Virtual,
-                    Spatial = sound.Spatial,
-                    Distance = sound.Distance,
-                    Level = sound.Level,
-                    Occlusion = sound.Occlusion
-                });
-            }
+            var sample = Next(time, frame.Instances, frame.Real, frame.Virtual, frame.Cost);
+            sample.Sounds.AddRange(frame.Sounds);
         }
 
         public void Clear()
         {
             _count = 0;
             _head = 0;
+            _names.Clear();
         }
 
         #endregion
@@ -96,18 +56,39 @@ namespace Nekuzaky.Resonance.Editor
         private int _head;
         private int _count;
 
-        private static SoundSnapshot Snapshot(SoundInstance instance, bool preview) => new()
+        private ProfilerSample Next(double time, int instances, int real, int virtualVoices, double cost)
         {
-            EventName = instance.Event != null ? instance.Event.name : "(deleted)",
-            Emitter = instance.EmitterName,
-            Bus = instance.Event != null && instance.Event.bus != null ? instance.Event.bus.name : "-",
-            Voices = instance.Voices.Count,
-            Virtual = instance.IsVirtual,
-            Spatial = instance.Event != null && instance.Event.spatialize && !preview,
-            Distance = instance.Distance,
-            Level = instance.Level,
-            Occlusion = instance.Occlusion
-        };
+            var sample = _samples[_head] ??= new ProfilerSample();
+            _head = (_head + 1) % Capacity;
+            _count = Mathf.Min(_count + 1, Capacity);
+            sample.Time = time;
+            sample.Instances = instances;
+            sample.Real = real;
+            sample.Virtual = virtualVoices;
+            sample.Cost = cost;
+            sample.Sounds.Clear();
+            return sample;
+        }
+
+        private readonly NameCache _names = new();
+        private int _recorded;
+
+        private RemoteSound Snapshot(SoundInstance instance, bool preview)
+        {
+            var sound = instance.Event;
+            return new RemoteSound
+            {
+                Event = _names.Of(sound) ?? "(deleted)",
+                Emitter = _names.Of(instance.Emitter) ?? (instance.HadEmitter ? "(destroyed)" : "(world)"),
+                Bus = (sound != null ? _names.Of(sound.bus) : null) ?? "-",
+                Voices = instance.Voices.Count,
+                Virtual = instance.IsVirtual,
+                Spatial = sound != null && sound.spatialize && !preview,
+                Distance = instance.Distance,
+                Level = instance.Level,
+                Occlusion = instance.Occlusion
+            };
+        }
 
         #endregion
     }

@@ -42,6 +42,8 @@ namespace Nekuzaky.Resonance
                 instance.Occlusion = 0f;
                 return;
             }
+            if (!snap && IsFar(instance))
+                return;
             if (snap || _time >= instance.NextOcclusionCheck)
             {
                 instance.NextOcclusionCheck = _time + settings.interval;

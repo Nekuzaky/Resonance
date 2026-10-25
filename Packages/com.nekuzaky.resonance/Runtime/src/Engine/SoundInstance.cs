@@ -101,6 +101,14 @@ namespace Nekuzaky.Resonance
         public DialogueLine ShownLine;
         public DialogueNode ShownDialogue;
         public float LastTime = -1f;
+        public Vector3 Placed;
+        public bool IsPlaced;
+        public float Volume = -1f;
+        public float Pitch = -1f;
+        public bool LowPassOn;
+        public float LowPassCutoff = -1f;
+        public bool HighPassOn;
+        public float HighPassCutoff = -1f;
 
         public Voice(Transform parent, int index)
         {
@@ -120,6 +128,51 @@ namespace Nekuzaky.Resonance
 
         public PlanClip Clip => Layer.Clips[ClipIndex];
 
+        public void Place(Vector3 position)
+        {
+            if (IsPlaced && Placed.Equals(position))
+                return;
+            Transform.position = position;
+            Placed = position;
+            IsPlaced = true;
+        }
+
+        public void Apply(float volume, float pitch, float lowPass, float highPass)
+        {
+            if (!Volume.Equals(volume))
+            {
+                Source.volume = volume;
+                Volume = volume;
+            }
+            if (!Pitch.Equals(pitch))
+            {
+                Source.pitch = pitch;
+                Pitch = pitch;
+            }
+            var lowPassOn = lowPass < AudioMath.OpenLowPass - 1f;
+            if (lowPassOn != LowPassOn)
+            {
+                LowPass.enabled = lowPassOn;
+                LowPassOn = lowPassOn;
+            }
+            if (lowPassOn && !LowPassCutoff.Equals(lowPass))
+            {
+                LowPass.cutoffFrequency = lowPass;
+                LowPassCutoff = lowPass;
+            }
+            var highPassOn = highPass > AudioMath.OpenHighPass + 1f;
+            if (highPassOn != HighPassOn)
+            {
+                HighPass.enabled = highPassOn;
+                HighPassOn = highPassOn;
+            }
+            if (highPassOn && !HighPassCutoff.Equals(highPass))
+            {
+                HighPass.cutoffFrequency = highPass;
+                HighPassCutoff = highPass;
+            }
+        }
+
         public void Reset()
         {
             if (Source != null)
@@ -138,6 +191,7 @@ namespace Nekuzaky.Resonance
             ShownLine = null;
             ShownDialogue = null;
             LastTime = -1f;
+            IsPlaced = false;
         }
 
         #endregion

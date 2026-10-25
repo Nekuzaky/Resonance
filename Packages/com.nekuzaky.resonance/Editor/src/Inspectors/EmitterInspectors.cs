@@ -165,13 +165,15 @@ namespace Nekuzaky.Resonance.Editor
 
         private static IEnumerable<string> AnimatorFloats(Animator animator)
         {
+            var names = new List<string>();
             if (animator == null || animator.runtimeAnimatorController is not UnityEditor.Animations.AnimatorController controller)
-                yield break;
+                return names;
             foreach (var parameter in controller.parameters)
             {
                 if (parameter.type == AnimatorControllerParameterType.Float)
-                    yield return parameter.name;
+                    names.Add(parameter.name);
             }
+            return names;
         }
     }
 

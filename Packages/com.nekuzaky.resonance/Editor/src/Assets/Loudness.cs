@@ -128,8 +128,6 @@ namespace Nekuzaky.Resonance.Editor
             EditorUtility.SetDirty(imbalance.Event);
         }
 
-        public static void Forget(AudioClip clip) => Cache.Remove(clip);
-
         #endregion
 
 

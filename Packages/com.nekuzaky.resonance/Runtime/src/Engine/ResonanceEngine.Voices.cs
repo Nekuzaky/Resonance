@@ -12,7 +12,7 @@ namespace Nekuzaky.Resonance
                 return;
 
             var instance = voice.Owner;
-            voice.Transform.position = instance.Position;
+            voice.Place(instance.Position);
             voice.BlendWeight = BlendOf(voice);
 
             var far = Simulate || IsFar(instance);
@@ -62,7 +62,7 @@ namespace Nekuzaky.Resonance
         {
             var clip = voice.Clip;
             var length = clip.Clip.length;
-            voice.VirtualTime += deltaTime * clip.Pitch * voice.Owner.Pitch;
+            voice.VirtualTime += deltaTime * PitchOf(clip, voice.Owner);
             if (voice.VirtualTime < length || length <= 0f)
                 return;
             if (clip.Loop)
@@ -70,9 +70,12 @@ namespace Nekuzaky.Resonance
                 voice.VirtualTime %= length;
                 return;
             }
+            var overshoot = voice.VirtualTime - length;
             if (NextClip(voice))
-                StartClip(voice, 0f, busGain);
+                StartClip(voice, Mathf.Min(overshoot, voice.Clip.Clip.length), busGain);
         }
+
+        private static float PitchOf(PlanClip clip, SoundInstance instance) => Mathf.Clamp(clip.Pitch * instance.Pitch, 0.01f, 4f);
 
         private void AdvanceClip(Voice voice, float busGain)
         {
@@ -151,21 +154,9 @@ namespace Nekuzaky.Resonance
         {
             var instance = voice.Owner;
             var clip = voice.Clip;
-            var volume = clip.Gain * instance.Gain * instance.Fade * voice.BlendWeight * busGain;
-            var source = voice.Source;
-            source.volume = Mathf.Clamp01(volume);
-            source.pitch = Mathf.Clamp(clip.Pitch * instance.Pitch, 0.01f, 4f);
-
-            var lowPass = instance.LowPass < AudioMath.OpenLowPass - 1f;
-            voice.LowPass.enabled = lowPass;
-            if (lowPass)
-                voice.LowPass.cutoffFrequency = instance.LowPass;
-            var highPass = instance.HighPass > AudioMath.OpenHighPass + 1f;
-            voice.HighPass.enabled = highPass;
-            if (highPass)
-                voice.HighPass.cutoffFrequency = instance.HighPass;
-
-            voice.Level = voice.Virtual ? 0f : LevelOf(voice, source.volume);
+            var volume = Mathf.Clamp01(clip.Gain * instance.Gain * instance.Fade * voice.BlendWeight * busGain);
+            voice.Apply(volume, PitchOf(clip, instance), instance.LowPass, instance.HighPass);
+            voice.Level = voice.Virtual ? 0f : LevelOf(voice, volume);
         }
 
         private float LevelOf(Voice voice, float volume)

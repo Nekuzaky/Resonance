@@ -147,7 +147,7 @@ namespace Nekuzaky.Resonance.Tests
             Assert.AreEqual(25 * 0.1, history[0].Time, 1e-6);
             Assert.AreEqual((ProfilerHistory.Capacity + 24) * 0.1, history[history.Count - 1].Time, 1e-6);
             Assert.AreEqual(1, history[0].Sounds.Count);
-            Assert.AreEqual(sound.name, history[0].Sounds[0].EventName);
+            Assert.AreEqual(sound.name, history[0].Sounds[0].Event);
         }
     }
 }

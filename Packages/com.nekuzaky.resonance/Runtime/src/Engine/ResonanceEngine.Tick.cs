@@ -27,6 +27,7 @@ namespace Nekuzaky.Resonance
                 Release(_instances[i]);
                 _instances.RemoveAt(i);
             }
+            Memory.Tick();
 
             if (!Preview)
                 Reverb.Tick(listener, ReverbZone.Active);
@@ -91,7 +92,7 @@ namespace Nekuzaky.Resonance
         {
             var source = voice.Source;
             var spatial = sound.Spatial;
-            voice.Transform.position = position;
+            voice.Place(position);
             source.outputAudioMixerGroup = sound.bus != null ? sound.bus.ResolveOutput() : null;
             source.spatialBlend = sound.spatialize && !Preview ? spatial.blend : 0f;
             source.minDistance = spatial.minDistance;

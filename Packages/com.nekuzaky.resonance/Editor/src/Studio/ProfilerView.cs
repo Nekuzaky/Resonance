@@ -57,6 +57,13 @@ namespace Nekuzaky.Resonance.Editor
             syncs.Add(Column("Game States", Header("Group", 160, "State", 160), out _states));
             syncs.Add(Column("Global Parameters", Header("Parameter", 160, "Value", 160), out _parameters));
             Root.Add(syncs);
+
+            _nothing = Ui.Help("Nothing is playing.");
+            _active.Add(_nothing);
+            _soundRows = new ProfilerTable(_active, true, 150, 110, 70, 50, 60, 60);
+            _logRows = new ProfilerTable(_log, false, 60, 160, 120, 90);
+            _stateRows = new ProfilerTable(_states, false, 160, 160);
+            _parameterRows = new ProfilerTable(_parameters, false, 160, 160);
         }
 
         public void Sample()
@@ -84,6 +91,8 @@ namespace Nekuzaky.Resonance.Editor
         public void Refresh()
         {
             RefreshSource();
+            if (++_refreshes % ProfilerHistory.Capacity == 0)
+                _names.Clear();
             var engine = Resonance.Engine;
             if (engine == null && !_remote)
                 return;
@@ -117,9 +126,7 @@ namespace Nekuzaky.Resonance.Editor
             RefreshSyncs(engine);
         }
 
-        public void ProjectChanged()
-        {
-        }
+        public void ProjectChanged() => _names.Clear();
 
         #endregion
 
@@ -140,6 +147,13 @@ namespace Nekuzaky.Resonance.Editor
         private readonly ScrollView _states;
         private readonly ScrollView _parameters;
         private int _logVersion = -1;
+        private readonly Label _nothing;
+        private readonly ProfilerTable _soundRows;
+        private readonly ProfilerTable _logRows;
+        private readonly ProfilerTable _stateRows;
+        private readonly ProfilerTable _parameterRows;
+        private readonly NameCache _names = new();
+        private int _refreshes;
         private readonly ProfilerHistory _history = new();
         private readonly ProfilerTimeline _timeline;
         private readonly Button _liveButton;
@@ -217,12 +231,10 @@ namespace Nekuzaky.Resonance.Editor
             return header;
         }
 
-        private static Label Cell(string text, float width, string className = null)
+        private static Label Cell(string text, float width)
         {
             var cell = Ui.Styled(text, "rs-cell");
             cell.style.width = width;
-            if (className != null)
-                cell.AddToClassList(className);
             return cell;
         }
 
@@ -238,31 +250,24 @@ namespace Nekuzaky.Resonance.Editor
 
         private void RenderSounds(ProfilerSample sample)
         {
-            _active.Clear();
+            _soundRows.Begin();
             foreach (var sound in sample.Sounds)
             {
-                var row = Ui.Box("rs-table-row");
-                row.Add(Cell(sound.EventName, 150));
-                row.Add(Cell(sound.Emitter, 110, "rs-cell--dim"));
-                row.Add(Cell(sound.Bus, 70, "rs-cell--dim"));
-                row.Add(Cell(sound.Virtual ? "virtual" : sound.Voices.ToString(), 50, sound.Virtual ? "rs-cell--warn" : null));
-                row.Add(Cell(sound.Spatial ? $"{sound.Distance:0.0} m" : "2D", 60, "rs-cell--dim"));
-                row.Add(Cell(sound.Occlusion > 0.01f ? $"{sound.Occlusion * 100f:0}%" : "-", 60, sound.Occlusion > 0.01f ? "rs-cell--warn" : "rs-cell--dim"));
-                row.Add(Level(sound.Level));
-                _active.Add(row);
+                var row = _soundRows.Next();
+                row.Set(0, sound.Event);
+                row.Set(1, sound.Emitter, "rs-cell--dim");
+                row.Set(2, sound.Bus, "rs-cell--dim");
+                if (row.Changed(3, sound.Virtual ? -1f : sound.Voices))
+                    row.Set(3, sound.Virtual ? "virtual" : sound.Voices.ToString(), sound.Virtual ? "rs-cell--warn" : null);
+                if (row.Changed(4, sound.Spatial ? Mathf.Round(sound.Distance * 10f) : -1f))
+                    row.Set(4, sound.Spatial ? $"{sound.Distance:0.0} m" : "2D", "rs-cell--dim");
+                var occluded = sound.Occlusion > 0.01f;
+                if (row.Changed(5, occluded ? Mathf.Round(sound.Occlusion * 100f) : -1f))
+                    row.Set(5, occluded ? $"{sound.Occlusion * 100f:0}%" : "-", occluded ? "rs-cell--warn" : "rs-cell--dim");
+                row.SetLevel(sound.Level);
             }
-            if (sample.Sounds.Count == 0)
-                _active.Add(Ui.Help("Nothing is playing."));
-        }
-
-        private static VisualElement Level(float level)
-        {
-            var bar = Ui.Box("rs-level");
-            bar.style.width = 80f;
-            var fill = Ui.Box("rs-level-fill");
-            fill.style.width = Mathf.Clamp01((AudioMath.ToDecibels(level) + 60f) / 60f) * 80f;
-            bar.Add(fill);
-            return bar;
+            _soundRows.End();
+            _nothing.style.display = sample.Sounds.Count == 0 ? DisplayStyle.Flex : DisplayStyle.None;
         }
 
         private void RefreshLog(ResonanceStats stats)
@@ -270,38 +275,40 @@ namespace Nekuzaky.Resonance.Editor
             if (stats.LogVersion == _logVersion)
                 return;
             _logVersion = stats.LogVersion;
-            _log.Clear();
+            _logRows.Begin();
             var count = Mathf.Min(stats.LogCount, 120);
             for (var i = 0; i < count; i++)
             {
                 var entry = stats.LogAt(i);
-                var row = Ui.Box("rs-table-row");
-                row.Add(Cell($"{entry.Time:0.00}", 60, "rs-cell--dim"));
-                row.Add(Cell(entry.Event, 160));
-                row.Add(Cell(entry.Emitter, 120, "rs-cell--dim"));
-                row.Add(Cell(Describe(entry.Result), 90, ClassOf(entry.Result)));
-                _log.Add(row);
+                var row = _logRows.Next();
+                if (row.Changed(0, entry.Time))
+                    row.Set(0, $"{entry.Time:0.00}", "rs-cell--dim");
+                row.Set(1, _names.Of(entry.Sound) ?? "(deleted)");
+                row.Set(2, _names.Of(entry.EmitterObject) ?? (entry.HadEmitter ? "(destroyed)" : "(world)"), "rs-cell--dim");
+                row.Set(3, Describe(entry.Result), ClassOf(entry.Result));
             }
+            _logRows.End();
         }
 
         private void RefreshSyncs(ResonanceEngine engine)
         {
-            _states.Clear();
+            _stateRows.Begin();
             foreach (var pair in engine.Syncs.States)
             {
-                var row = Ui.Box("rs-table-row");
-                row.Add(Cell(pair.Key != null ? pair.Key.name : "?", 160));
-                row.Add(Cell(pair.Value, 160, "rs-cell--good"));
-                _states.Add(row);
+                var row = _stateRows.Next();
+                row.Set(0, _names.Of(pair.Key) ?? "?");
+                row.Set(1, pair.Value, "rs-cell--good");
             }
-            _parameters.Clear();
+            _stateRows.End();
+            _parameterRows.Begin();
             foreach (var pair in engine.Syncs.GlobalParameters)
             {
-                var row = Ui.Box("rs-table-row");
-                row.Add(Cell(pair.Key != null ? pair.Key.name : "?", 160));
-                row.Add(Cell($"{pair.Value.Current:0.###}", 160, "rs-cell--good"));
-                _parameters.Add(row);
+                var row = _parameterRows.Next();
+                row.Set(0, _names.Of(pair.Key) ?? "?");
+                if (row.Changed(1, pair.Value.Current))
+                    row.Set(1, $"{pair.Value.Current:0.###}", "rs-cell--good");
             }
+            _parameterRows.End();
         }
 
         private static string Describe(PlayResult result)

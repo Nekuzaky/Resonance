@@ -11,6 +11,8 @@ namespace Nekuzaky.Resonance
 
         public ResonanceEngine Engine { get; private set; }
 
+        public static ResonanceRuntime Current => _instance;
+
         public static ResonanceRuntime Ensure()
         {
             if (_instance != null)
