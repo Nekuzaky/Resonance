@@ -25,8 +25,8 @@ namespace Nekuzaky.Resonance
                 var length = Track.LengthOf(deck.Segment);
                 if (length > 0.0 && now >= deck.Start + length - ScheduleAhead)
                 {
-                    var next = NextAfter(deck.Segment);
-                    Schedule(next, deck.Start + length, 0f, now);
+                    var end = deck.Start + length;
+                    Schedule(NextAfter(deck.Segment), end > now ? end : now + Lookahead, 0f, now);
                 }
             }
             ApplyVolumes(now);
