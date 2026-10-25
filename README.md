@@ -3,6 +3,7 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/Nekuzaky/Resonance/actions/workflows/tests.yml"><img alt="Tests" src="https://github.com/Nekuzaky/Resonance/actions/workflows/tests.yml/badge.svg"></a>
   <img alt="Unity 6000.3 or newer" src="https://img.shields.io/badge/Unity-6000.3%2B-1b1d24?logo=unity&logoColor=white">
   <a href="https://github.com/Nekuzaky/Resonance/releases"><img alt="Release" src="https://img.shields.io/github/v/tag/Nekuzaky/Resonance?label=release&color=2fa9b8"></a>
   <img alt="No soundbanks" src="https://img.shields.io/badge/soundbanks-none-3ddc84">

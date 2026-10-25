@@ -45,3 +45,17 @@ Style: 4 spaces, `_camelCase` private fields, `#region` blocks like the existing
 Engine tests use simulated playback, so they do not depend on an audio device and give the same result on every
 machine. `PerformanceTests` checks that playing and updating sounds allocates no managed memory once warmed up. The
 suite also passes in URP and HDRP projects. Add a test with every fix.
+## Continuous integration
+
+`.github/workflows/tests.yml` checks on every push and pull request that every package file has its `.meta` and that
+none is a Git LFS pointer, then runs the package tests with [GameCI](https://game.ci). The Unity steps need three
+repository secrets:
+
+| Secret | Value |
+| --- | --- |
+| `UNITY_LICENSE` | Contents of your `Unity_lic.ulf` file (Personal licenses work) |
+| `UNITY_EMAIL` | Your Unity account email |
+| `UNITY_PASSWORD` | Your Unity account password |
+
+See [GameCI activation](https://game.ci/docs/github/activation) for how to get the license file. Without these secrets
+the workflow skips the Unity steps and reports a notice instead of failing.

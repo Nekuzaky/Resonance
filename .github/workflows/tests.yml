@@ -1,0 +1,101 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "Packages/com.nekuzaky.resonance/**"
+      - ".github/workflows/tests.yml"
+  pull_request:
+    paths:
+      - "Packages/com.nekuzaky.resonance/**"
+  workflow_dispatch:
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  checks: write # The test runner publishes results as a check run.
+
+jobs:
+  meta-files:
+    name: Package files (metas, no LFS)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check .meta files
+        shell: bash
+        run: |
+          # Git installs are read-only: Unity ignores any file or folder without a .meta.
+          cd Packages/com.nekuzaky.resonance
+          missing=0
+          while IFS= read -r -d '' path; do
+            case "$path" in *.meta) continue ;; esac
+            if [ ! -f "$path.meta" ]; then echo "::error file=Packages/com.nekuzaky.resonance/${path#./}::missing .meta"; missing=1; fi
+          done < <(find . -mindepth 1 \( -name '*~' -o -name '.*' \) -prune -o -print0)
+          exit $missing
+
+      - name: No Git LFS pointers in the package
+        shell: bash
+        run: |
+          # Unity may install the package without Git LFS: a pointer file breaks the asset import.
+          cd Packages/com.nekuzaky.resonance
+          pointers=$(grep -rlI --exclude='*.meta' '^version https://git-lfs.github.com/spec/' . || true)
+          if [ -n "$pointers" ]; then
+            echo "$pointers" | while read -r f; do echo "::error file=Packages/com.nekuzaky.resonance/${f#./}::stored as a Git LFS pointer"; done
+            exit 1
+          fi
+
+  test:
+    name: Unity ${{ matrix.unityVersion }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        unityVersion:
+          - 6000.3.13f1
+    env:
+      UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+      UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+      UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+    steps:
+      - name: Check license secrets
+        id: license
+        run: |
+          if [ -z "$UNITY_LICENSE" ]; then
+            echo "::notice::UNITY_LICENSE secret is not set; skipping Unity test run. See CONTRIBUTING.md."
+            echo "available=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.license.outputs.available == 'true'
+        with:
+          lfs: true
+
+      - uses: actions/cache@v4
+        if: steps.license.outputs.available == 'true'
+        with:
+          path: Packages/com.nekuzaky.resonance/Library
+          key: Library-${{ matrix.unityVersion }}-${{ hashFiles('Packages/com.nekuzaky.resonance/**/*.cs') }}
+          restore-keys: Library-${{ matrix.unityVersion }}-
+
+      - name: Run package tests
+        if: steps.license.outputs.available == 'true'
+        uses: game-ci/unity-test-runner@v4
+        with:
+          packageMode: true
+          projectPath: Packages/com.nekuzaky.resonance
+          unityVersion: ${{ matrix.unityVersion }}
+          testMode: all
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          checkName: Test results (${{ matrix.unityVersion }})
+
+      - uses: actions/upload-artifact@v4
+        if: always() && steps.license.outputs.available == 'true'
+        with:
+          name: test-results-${{ matrix.unityVersion }}
+          path: artifacts
