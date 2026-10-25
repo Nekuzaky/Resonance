@@ -31,6 +31,7 @@ namespace Nekuzaky.Resonance
             _plan = new Plan(_layerPool);
             Music = new MusicPlayer(host, Syncs, Mixer);
             Reverb = new ReverbMixer(host);
+            Memory.InUse = Uses;
             _hasSpatializer = HasSpatializer;
         }
 
@@ -285,6 +286,24 @@ namespace Nekuzaky.Resonance
         {
             Stats.Record(new EventLogEntry(_time, sound, emitter, result));
             return SoundHandle.None;
+        }
+
+        private bool Uses(AudioClip clip)
+        {
+            foreach (var instance in _instances)
+            {
+                foreach (var voice in instance.Voices)
+                {
+                    if (voice.Finished || voice.Layer == null)
+                        continue;
+                    foreach (var planned in voice.Layer.Clips)
+                    {
+                        if (ReferenceEquals(planned.Clip, clip))
+                            return true;
+                    }
+                }
+            }
+            return Music.Uses(clip);
         }
 
         private SoundInstance Find(int id)

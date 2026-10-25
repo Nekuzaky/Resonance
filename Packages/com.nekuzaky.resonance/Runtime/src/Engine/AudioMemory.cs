@@ -13,6 +13,12 @@ namespace Nekuzaky.Resonance
 
         public int OnDemandLoads { get; private set; }
 
+        public int PendingUnloads => _deferred.Count;
+
+        internal System.Action<AudioClip> UnloadData = clip => clip.UnloadAudioData();
+
+        internal System.Func<AudioClip, bool> InUse;
+
         public void Load(SoundBank bank)
         {
             if (bank == null)
@@ -23,7 +29,9 @@ namespace Nekuzaky.Resonance
                 return;
             _scratch.Clear();
             bank.CollectClips(_scratch);
-            foreach (var clip in _scratch)
+            var held = new List<AudioClip>(_scratch);
+            _held[bank] = held;
+            foreach (var clip in held)
                 Retain(clip);
         }
 
@@ -37,9 +45,9 @@ namespace Nekuzaky.Resonance
                 return;
             }
             _banks.Remove(bank);
-            _scratch.Clear();
-            bank.CollectClips(_scratch);
-            foreach (var clip in _scratch)
+            if (!_held.Remove(bank, out var held))
+                return;
+            foreach (var clip in held)
                 Release(clip);
         }
 
@@ -47,13 +55,11 @@ namespace Nekuzaky.Resonance
 
         public bool IsReady(SoundBank bank)
         {
-            if (!IsLoaded(bank))
+            if (!IsLoaded(bank) || !_held.TryGetValue(bank, out var held))
                 return false;
-            _scratch.Clear();
-            bank.CollectClips(_scratch);
-            foreach (var clip in _scratch)
+            foreach (var clip in held)
             {
-                if (clip.loadState != AudioDataLoadState.Loaded && clip.loadState != AudioDataLoadState.Failed)
+                if (clip != null && clip.loadState != AudioDataLoadState.Loaded && clip.loadState != AudioDataLoadState.Failed)
                     return false;
             }
             return true;
@@ -65,15 +71,40 @@ namespace Nekuzaky.Resonance
                 OnDemandLoads++;
         }
 
+        public void Tick()
+        {
+            if (_deferred.Count == 0)
+                return;
+            _released.Clear();
+            foreach (var clip in _deferred)
+            {
+                if (clip == null || InUse == null || !InUse(clip))
+                    _released.Add(clip);
+            }
+            foreach (var clip in _released)
+            {
+                _deferred.Remove(clip);
+                if (clip != null)
+                    UnloadData(clip);
+            }
+        }
+
         public void Clear()
         {
             foreach (var pair in _references)
             {
                 if (pair.Key != null)
-                    pair.Key.UnloadAudioData();
+                    UnloadData(pair.Key);
+            }
+            foreach (var clip in _deferred)
+            {
+                if (clip != null)
+                    UnloadData(clip);
             }
             _references.Clear();
+            _deferred.Clear();
             _banks.Clear();
+            _held.Clear();
         }
 
         #endregion
@@ -83,19 +114,26 @@ namespace Nekuzaky.Resonance
 
         private readonly Dictionary<AudioClip, int> _references = new();
         private readonly Dictionary<SoundBank, int> _banks = new();
+        private readonly Dictionary<SoundBank, List<AudioClip>> _held = new();
+        private readonly HashSet<AudioClip> _deferred = new();
+        private readonly List<AudioClip> _released = new();
         private readonly HashSet<AudioClip> _scratch = new();
 
         private void Retain(AudioClip clip)
         {
+            if (clip == null)
+                return;
             _references.TryGetValue(clip, out var count);
             _references[clip] = count + 1;
-            if (count == 0 && clip.loadState == AudioDataLoadState.Unloaded)
+            if (count > 0 || _deferred.Remove(clip))
+                return;
+            if (clip.loadState == AudioDataLoadState.Unloaded)
                 clip.LoadAudioData();
         }
 
         private void Release(AudioClip clip)
         {
-            if (!_references.TryGetValue(clip, out var count))
+            if (clip == null || !_references.TryGetValue(clip, out var count))
                 return;
             if (count > 1)
             {
@@ -103,7 +141,10 @@ namespace Nekuzaky.Resonance
                 return;
             }
             _references.Remove(clip);
-            clip.UnloadAudioData();
+            if (InUse != null && InUse(clip))
+                _deferred.Add(clip);
+            else
+                UnloadData(clip);
         }
 
         #endregion

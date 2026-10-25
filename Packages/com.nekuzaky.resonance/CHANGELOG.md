@@ -12,6 +12,9 @@ All notable changes to this package are documented here. The format follows
   is stolen.
 - Virtual voices keep their exact position across the clips of a continuous sequence, and advance at the pitch the
   audio source really plays (clamped to 4x), so they resume in the right place.
+- Unloading a Sound Bank while one of its clips plays (a sound, a music segment, a layer or a stinger) no longer cuts
+  it: the clip's audio data is released when nothing plays it any more, unless the bank is loaded again first.
+- A Sound Bank releases exactly the clips it loaded, even if its events were edited while it was loaded.
 
 ## [0.5.1] - 2026-10-24
 

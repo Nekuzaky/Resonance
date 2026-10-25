@@ -68,6 +68,20 @@ namespace Nekuzaky.Resonance
             }
         }
 
+        public bool Uses(AudioClip clip)
+        {
+            if (!Active)
+                return false;
+            if (Source != null && ReferenceEquals(Source.clip, clip))
+                return true;
+            foreach (var layer in Layers)
+            {
+                if (layer != null && ReferenceEquals(layer.clip, clip))
+                    return true;
+            }
+            return false;
+        }
+
         public void Halt()
         {
             if (Source != null)
@@ -244,6 +258,21 @@ namespace Nekuzaky.Resonance
             deck.Start = Boundary(stinger.sync, now);
             deck.Source.PlayScheduled(deck.Start);
             deck.Active = true;
+        }
+
+        public bool Uses(AudioClip clip)
+        {
+            foreach (var deck in _decks)
+            {
+                if (deck.Uses(clip))
+                    return true;
+            }
+            foreach (var stinger in _stingers)
+            {
+                if (stinger.Uses(clip))
+                    return true;
+            }
+            return false;
         }
 
         public bool Position(out int bar, out int beat, out float beatPhase)
