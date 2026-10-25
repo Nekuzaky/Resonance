@@ -97,7 +97,33 @@ namespace Nekuzaky.Resonance
         {
             if (data == null || data.Length == 0 || data[0] != Version)
                 return false;
-            using var reader = new BinaryReader(new MemoryStream(data));
+            _incoming ??= new RemoteFrame();
+            try
+            {
+                using var reader = new BinaryReader(new MemoryStream(data, false));
+                _incoming.Parse(reader);
+                if (reader.BaseStream.Position != data.Length)
+                    return false;
+            }
+            catch (Exception exception) when (exception is IOException || exception is FormatException || exception is ArgumentException)
+            {
+                return false;
+            }
+            CopyFrom(_incoming);
+            return true;
+        }
+
+        #endregion
+
+
+        #region Private and Protected
+
+        private const int MaxItems = 512;
+
+        private RemoteFrame _incoming;
+
+        private void Parse(BinaryReader reader)
+        {
             reader.ReadByte();
             Time = reader.ReadSingle();
             Platform = reader.ReadString();
@@ -113,15 +139,27 @@ namespace Nekuzaky.Resonance
             Wet = reader.ReadSingle();
             ReadSounds(reader);
             ReadBuses(reader);
-            return true;
         }
 
-        #endregion
-
-
-        #region Private and Protected
-
-        private const int MaxItems = 512;
+        private void CopyFrom(RemoteFrame other)
+        {
+            Time = other.Time;
+            Platform = other.Platform;
+            Instances = other.Instances;
+            Real = other.Real;
+            Virtual = other.Virtual;
+            Pooled = other.Pooled;
+            Plays = other.Plays;
+            Rejected = other.Rejected;
+            OnDemand = other.OnDemand;
+            Cost = other.Cost;
+            Reverb = other.Reverb;
+            Wet = other.Wet;
+            Sounds.Clear();
+            Sounds.AddRange(other.Sounds);
+            Buses.Clear();
+            Buses.AddRange(other.Buses);
+        }
 
         private void CaptureSounds(ResonanceEngine engine)
         {

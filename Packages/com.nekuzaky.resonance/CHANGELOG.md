@@ -15,6 +15,8 @@ All notable changes to this package are documented here. The format follows
 - Unloading a Sound Bank while one of its clips plays (a sound, a music segment, a layer or a stinger) no longer cuts
   it: the clip's audio data is released when nothing plays it any more, unless the bank is loaded again first.
 - A Sound Bank releases exactly the clips it loaded, even if its events were edited while it was loaded.
+- The Profiler ignores a truncated or corrupted frame from a remote player instead of throwing in the editor and
+  showing half of a frame.
 
 ## [0.5.1] - 2026-10-24
 
