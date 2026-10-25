@@ -163,7 +163,8 @@ namespace Nekuzaky.Resonance.Editor
             if (_bus == null)
                 return;
             Element.EnableInClassList("rs-strip--selected", _bus == selected);
-            _effects.text = EffectsInfo(_bus, engine);
+            if (EffectsChanged(engine))
+                _effects.text = EffectsInfo(_bus, engine);
             if (_fader.focusController?.focusedElement != _fader)
                 _fader.SetValueWithoutNotify(_bus.volume);
             var state = engine != null && engine.Mixer.Buses.TryGetValue(_bus, out var found) ? found : null;
@@ -203,6 +204,29 @@ namespace Nekuzaky.Resonance.Editor
         private float _peak = -1f;
         private float _shownDuck = float.NaN;
         private float _shownVolume = float.NaN;
+        private readonly int[] _shownEffects = new int[BusEffects.MaxEffects];
+        private int _shownEffectCount = -1;
+        private int _shownReduction = -1;
+
+        internal Label EffectsLabel => _effects;
+
+        private bool EffectsChanged(ResonanceEngine engine)
+        {
+            var count = Mathf.Min(_bus.effects.Count, BusEffects.MaxEffects);
+            var reduction = engine != null ? engine.Mixer.GainReduction(_bus) : 0f;
+            var shownReduction = reduction > 0.05f ? Mathf.RoundToInt(reduction * 10f) : 0;
+            var changed = count != _shownEffectCount || shownReduction != _shownReduction;
+            for (var i = 0; i < count; i++)
+            {
+                var effect = _bus.effects[i];
+                var key = effect == null ? -1 : (int)effect.type * 2 + (effect.bypass ? 1 : 0);
+                changed |= key != _shownEffects[i];
+                _shownEffects[i] = key;
+            }
+            _shownEffectCount = count;
+            _shownReduction = shownReduction;
+            return changed;
+        }
 
         private void Toggle(bool mute)
         {

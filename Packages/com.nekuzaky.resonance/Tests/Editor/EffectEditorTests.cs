@@ -213,6 +213,23 @@ namespace Nekuzaky.Resonance.Tests
             Assert.AreSame(first, panel.Element.Q(className: "rs-effect"));
         }
 
+        [Test]
+        public void BusStrip_BuildsItsEffectTextOnlyWhenTheChainChanges()
+        {
+            var bus = Chain(BusEffectType.LowPass, BusEffectType.Delay);
+            var strip = new BusStrip(bus, _ => { });
+            strip.Refresh(Engine, null);
+            var text = strip.EffectsLabel.text;
+            Assert.AreEqual("Low Pass\nDelay", text);
+
+            strip.Refresh(Engine, null);
+            Assert.AreSame(text, strip.EffectsLabel.text);
+
+            bus.effects[1].bypass = true;
+            strip.Refresh(Engine, null);
+            Assert.AreEqual("Low Pass\n(Delay)", strip.EffectsLabel.text);
+        }
+
         private AudioBus Chain(params BusEffectType[] types)
         {
             var bus = Asset<AudioBus>("Chain");
