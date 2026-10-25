@@ -31,6 +31,7 @@ namespace Nekuzaky.Resonance.Dev
             host.AddComponent<SmokeTest>();
             host.AddComponent<TimelineCheck>();
             host.AddComponent<AddressablesCheck>();
+            host.AddComponent<BusEffectsCheck>();
         }
 
         private static void Check(bool condition, string message) => Smoke.Check(condition, message);
