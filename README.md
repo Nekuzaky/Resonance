@@ -119,7 +119,7 @@ In Unity: **Window > Package Manager > + > Install package from git URL...** and
 https://github.com/Nekuzaky/Resonance.git?path=Packages/com.nekuzaky.resonance
 ```
 
-Add `#v0.5.1` at the end of the URL to pin a version.
+Add `#v0.6.0` at the end of the URL to pin a version.
 
 ## Quick start
 
