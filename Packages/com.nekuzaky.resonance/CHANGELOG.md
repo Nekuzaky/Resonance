@@ -20,6 +20,8 @@ All notable changes to this package are documented here. The format follows
 - When the game stalls past the end of a music segment (a long frame, a breakpoint, the editor paused), the next
   segment starts a moment later on a new beat grid instead of being scheduled in the past, which played it late and
   cut it before its end.
+- A Snapshot Trigger removes its snapshot when its scene is unloaded; before, the snapshot stayed applied for the
+  rest of the game.
 
 ## [0.5.1] - 2026-10-24
 

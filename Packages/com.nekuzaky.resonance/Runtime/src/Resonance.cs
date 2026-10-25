@@ -120,6 +120,19 @@ namespace Nekuzaky.Resonance
 
         internal static Func<ResonanceEngine> EditorEngine;
 
+        internal static ResonanceEngine Running
+        {
+            get
+            {
+                if (_override != null)
+                    return _override;
+                if (!Application.isPlaying)
+                    return EditorEngine?.Invoke();
+                var runtime = ResonanceRuntime.Current;
+                return runtime != null ? runtime.Engine : null;
+            }
+        }
+
         private static ResonanceEngine _override;
 
         internal static void Override(ResonanceEngine engine) => _override = engine;

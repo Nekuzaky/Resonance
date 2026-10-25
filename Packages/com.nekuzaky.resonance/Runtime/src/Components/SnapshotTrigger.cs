@@ -23,8 +23,8 @@ namespace Nekuzaky.Resonance
 
         private void OnDisable()
         {
-            if (applyOnEnable && gameObject.scene.isLoaded)
-                Remove();
+            if (applyOnEnable && snapshot != null)
+                Resonance.Running?.Mixer.Remove(snapshot);
         }
     }
 }
