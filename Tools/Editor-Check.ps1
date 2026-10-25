@@ -3,6 +3,9 @@
     Checks the editor-side features that need a running editor: Studio preview audio, loudness accuracy and gizmos.
 .DESCRIPTION
     1. Plays a sound through the Studio preview in Edit Mode (master muted) and checks that its AudioSource advances.
+       Then plays sounds and music through buses with effects and records the real output at the Audio Listener
+       (the speakers stay silent): the low pass cuts a tone, the delay and reverb tails ring after the sound ends, the
+       distortion drive ignores the bus fader, and music layers are filtered too.
     2. Measures every demo clip with the Audit loudness meter and compares it with ffmpeg's EBU R128 meter; clips
        shorter than 400 ms are skipped because the standard does not measure them.
     3. Opens the editor, selects the demo car and saves the Scene view with its gizmos to docs/images.
@@ -21,6 +24,11 @@ $failed = $false
 $previewLog = Join-Path $logs 'preview.log'
 $exitCode = Invoke-Unity -Arguments @('-executeMethod', 'Nekuzaky.Resonance.Dev.PreviewCheck.Run') -LogFile $previewLog
 Select-String -Path $previewLog -Pattern '\[PreviewCheck\]' | ForEach-Object { Write-Host $_.Line }
+if ($exitCode -ne 0) { $failed = $true }
+
+$effectsLog = Join-Path $logs 'effects.log'
+$exitCode = Invoke-Unity -Arguments @('-executeMethod', 'Nekuzaky.Resonance.Dev.EffectsCheck.Run') -LogFile $effectsLog
+Select-String -Path $effectsLog -Pattern '\[EffectsCheck\]' | ForEach-Object { Write-Host $_.Line }
 if ($exitCode -ne 0) { $failed = $true }
 
 $ffmpeg = Get-Command ffmpeg -ErrorAction SilentlyContinue

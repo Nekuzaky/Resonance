@@ -5,6 +5,29 @@ All notable changes to this package are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- Bus effects: an ordered chain on every bus with Low Pass, High Pass, Reverb (send or insert), Delay, Distortion and a
+  Compressor, edited in the Mixer tab (and in the bus inspector) with bypass, reordering and live values.
+- Effect settings driven by Parameters through curves, and faded by Mix Snapshots (new Effects list on the snapshot).
+- Delay and reverb tails ring out after a sound ends or is stopped instead of being cut.
+- `AudioBus.AddEffect`, `BusEffect.SetValue` and `BusEffects` for building chains from scripts.
+
+
+### Changed
+
+- Music layers play on their own child objects, so bus effects reach every layer.
+- Bus strips in the Mixer tab are wider, with an effects button and the effect names under the fader.
+
+
+- The engine update only writes audio source, filter and transform properties that changed, computes each bus gain
+  once per frame, and skips occlusion rays for sounds out of range (they are virtual, so they cannot be heard). In
+  the demo player, 400 sounds cost 0.15 ms per frame instead of 0.17 ms; 250 occluded sounds on a two-level bus
+  hierarchy with a snapshot, half of them out of range, went from about 0.48 ms to 0.24 ms in the editor tests.
+- The Studio Profiler reuses its table rows instead of rebuilding them ten times a second, and its history records
+  without allocating: one refresh with 100 sounds went from about 5 ms to 0.07 ms. Mixer meters repaint only when
+  their level changes.
+
 ### Fixed
 
 - A play refused for lack of voices no longer steals lower priority sounds first: voices are only stolen when enough
@@ -23,15 +46,16 @@ All notable changes to this package are documented here. The format follows
 - A Snapshot Trigger removes its snapshot when its scene is unloaded; before, the snapshot stayed applied for the
   rest of the game.
 
-### Changed
 
-- The engine update only writes audio source, filter and transform properties that changed, computes each bus gain
-  once per frame, and skips occlusion rays for sounds out of range (they are virtual, so they cannot be heard). In
-  the demo player, 400 sounds cost 0.15 ms per frame instead of 0.17 ms; 250 occluded sounds on a two-level bus
-  hierarchy with a snapshot, half of them out of range, went from about 0.48 ms to 0.24 ms in the editor tests.
-- The Studio Profiler reuses its table rows instead of rebuilding them ten times a second, and its history records
-  without allocating: one refresh with 100 sounds went from about 5 ms to 0.07 ms. Mixer meters repaint only when
-  their level changes.
+### Verified
+
+- Allocation free once warmed up, with every effect, a parameter curve, an active snapshot, compressor detection and
+  ringing tails (new `PerformanceTests`).
+- The real output recorded at the Audio Listener in Edit Mode: the low pass cuts a tone by 28 dB, a 300 ms echo and a
+  reverb tail are heard after the sound ended, the distortion drive ignores the bus fader and music layers are
+  filtered.
+- Existing buses and snapshots load unchanged, with an empty chain.
+
 
 ## [0.5.1] - 2026-10-24
 

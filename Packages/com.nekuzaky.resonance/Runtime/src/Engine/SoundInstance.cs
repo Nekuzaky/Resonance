@@ -90,7 +90,9 @@ namespace Nekuzaky.Resonance
         public readonly AudioLowPassFilter LowPass;
         public readonly AudioHighPassFilter HighPass;
         public readonly Transform Transform;
+        public readonly EffectRack Effects;
         public SoundInstance Owner;
+        public float RingUntil;
         public PlanLayer Layer;
         public int ClipIndex;
         public bool Virtual;
@@ -122,6 +124,7 @@ namespace Nekuzaky.Resonance
             HighPass = host.AddComponent<AudioHighPassFilter>();
             LowPass.enabled = false;
             HighPass.enabled = false;
+            Effects = new EffectRack(host);
         }
 
         public bool HasClip => Layer != null && ClipIndex >= 0 && ClipIndex < Layer.Clips.Count;
@@ -181,6 +184,7 @@ namespace Nekuzaky.Resonance
                 Source.clip = null;
             }
             Owner = null;
+            RingUntil = 0f;
             Layer = null;
             ClipIndex = 0;
             Virtual = false;

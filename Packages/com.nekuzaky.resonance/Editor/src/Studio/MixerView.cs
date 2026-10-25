@@ -22,7 +22,8 @@ namespace Nekuzaky.Resonance.Editor
         {
             var engine = Resonance.Engine;
             foreach (var strip in _strips)
-                strip.Refresh(engine);
+                strip.Refresh(engine, _effects.Bus);
+            _effects.Refresh(engine);
             foreach (var snapshot in _snapshots)
                 snapshot.Refresh(engine);
         }
@@ -36,6 +37,7 @@ namespace Nekuzaky.Resonance.Editor
 
         private readonly List<BusStrip> _strips = new();
         private readonly List<SnapshotRow> _snapshots = new();
+        private readonly EffectsPanel _effects = new();
 
         private void Rebuild()
         {
@@ -54,11 +56,13 @@ namespace Nekuzaky.Resonance.Editor
             var strips = Ui.Box("rs-strips");
             foreach (var bus in buses)
             {
-                var strip = new BusStrip(bus);
+                var strip = new BusStrip(bus, _effects.Show);
                 _strips.Add(strip);
                 strips.Add(strip.Element);
             }
             Root.Add(strips);
+            _effects.Show(buses.Contains(_effects.Bus) ? _effects.Bus : null);
+            Root.Add(_effects.Element);
 
             var snapshots = Ui.Box("rs-snapshots");
             snapshots.Add(Ui.GroupTitle(Glyphs.Snapshot, "Mix Snapshots"));
@@ -116,7 +120,7 @@ namespace Nekuzaky.Resonance.Editor
 
         public readonly VisualElement Element;
 
-        public BusStrip(AudioBus bus)
+        public BusStrip(AudioBus bus, System.Action<AudioBus> select)
         {
             _bus = bus;
             Element = Ui.Box("rs-strip");
@@ -144,16 +148,22 @@ namespace Nekuzaky.Resonance.Editor
             _solo = Ui.IconButton(Glyphs.Solo, "Solo (this session)", () => Toggle(false));
             buttons.Add(_mute);
             buttons.Add(_solo);
+            buttons.Add(Ui.IconButton(Glyphs.Filter, "Edit the effects of this bus", () => select(bus)));
             buttons.Add(Ui.IconButton(Glyphs.Settings, "Edit the bus", () => StudioWindow.Open(bus)));
             Element.Add(buttons);
+            _effects = Ui.Styled(string.Empty, "rs-strip-effects");
+            _effects.RegisterCallback<ClickEvent>(_ => select(bus));
+            Element.Add(_effects);
             _info = Ui.Styled(DuckInfo(bus), "rs-strip-info");
             Element.Add(_info);
         }
 
-        public void Refresh(ResonanceEngine engine)
+        public void Refresh(ResonanceEngine engine, AudioBus selected)
         {
             if (_bus == null)
                 return;
+            Element.EnableInClassList("rs-strip--selected", _bus == selected);
+            _effects.text = EffectsInfo(_bus, engine);
             if (_fader.focusController?.focusedElement != _fader)
                 _fader.SetValueWithoutNotify(_bus.volume);
             var state = engine != null && engine.Mixer.Buses.TryGetValue(_bus, out var found) ? found : null;
@@ -186,6 +196,7 @@ namespace Nekuzaky.Resonance.Editor
         private readonly VisualElement _meter;
         private readonly Label _db;
         private readonly Label _info;
+        private readonly Label _effects;
         private readonly Button _mute;
         private readonly Button _solo;
         private float _level = -1f;
@@ -216,6 +227,19 @@ namespace Nekuzaky.Resonance.Editor
                     names.Add($"{rule.target.name} {rule.amount:0} dB");
             }
             return names.Count == 0 ? string.Empty : "ducks " + string.Join(", ", names);
+        }
+
+        private static string EffectsInfo(AudioBus bus, ResonanceEngine engine)
+        {
+            var text = string.Empty;
+            for (var i = 0; i < bus.effects.Count && i < BusEffects.MaxEffects; i++)
+            {
+                var effect = bus.effects[i];
+                if (effect != null)
+                    text += (text.Length > 0 ? "\n" : string.Empty) + (effect.bypass ? $"({BusEffects.Label(effect.type)})" : BusEffects.Label(effect.type));
+            }
+            var reduction = engine != null ? engine.Mixer.GainReduction(bus) : 0f;
+            return reduction > 0.05f ? $"{text}\nGR -{reduction:0.0} dB" : text;
         }
 
         private static Color MeterColor(float decibels)

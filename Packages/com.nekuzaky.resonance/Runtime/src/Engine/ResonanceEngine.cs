@@ -33,6 +33,7 @@ namespace Nekuzaky.Resonance
             Reverb = new ReverbMixer(host);
             Memory.InUse = Uses;
             _hasSpatializer = HasSpatializer;
+            Mixer.Syncs = Syncs;
         }
 
         #endregion
@@ -174,6 +175,7 @@ namespace Nekuzaky.Resonance
             for (var i = _instances.Count - 1; i >= 0; i--)
                 Release(_instances[i]);
             _instances.Clear();
+            CutTails();
             Music.Stop(0f);
             Memory.Clear();
             Dispatch();

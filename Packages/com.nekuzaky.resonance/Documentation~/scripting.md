@@ -66,6 +66,14 @@ Resonance.SetBusVolume(musicBus, -6f);
 
 `SetBusVolume` is a runtime offset in dB on top of the bus asset, made for options menus.
 
+Bus effects are data on the bus asset, so a script can build or change a chain at runtime:
+
+```csharp
+var lowPass = sfxBus.AddEffect(BusEffectType.LowPass);
+lowPass.SetValue(BusEffects.FilterCutoff, 800f);
+lowPass.bypass = false;
+```
+
 ## Engine
 
 `Resonance.Engine` is the running engine (created on first use in Play Mode, kept across scenes). `Resonance.Stats`

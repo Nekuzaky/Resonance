@@ -286,7 +286,7 @@
 .rs-strips { flex-direction: row; padding: 12px; }
 
 .rs-strip {
-    width: 96px;
+    width: 120px;
     margin-right: 8px;
     padding: 8px 6px;
     border-radius: 6px;
@@ -297,7 +297,7 @@
 }
 
 .rs-strip--selected { border-color: rgb(47, 169, 184); }
-.rs-strip-name { -unity-font-style: bold; overflow: hidden; text-overflow: ellipsis; max-width: 84px; }
+.rs-strip-name { -unity-font-style: bold; overflow: hidden; text-overflow: ellipsis; max-width: 108px; }
 .rs-strip-parent { color: var(--rs-text-3); font-size: 10px; margin-bottom: 6px; }
 .rs-strip-body { flex-direction: row; height: 180px; margin: 6px 0; }
 .rs-strip-body Slider { margin: 0; }
@@ -305,6 +305,31 @@
 .rs-strip-db { color: var(--rs-text-2); font-size: 11px; margin-bottom: 6px; }
 .rs-strip-buttons { flex-direction: row; }
 .rs-strip-info { color: var(--rs-text-3); font-size: 10px; margin-top: 6px; white-space: normal; -unity-text-align: middle-center; }
+
+.rs-strip-effects { color: var(--rs-accent); font-size: 10px; margin-top: 6px; white-space: normal; -unity-text-align: middle-center; }
+
+.rs-effects { padding: 0 12px 12px 12px; max-width: 720px; }
+.rs-effects-header { flex-direction: row; align-items: center; margin-bottom: 2px; }
+.rs-effect {
+    padding: 6px 8px;
+    margin-bottom: 6px;
+    border-radius: 6px;
+    background-color: var(--rs-panel);
+    border-width: 1px;
+    border-color: var(--rs-border);
+}
+.rs-effect--bypassed { opacity: 0.55; }
+.rs-effect-header { flex-direction: row; align-items: center; margin-bottom: 4px; }
+.rs-effect-header Toggle { margin-right: 6px; }
+.rs-effect-header Toggle > Label { min-width: 0; margin-right: 4px; }
+.rs-effect-index { color: var(--rs-text-3); min-width: 18px; }
+.rs-effect-name { -unity-font-style: bold; }
+.rs-effect-row { flex-direction: row; align-items: center; height: 20px; }
+.rs-effect-label { width: 90px; color: var(--rs-text-2); }
+.rs-effect-slider { flex-grow: 1; margin: 0 6px 0 0; }
+.rs-effect-value { width: 64px; margin: 0; }
+.rs-effect-unit { width: 28px; color: var(--rs-text-3); font-size: 10px; margin-left: 3px; }
+.rs-effect-live { color: var(--rs-good); font-size: 10px; min-width: 70px; }
 
 .rs-snapshots { padding: 0 12px 12px 12px; }
 

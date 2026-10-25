@@ -18,6 +18,14 @@ namespace Nekuzaky.Resonance
         public bool Soloed;
         public float FrameGain;
         public int GainFrame = -1;
+        public readonly List<float[]> Values = new();
+        public readonly List<float> Reductions = new();
+        public readonly EffectChain Chain = new();
+        public int EvaluatedFrame = -1;
+        public bool HasCompressor;
+        public float Detector;
+        public float Compression;
+        public float GainReduction;
     }
 
     internal sealed class ActiveSnapshot
@@ -36,6 +44,8 @@ namespace Nekuzaky.Resonance
         public IReadOnlyList<ActiveSnapshot> Snapshots => _snapshots;
 
         public bool AnySolo { get; private set; }
+
+        public SyncStore Syncs { get; set; }
 
         #endregion
 
@@ -65,14 +75,15 @@ namespace Nekuzaky.Resonance
         public void BeginFrame()
         {
             var solo = false;
+            _frame++;
             foreach (var state in _buses.Values)
             {
                 state.ActiveVoices = 0;
                 state.Meter = 0f;
+                state.Detector = 0f;
                 solo |= state.Soloed;
             }
             AnySolo = solo;
-            _frame++;
             _frameOpen = true;
         }
 
@@ -104,6 +115,8 @@ namespace Nekuzaky.Resonance
                 var time = falling ? state.DuckAttack : state.DuckRelease;
                 state.Duck = AudioMath.Approach(state.Duck, state.DuckTarget, time, state.DuckSpan, deltaTime);
             }
+            foreach (var pair in _buses)
+                TickCompressors(pair.Key, pair.Value, deltaTime);
         }
 
         public float Gain(AudioBus bus)
@@ -132,10 +145,62 @@ namespace Nekuzaky.Resonance
                 if (state != null && state.Muted)
                     return 0f;
                 soloed |= state != null && state.Soloed;
-                decibels += bus.volume + SnapshotOffset(bus) + (state == null ? 0f : state.Duck + state.UserVolume);
+                decibels += OwnDecibels(bus, state);
                 bus = bus.parent;
             }
             return AnySolo && !soloed ? 0f : AudioMath.ToLinear(decibels);
+        }
+
+        public EffectChain Chain(AudioBus bus)
+        {
+            if (bus == null)
+                return EffectChain.None;
+            var chain = State(bus).Chain;
+            if (chain.Frame == _frame)
+                return chain;
+            chain.Frame = _frame;
+            chain.Clear();
+            var remaining = PathDecibels(bus);
+            var current = bus;
+            for (var depth = 0; depth < AudioBus.MaxDepth && current != null; depth++)
+            {
+                var state = Evaluate(current);
+                chain.Level = Mathf.Max(0.0001f, AudioMath.ToLinear(remaining));
+                remaining -= OwnDecibels(current, state);
+                var count = Mathf.Min(current.effects.Count, BusEffects.MaxEffects);
+                for (var i = 0; i < count; i++)
+                {
+                    var effect = current.effects[i];
+                    if (effect != null && !effect.bypass)
+                        chain.Add(effect, state.Values[i]);
+                }
+                current = current.parent;
+            }
+            chain.Finish();
+            return chain;
+        }
+
+        public float[] EffectValues(AudioBus bus, int index)
+        {
+            if (bus == null || index < 0 || index >= Mathf.Min(bus.effects.Count, BusEffects.MaxEffects))
+                return null;
+            return Evaluate(bus).Values[index];
+        }
+
+        public float GainReduction(AudioBus bus) => bus != null && _buses.TryGetValue(bus, out var state) ? state.GainReduction : 0f;
+
+        public void Detect(AudioBus bus, float level)
+        {
+            for (var depth = 0; depth < AudioBus.MaxDepth && bus != null && level > 0f; depth++)
+            {
+                var state = bus.effects.Count > 0 ? Evaluate(bus) : _buses.TryGetValue(bus, out var found) ? found : null;
+                if (state != null && state.HasCompressor)
+                    state.Detector += level * level;
+                if (bus.mute || (state != null && state.Muted))
+                    return;
+                level *= AudioMath.ToLinear(OwnDecibels(bus, state));
+                bus = bus.parent;
+            }
         }
 
         public float SnapshotOffset(AudioBus bus)
@@ -215,6 +280,128 @@ namespace Nekuzaky.Resonance
                 if (active.Removing && active.Weight <= 0f)
                     _snapshots.RemoveAt(i);
             }
+        }
+
+        private float PathDecibels(AudioBus bus)
+        {
+            var decibels = 0f;
+            for (var depth = 0; depth < AudioBus.MaxDepth && bus != null; depth++)
+            {
+                decibels += OwnDecibels(bus, _buses.TryGetValue(bus, out var state) ? state : null);
+                bus = bus.parent;
+            }
+            return decibels;
+        }
+
+        private float OwnDecibels(AudioBus bus, BusState state) =>
+            bus.volume + SnapshotOffset(bus) + (state == null ? 0f : state.Duck + state.UserVolume + state.Compression);
+
+        private BusState Evaluate(AudioBus bus)
+        {
+            var state = State(bus);
+            if (state.EvaluatedFrame == _frame)
+                return state;
+            state.EvaluatedFrame = _frame;
+            state.HasCompressor = false;
+            var count = Mathf.Min(bus.effects.Count, BusEffects.MaxEffects);
+            for (var guard = 0; guard < BusEffects.MaxEffects && state.Values.Count < count; guard++)
+            {
+                state.Values.Add(new float[BusEffect.MaxParameters]);
+                state.Reductions.Add(0f);
+            }
+            for (var i = 0; i < count; i++)
+            {
+                var effect = bus.effects[i];
+                if (effect == null)
+                    continue;
+                EvaluateEffect(effect, state.Values[i]);
+                state.HasCompressor |= !effect.bypass && effect.type == BusEffectType.Compressor;
+            }
+            ApplySnapshotEffects(bus, state, count);
+            return state;
+        }
+
+        private void EvaluateEffect(BusEffect effect, float[] values)
+        {
+            var parameters = BusEffects.Parameters(effect.type);
+            for (var p = 0; p < parameters.Count; p++)
+                values[p] = effect.Value(p);
+            if (effect.modulations == null)
+                return;
+            foreach (var modulation in effect.modulations)
+            {
+                if (modulation?.parameter == null || modulation.curve == null || modulation.target < 0 || modulation.target >= parameters.Count)
+                    continue;
+                var parameter = modulation.parameter;
+                var raw = Syncs != null ? Syncs.GetParameter(parameter, null) : parameter.Clamp(parameter.defaultValue);
+                values[modulation.target] = parameters[modulation.target].Clamp(modulation.curve.Evaluate(parameter.Normalize(raw)));
+            }
+        }
+
+        private void ApplySnapshotEffects(AudioBus bus, BusState state, int count)
+        {
+            foreach (var active in _snapshots)
+            {
+                var entries = active.Snapshot != null ? active.Snapshot.effects : null;
+                if (entries == null || active.Weight <= 0f)
+                    continue;
+                foreach (var entry in entries)
+                {
+                    if (entry == null || entry.bus != bus)
+                        continue;
+                    var index = bus.IndexOfEffect(entry.effect);
+                    if (index < 0 || index >= count)
+                        continue;
+                    var parameters = BusEffects.Parameters(bus.effects[index].type);
+                    if (entry.parameter < 0 || entry.parameter >= parameters.Count)
+                        continue;
+                    var info = parameters[entry.parameter];
+                    var values = state.Values[index];
+                    var target = info.Clamp(entry.value);
+                    values[entry.parameter] = info.Logarithmic
+                        ? AudioMath.LogLerp(values[entry.parameter], target, active.Weight)
+                        : Mathf.Lerp(values[entry.parameter], target, active.Weight);
+                }
+            }
+        }
+
+        private void TickCompressors(AudioBus bus, BusState state, float deltaTime)
+        {
+            if (bus == null || (bus.effects.Count == 0 && state.Compression == 0f && state.GainReduction == 0f))
+                return;
+            var count = Mathf.Min(bus.effects.Count, BusEffects.MaxEffects);
+            if (count > 0)
+                Evaluate(bus);
+            var input = AudioMath.ToDecibels(Mathf.Sqrt(state.Detector));
+            var gain = 0f;
+            var reduction = 0f;
+            for (var i = 0; i < count; i++)
+            {
+                var effect = bus.effects[i];
+                if (effect == null || effect.bypass || effect.type != BusEffectType.Compressor)
+                {
+                    state.Reductions[i] = 0f;
+                    continue;
+                }
+                var values = state.Values[i];
+                var amount = Compress(values, input + gain, state.Reductions[i], deltaTime);
+                state.Reductions[i] = amount;
+                gain += values[BusEffects.CompressorMakeup] - amount;
+                reduction += amount;
+            }
+            state.Compression = gain;
+            state.GainReduction = reduction;
+        }
+
+        internal static float Compress(float[] values, float input, float current, float deltaTime)
+        {
+            var threshold = values[BusEffects.CompressorThreshold];
+            var ratio = Mathf.Max(1f, values[BusEffects.CompressorRatio]);
+            var target = input > threshold ? (input - threshold) * (1f - 1f / ratio) : 0f;
+            var time = target > current ? values[BusEffects.CompressorAttack] : values[BusEffects.CompressorRelease];
+            if (time <= 0f || deltaTime <= 0f)
+                return target;
+            return current + (target - current) * (1f - Mathf.Exp(-deltaTime / time));
         }
 
         private void CollectDucking()

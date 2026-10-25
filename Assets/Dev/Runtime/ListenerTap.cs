@@ -3,7 +3,8 @@ using UnityEngine;
 namespace Nekuzaky.Resonance.Dev
 {
     [AddComponentMenu("")]
-    internal sealed class ListenerTap : MonoBehaviour
+    [ExecuteAlways]
+    public sealed class ListenerTap : MonoBehaviour
     {
         #region Public
 

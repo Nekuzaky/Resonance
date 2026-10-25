@@ -58,7 +58,10 @@ Studio, presses space to hear the result, and adds a component to the scene. Cha
 - **Game syncs.** Parameters (global or per emitter, with smoothing), switch groups and state groups. Curves map
   parameters to volume, pitch, low pass and high pass.
 - **Mixing.** A bus hierarchy with faders, mute and solo, ducking rules (the voice bus lowers the music while someone
-  speaks), mix snapshots with fades, and optional output to a Unity Audio Mixer group for effects.
+  speaks), mix snapshots with fades, and optional output to a Unity Audio Mixer group.
+- **Bus effects.** An ordered chain on every bus, edited in the Mixer tab: low pass, high pass, reverb (send or
+  insert), delay, distortion and a compressor. Parameters drive any setting through curves and snapshots fade them.
+  Tails ring out after the sound ends, nothing is allocated per frame, and it works in the Edit Mode preview.
 - **Voice management.** Instance limits per event or per emitter, steal oldest or quietest, priorities against a
   global voice budget, cooldowns, and virtual voices: sounds too far to hear stop using an audio source and resume
   in the right place when you come back.
@@ -188,6 +191,7 @@ See [Scripting](Packages/com.nekuzaky.resonance/Documentation~/scripting.md) for
 | Random, Sequence, Switch, Blend Containers | Random, Sequence, Switch, Blend, Layer nodes |
 | Game Parameters (RTPC), Switches, States | Parameters, Switch Groups, State Groups |
 | Audio Buses, auto-ducking, bus states | Buses, Duck Rules, Mix Snapshots |
+| Effects on busses, RTPCs on effect properties | Bus effects (filters, reverb, delay, distortion, compressor) driven by Parameters and Snapshots |
 | Playback limits, priority, virtual voices | Max Instances, Priority, Virtualize When Far |
 | Attenuation ShareSets, obstruction and occlusion | Attenuation Presets, Occlusion |
 | Auxiliary reverb busses, Rooms | Reverb Zones, Reverb Send |

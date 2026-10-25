@@ -5,6 +5,7 @@ namespace Nekuzaky.Resonance
     internal sealed class MusicDeck
     {
         public readonly AudioSource Source;
+        public readonly EffectRack Effects;
         public MusicSegment Segment;
         public double Start;
         public double FadeStart;
@@ -14,6 +15,7 @@ namespace Nekuzaky.Resonance
         public bool Active;
         public float Volume;
         public readonly System.Collections.Generic.List<AudioSource> Layers = new();
+        public readonly System.Collections.Generic.List<EffectRack> LayerEffects = new();
 
         private readonly GameObject _host;
 
@@ -21,19 +23,32 @@ namespace Nekuzaky.Resonance
         {
             _host = new GameObject(name) { hideFlags = parent.gameObject.hideFlags };
             _host.transform.SetParent(parent, false);
-            Source = NewSource();
+            Source = NewSource(_host);
+            Effects = new EffectRack(_host);
         }
 
         public AudioSource Layer(int index)
         {
             for (var guard = 0; guard < 16 && Layers.Count <= index; guard++)
-                Layers.Add(NewSource());
+            {
+                var host = new GameObject($"Layer {Layers.Count}") { hideFlags = _host.hideFlags };
+                host.transform.SetParent(_host.transform, false);
+                Layers.Add(NewSource(host));
+                LayerEffects.Add(new EffectRack(host));
+            }
             return Layers[index];
         }
 
-        private AudioSource NewSource()
+        public void ApplyEffects(EffectChain chain)
         {
-            var source = _host.AddComponent<AudioSource>();
+            Effects.Apply(chain);
+            foreach (var rack in LayerEffects)
+                rack.Apply(chain);
+        }
+
+        private static AudioSource NewSource(GameObject host)
+        {
+            var source = host.AddComponent<AudioSource>();
             source.playOnAwake = false;
             source.spatialBlend = 0f;
             source.priority = 0;

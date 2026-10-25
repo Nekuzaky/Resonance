@@ -11,7 +11,7 @@ need one. There are no soundbanks to build and no external tool to keep in sync.
 | [Getting started](getting-started.md) | Install the package, make your first sound, hear it in the game |
 | [Sound Events](sound-events.md) | Containers (Random, Sequence, Switch, Blend, Layer), randomization, 3D, voice limits |
 | [Game syncs](game-syncs.md) | Parameters, switches and states, and how sounds react to them |
-| [Mixing](mixing.md) | Buses, ducking, snapshots, mute and solo, Audio Mixer output |
+| [Mixing](mixing.md) | Buses, effects, ducking, snapshots, mute and solo, Audio Mixer output |
 | [Distance, occlusion and reverb](space.md) | Attenuation curves and presets, occlusion, reverb zones |
 | [Memory and loading](memory.md) | Sound Banks, loading on demand, import settings |
 | [Interactive music](music.md) | Segments, layers, beat-synced transitions, state links, bridges, stingers, beat events |

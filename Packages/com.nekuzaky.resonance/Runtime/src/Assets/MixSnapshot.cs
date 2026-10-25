@@ -11,5 +11,6 @@ namespace Nekuzaky.Resonance
         [Min(0f)] public float fadeIn = 0.5f;
         [Min(0f)] public float fadeOut = 0.5f;
         public List<BusOffset> offsets = new();
+        public List<EffectOffset> effects = new();
     }
 }
