@@ -221,18 +221,33 @@ namespace Nekuzaky.Resonance
 
         private int MakeRoom(SoundEvent sound, int needed)
         {
-            var stole = 0;
-            for (var guard = 0; guard < MaxVoices + 1 && ActiveVoices() + needed > MaxVoices; guard++)
+            var excess = ActiveVoices() + needed - MaxVoices;
+            if (excess <= 0)
+                return 0;
+            if (needed > MaxVoices || StealableVoices(sound.priority) < excess)
+                return -1;
+            for (var guard = 0; guard < MaxVoices + 1 && excess > 0; guard++)
             {
                 var victim = LowestPriority(sound.priority);
                 if (victim == null)
                     return -1;
+                excess -= victim.Voices.Count;
                 QueueEnded(victim);
                 Release(victim);
                 _instances.Remove(victim);
-                stole = 1;
             }
-            return stole;
+            return 1;
+        }
+
+        private int StealableVoices(int priority)
+        {
+            var count = 0;
+            foreach (var instance in _instances)
+            {
+                if (instance.State != InstanceState.Done && instance.Event.priority <= priority)
+                    count += instance.Voices.Count;
+            }
+            return count;
         }
 
         private SoundInstance LowestPriority(int priority)
@@ -242,11 +257,20 @@ namespace Nekuzaky.Resonance
             {
                 if (instance.State == InstanceState.Done || instance.Event.priority > priority)
                     continue;
-                if (lowest == null || instance.Event.priority < lowest.Event.priority ||
-                    (instance.Event.priority == lowest.Event.priority && instance.Age > lowest.Age))
+                if (lowest == null || StealsBefore(instance, lowest))
                     lowest = instance;
             }
             return lowest;
+        }
+
+        private static bool StealsBefore(SoundInstance candidate, SoundInstance current)
+        {
+            var stopping = candidate.State == InstanceState.Stopping;
+            if (stopping != (current.State == InstanceState.Stopping))
+                return stopping;
+            if (candidate.Event.priority != current.Event.priority)
+                return candidate.Event.priority < current.Event.priority;
+            return candidate.Age > current.Age;
         }
 
         private int ActiveVoices()

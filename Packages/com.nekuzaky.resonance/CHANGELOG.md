@@ -3,6 +3,16 @@
 All notable changes to this package are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+
+- A play refused for lack of voices no longer steals lower priority sounds first: voices are only stolen when enough
+  of them can be freed, and a sound already stopped by its instance limit gives its voice back before any other sound
+  is stolen.
+- Virtual voices keep their exact position across the clips of a continuous sequence, and advance at the pitch the
+  audio source really plays (clamped to 4x), so they resume in the right place.
+
 ## [0.5.1] - 2026-10-24
 
 ### Changed
